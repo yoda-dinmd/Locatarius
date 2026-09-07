@@ -1,0 +1,32 @@
+## OS
+.DS_Store
+Thumbs.db
+
+## IDEs & Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+
+## .NET & Backend
+bin/
+obj/
+*.user
+*.suo
+appsettings.Development.json
+appsettings.Production.json
+
+## Node & Frontend
+node_modules/
+.next/
+out/
+build/
+dist/
+.env
+.env.local
+.env.production
+npm-debug.log*
+
+## Docker & Persistence
+pgdata/
+*.log

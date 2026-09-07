@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: locatarius_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: locatarius_db
+      POSTGRES_USER: locatarius_admin
+      POSTGRES_PASSWORD: dev_secure_password_123
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U locatarius_admin -d locatarius_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: locatarius_backend
+    restart: unless-stopped
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=locatarius_db;Username=locatarius_admin;Password=dev_secure_password_123
+      - Jwt__Issuer=LocatariusAuthority
+      - Jwt__Audience=LocatariusClient
+      - Jwt__SecretKey=super_secret_internship_signing_key_for_dsa_2026!
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  pgdata:
