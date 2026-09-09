@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Locatarius.Api/Locatarius.Api.csproj" />
+    <Project Path="src/Locatarius.Application/Locatarius.Application.csproj" />
+    <Project Path="src/Locatarius.Domain/Locatarius.Domain.csproj" />
+    <Project Path="src/Locatarius.Infrastructure/Locatarius.Infrastructure.csproj" />
+  </Folder>
+</Solution>
