@@ -1,89 +1,137 @@
 # Locatarius
 
-> **Secure Condominium Governance & Administration Platform**  
+> Secure condominium governance and administration platform architecture and specifications.
+>
 > Aligned with Republic of Moldova Law 187/2022 (*Legea cu privire la condominiu*).
 
-[![Security Focus](https://img.shields.io/badge/Security-DSA%20Standard-blue.svg)](#architectural-overview)
+[![Security Focus](https://img.shields.io/badge/Security-DSA%20Standard-blue.svg)](docs/solution-design.md)
 
----
+## Documentation Portal
 
-## 1. Project Overview
-Locatarius addresses administrative opacity, unauthorized takeovers, and communication breakdowns during Moldova's transition from legacy municipal housing structures (ÎMGFL/JEC) to Homeowners' Associations (**APC** - *Asociație de Proprietari din Condominiu*).
+The complete documentation is available in [`docs/`](docs/index.md) and is configured as a Material for MkDocs site through [`mkdocs.yml`](mkdocs.yml).
 
-### Roadmap Overview
-- **Sprint 1 (Current Focus):** Authentication, Role-Based Access Control (RBAC), and user provisioning.
-- **Sprints 2-3 (September MVP Target):** Apartment Directory, incident and maintenance ticketing with secure photo upload, and tamper-evident audit logging.
-- **October-December (PBL Continuation):** Quorum verification, General Assembly voting, and repair and development fund ledger.
+### Documentation Areas
 
----
+- **Solution design:** Business context, scope classification, architecture, authorization matrix, UX, and non-functional requirements.
+- **Shared patterns:** Authorization, transactions, errors, files, notifications, and delivery contracts.
+- **Data model:** Entity ownership, constraints, relationships, and financial rules.
+- **API catalogue:** Use-case-mapped operations, conventions, and representative contracts.
+- **Use-case catalogue:** 55 stable use cases with dedicated specifications and Mermaid end-to-end sequences.
+- **MVP roadmap:** Five production increments, dependencies, delivery gates, effort, and manual alternatives.
+- **Operations and testing:** Test design, environments, cutover planning, ownership, and runbooks.
+- **Decisions and risks:** ADRs, stakeholder questions, risks, and deferred decisions.
+- **Traceability:** Requirement, use case, API, screen, entity, and acceptance-test coverage.
+- **Validation report:** Documentation checks, diagram rendering results, consistency checks, and remaining assumptions.
+- **Sources:** Verified primary references and external verification limits.
 
-## 2. Sprint 1 Scope: Authentication & User Management
+### Use-Case Coverage
 
-### Feature: Authentication & User Management
+The 55 use cases are grouped by domain:
 
-#### User Story 1: Administrator can authenticate
-- User schema and initial admin seeding.
-- Password hashing (Argon2 or BCrypt) and verification.
-- Login API endpoint returning a JWT with role claims.
-- Frontend login view and session persistence.
+| Domain | IDs | Count |
+| :--- | :--- | ---: |
+| Building management | `UC-BLD` | 3 |
+| Communication | `UC-COM` | 5 |
+| Finance | `UC-FIN` | 11 |
+| Governance | `UC-GOV` | 3 |
+| Identity and access | `UC-IAM` | 8 |
+| Issues | `UC-ISS` | 6 |
+| Maintenance | `UC-MNT` | 4 |
+| Privacy | `UC-PRV` | 2 |
+| Residents | `UC-RES` | 2 |
+| Reporting | `UC-RPT` | 2 |
+| Tenancy | `UC-TEN` | 4 |
+| Utilities | `UC-UTL` | 5 |
+| **Total** |  | **55** |
 
-#### User Story 2: Administrator can create users
-- Admin-only user creation endpoint (`[Authorize(Roles = "Admin")]`).
-- Server-side and client-side validation.
-- Add User UI form with role selection (`Admin`, `Owner`, `Tenant`).
+## Technology Direction
 
-#### User Story 3: Registered user can authenticate
-- Tenant and Owner login flow.
-- Route protection through backend policy gates and frontend protected routes.
-- Error feedback for invalid credentials or unauthorized access.
+The specifications target the following implementation stack:
 
----
+| Area | Planned technology or approach |
+| :--- | :--- |
+| Backend | ASP.NET Core .NET 8 Web API with Clean Architecture |
+| Frontend | React or Next.js with Tailwind CSS and a mobile-first PWA approach |
+| Database | PostgreSQL 16 with Entity Framework Core |
+| Authentication | Managed OIDC or equivalent identity integration, MFA, sessions, and role/policy authorization |
+| Security | Tenant isolation, least privilege, audit logging, rate limiting, CSRF protection, secure file handling, and restore-tested backups |
+| Documentation | MkDocs Material, Markdown, Mermaid diagrams, and strict build validation |
+| Delivery | Docker Compose for local services and GitHub Actions for documentation deployment |
 
-## 3. Tech Stack
+These are implementation targets and architectural recommendations, not evidence that the application or infrastructure is already deployed.
 
-| Component | Technology | Rationale |
-| :--- | :--- | :--- |
-| **Backend** | ASP.NET Core (.NET 8 Web API) | Enterprise security middleware, native RBAC policies, and EF Core type-safety. |
-| **Frontend** | React / Next.js + Tailwind CSS | Mobile-first responsive UI, PWA capability, and rapid component prototyping. |
-| **Database** | PostgreSQL 16 | Relational data integrity for user roles and condominium entities. |
-| **Security** | Argon2 / BCrypt, JWT Bearer | Secure credential storage, short-lived tokens, and protection against common OWASP risks. |
-| **DevOps** | Docker Compose | Reproducible local development across operating systems. |
-
----
-
-## 4. Quick Start (Local Environment)
+## Local Documentation Setup
 
 ### Prerequisites
-- Docker and Docker Compose.
-- Git.
-- .NET 8 SDK for local backend development.
-- Node.js 18 or later for local frontend development.
 
-### Running the Database
+- Git.
+- Python 3.x.
+- `mkdocs-material`.
+- Docker and Docker Compose only when working with the planned local database or application services.
+
+### Serve the Documentation
+
 ```bash
-# 1. Clone repository
 git clone https://github.com/yoda-dinmd/Locatarius.git
 cd Locatarius
-
-# 2. Checkout the active sprint branch
 git checkout feat/auth-user-mgmt
+python3 -m venv .venv
+.venv/bin/pip install mkdocs-material
+.venv/bin/mkdocs serve
+```
 
-# 3. Start local PostgreSQL
+Open <http://127.0.0.1:8000/> after the server starts. The documentation workflow uses the same package and publishes with `mkdocs gh-deploy --force`.
+
+### Database Service
+
+The current Compose file defines PostgreSQL 16 and a future backend service. Until the .NET solution and `backend/Dockerfile` exist, start only PostgreSQL:
+
+```bash
 docker compose up -d postgres
 ```
 
-At this stage, start only the `postgres` service. The backend service will be enabled after the .NET solution and `backend/Dockerfile` are added.
+Development database settings are defined in [`docker-compose.yml`](docker-compose.yml). They are local development credentials only and must not be reused in production.
 
-- **PostgreSQL Port:** `localhost:5432`
-- **Database:** `locatarius_db`
-- **User:** `locatarius_admin`
-- **Password:** `dev_secure_password_123` (development only)
+## Repository Structure
 
-## 5. Architectural Overview
+```text
+.
+├── backend/                 # Reserved for the ASP.NET Core implementation
+├── frontend/                # Reserved for the React/Next.js implementation
+├── docs/                    # Architecture and product specifications
+│   └── use-cases/           # 55 dedicated use-case specifications
+├── .github/workflows/       # GitHub Actions documentation deployment
+├── docker-compose.yml       # Local PostgreSQL and future backend services
+├── mkdocs.yml               # Documentation site configuration
+├── CONTRIBUTING.md          # Scrum, branching, commit, and PR rules
+└── README.md                # Repository overview
+```
 
-The initial implementation is organized around identity and access management:
+## Contribution Workflow
 
-- **Presentation:** API Controllers (`AuthController`, `UsersController`), JWT middleware, exception handling, rate limiting, and Swagger.
-- **Application:** User DTOs, authentication commands (`Login`, `CreateUser`), and input validation.
-- **Domain:** `User` and `Role` entities, domain exceptions, and authentication rules.
-- **Infrastructure:** `ApplicationDbContext` (EF Core), PostgreSQL migrations, `JwtTokenService`, and `PasswordHasher`.
+Read [`CONTRIBUTING.md`](CONTRIBUTING.md) before making changes. Current rules include:
+
+- One-week sprints beginning Mondays and daily OpenProject time logging.
+- No direct pushes to `main` or `develop`.
+- Sprint 1 task branches created from `feat/auth-user-mgmt`.
+- Conventional Commits with an OpenProject work-package reference, for example `feat(auth): implement login endpoint and JWT issuance #62`.
+- Pull requests with the `[#<WP-ID>] <type>(<scope>): <short description>` title pattern.
+- At least one peer approval, clean CI, passing tests, and squash merging before integration.
+
+## Branches
+
+- `main`: Protected production and demonstration baseline.
+- `develop`: Integration trunk.
+- `feat/auth-user-mgmt`: Current Sprint 1 integration branch.
+
+The current repository branch contains the documentation portal and project skeleton. Backend and frontend feature branches should be created from the Sprint 1 integration branch according to the contribution rules.
+
+## Documentation Deployment
+
+[`deploy-docs.yml`](.github/workflows/deploy-docs.yml) deploys the MkDocs site to GitHub Pages when documentation-related files change on `main` or `feat/auth-user-mgmt`. It can also be started manually with `workflow_dispatch`.
+
+Configure GitHub Pages to use the `gh-pages` branch and the repository root after the workflow runs for the first time.
+
+## Scope and Limitations
+
+The documentation is a proposed implementation baseline, not application code, legal advice, a security certification, or proof of production readiness. Jurisdiction, privacy obligations, provider compatibility, capacity, budget, and financial or governance policies remain stakeholder decisions recorded in [`docs/decisions.md`](docs/decisions.md).
