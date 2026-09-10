@@ -1,5 +1,5 @@
 site_name: Locatarius Documentation
-site_description: Secure Condominium Governance Platform Architecture & Specifications
+site_description: "TUM secure application: scope, implementation contracts and assessment evidence"
 site_author: Locatarius Team
 repo_url: https://github.com/yoda-dinmd/Locatarius
 repo_name: yoda-dinmd/Locatarius
@@ -44,86 +44,29 @@ markdown_extensions:
   - attr_list
 
 nav:
-  - Overview: index.md
-  - Product & Delivery:
-      - Roadmap: mvp-roadmap.md
-      - Use-Case Catalogue: use-case-catalog.md
-      - Traceability: traceability.md
-      - Validation Report: validation.md
-  - Architecture & Design:
-      - Solution Design: solution-design.md
-      - Data Model: data-model.md
-      - Shared Patterns: shared-patterns.md
-      - API Catalogue: api-catalog.md
-      - Architecture Decisions: decisions.md
-  - Operations & References:
-      - Operations and Testing: operations-and-testing.md
+  - Start here: index.md
+  - Scope and delivery:
+      - Product and screens: solution-design.md
+      - Two-phase roadmap: mvp-roadmap.md
+      - Internship backlog: internship-backlog.md
+      - Stories and use cases: use-case-catalog.md
+      - Decisions: decisions.md
+  - Implementation:
+      - Screen mockups: frontend-mockups.md
+      - Sprint 1 acceptance: sprint-1.md
+      - Database: data-model.md
+      - API contract: api-catalog.md
+      - Shared rules: shared-patterns.md
+  - Detailed use cases:
+      - UC-01 — Sign in and out: use-cases/UC-01.md
+      - UC-02 — Manage residents: use-cases/UC-02.md
+      - UC-03 — Own profile and password: use-cases/UC-03.md
+      - UC-04 — Building and unit register: use-cases/UC-04.md
+      - UC-05 — Report and read tickets: use-cases/UC-05.md
+      - UC-06 — Comments and resolution: use-cases/UC-06.md
+      - UC-07 — MFA and provider login: use-cases/UC-07.md
+  - Security and assessment:
+      - Controls, tests and runbooks: operations-and-testing.md
+      - Requirement traceability: traceability.md
       - Sources: sources.md
-  - Use Cases:
-      - Building Management:
-          - UC-BLD-001: use-cases/UC-BLD-001.md
-          - UC-BLD-002: use-cases/UC-BLD-002.md
-          - UC-BLD-003: use-cases/UC-BLD-003.md
-      - Communication:
-          - UC-COM-001: use-cases/UC-COM-001.md
-          - UC-COM-002: use-cases/UC-COM-002.md
-          - UC-COM-003: use-cases/UC-COM-003.md
-          - UC-COM-004: use-cases/UC-COM-004.md
-          - UC-COM-005: use-cases/UC-COM-005.md
-      - Finance:
-          - UC-FIN-001: use-cases/UC-FIN-001.md
-          - UC-FIN-002: use-cases/UC-FIN-002.md
-          - UC-FIN-003: use-cases/UC-FIN-003.md
-          - UC-FIN-004: use-cases/UC-FIN-004.md
-          - UC-FIN-005: use-cases/UC-FIN-005.md
-          - UC-FIN-006: use-cases/UC-FIN-006.md
-          - UC-FIN-007: use-cases/UC-FIN-007.md
-          - UC-FIN-008: use-cases/UC-FIN-008.md
-          - UC-FIN-009: use-cases/UC-FIN-009.md
-          - UC-FIN-010: use-cases/UC-FIN-010.md
-          - UC-FIN-011: use-cases/UC-FIN-011.md
-      - Governance:
-          - UC-GOV-001: use-cases/UC-GOV-001.md
-          - UC-GOV-002: use-cases/UC-GOV-002.md
-          - UC-GOV-003: use-cases/UC-GOV-003.md
-      - Identity & Access:
-          - UC-IAM-001: use-cases/UC-IAM-001.md
-          - UC-IAM-002: use-cases/UC-IAM-002.md
-          - UC-IAM-003: use-cases/UC-IAM-003.md
-          - UC-IAM-004: use-cases/UC-IAM-004.md
-          - UC-IAM-005: use-cases/UC-IAM-005.md
-          - UC-IAM-006: use-cases/UC-IAM-006.md
-          - UC-IAM-007: use-cases/UC-IAM-007.md
-          - UC-IAM-008: use-cases/UC-IAM-008.md
-      - Issues:
-          - UC-ISS-001: use-cases/UC-ISS-001.md
-          - UC-ISS-002: use-cases/UC-ISS-002.md
-          - UC-ISS-003: use-cases/UC-ISS-003.md
-          - UC-ISS-004: use-cases/UC-ISS-004.md
-          - UC-ISS-005: use-cases/UC-ISS-005.md
-          - UC-ISS-006: use-cases/UC-ISS-006.md
-      - Maintenance:
-          - UC-MNT-001: use-cases/UC-MNT-001.md
-          - UC-MNT-002: use-cases/UC-MNT-002.md
-          - UC-MNT-003: use-cases/UC-MNT-003.md
-          - UC-MNT-004: use-cases/UC-MNT-004.md
-      - Privacy:
-          - UC-PRV-001: use-cases/UC-PRV-001.md
-          - UC-PRV-002: use-cases/UC-PRV-002.md
-      - Residents:
-          - UC-RES-001: use-cases/UC-RES-001.md
-          - UC-RES-002: use-cases/UC-RES-002.md
-      - Reporting:
-          - UC-RPT-001: use-cases/UC-RPT-001.md
-          - UC-RPT-002: use-cases/UC-RPT-002.md
-      - Tenancy:
-          - UC-TEN-001: use-cases/UC-TEN-001.md
-          - UC-TEN-002: use-cases/UC-TEN-002.md
-          - UC-TEN-003: use-cases/UC-TEN-003.md
-          - UC-TEN-004: use-cases/UC-TEN-004.md
-      - Utilities:
-          - UC-UTL-001: use-cases/UC-UTL-001.md
-          - UC-UTL-002: use-cases/UC-UTL-002.md
-          - UC-UTL-003: use-cases/UC-UTL-003.md
-          - UC-UTL-004: use-cases/UC-UTL-004.md
-          - UC-UTL-005: use-cases/UC-UTL-005.md
+      - Documentation validation: validation.md
