@@ -1,0 +1,1560 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="TUM secure application: scope, implementation contracts and assessment evidence">
+      
+      
+        <meta name="author" content="Locatarius Team">
+      
+      
+      
+        <link rel="prev" href="../use-cases/UC-07/">
+      
+      
+        <link rel="next" href="../traceability/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Controls, tests and runbooks - Locatarius Documentation</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#security-testing-and-university-evidence" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="Locatarius Documentation" class="md-header__button md-logo" aria-label="Locatarius Documentation" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Locatarius Documentation
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Controls, tests and runbooks
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/yoda-dinmd/Locatarius" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    yoda-dinmd/Locatarius
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="Locatarius Documentation" class="md-nav__button md-logo" aria-label="Locatarius Documentation" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Locatarius Documentation
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/yoda-dinmd/Locatarius" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    yoda-dinmd/Locatarius
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Start here
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Scope and delivery
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Scope and delivery
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../solution-design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Product and screens
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mvp-roadmap/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Two-phase roadmap
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../internship-backlog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Internship backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../use-case-catalog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Stories and use cases
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../decisions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Decisions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Implementation
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Implementation
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../frontend-mockups/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Screen mockups
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../sprint-1/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Sprint 1 acceptance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../data-model/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Database
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api-catalog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API contract
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../shared-patterns/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Shared rules
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Detailed use cases
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Detailed use cases
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../use-cases/UC-01/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    UC-01 — Sign in and out
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../use-cases/UC-02/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    UC-02 — Manage residents
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../use-cases/UC-03/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    UC-03 — Own profile and password
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../use-cases/UC-04/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    UC-04 — Building and unit register
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../use-cases/UC-05/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    UC-05 — Report and read tickets
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../use-cases/UC-06/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    UC-06 — Comments and resolution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../use-cases/UC-07/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    UC-07 — MFA and provider login
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security and assessment
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Security and assessment
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Controls, tests and runbooks
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Controls, tests and runbooks
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#threat-model-and-residual-risks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Threat model and residual risks
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#security-implementation-checklist" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Security implementation checklist
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tests-and-evidence" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tests and evidence
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#minimal-deployment-and-backup-runbook" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Minimal deployment and backup runbook
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#supervised-recovery-and-provisioning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Supervised recovery and provisioning
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#incident-response-drill" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Incident response drill
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#final-demonstration-1215-minutes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Final demonstration (12–15 minutes)
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../traceability/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Requirement traceability
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../sources/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Sources
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../validation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Documentation validation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#threat-model-and-residual-risks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Threat model and residual risks
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#security-implementation-checklist" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Security implementation checklist
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tests-and-evidence" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tests and evidence
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#minimal-deployment-and-backup-runbook" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Minimal deployment and backup runbook
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#supervised-recovery-and-provisioning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Supervised recovery and provisioning
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#incident-response-drill" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Incident response drill
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#final-demonstration-1215-minutes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Final demonstration (12–15 minutes)
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="security-testing-and-university-evidence">Security, testing and university evidence</h1>
+<p>The university PDF expects a secure application (even with limited functionality), security documentation, a threat model/risk assessment, an incident response plan and a security-focused presentation. September selects core protections; the semester completes the remaining technical requirements. <a href="../sources/">Source details</a> and <a href="../traceability/">traceability</a> separate those requirements from product choices.</p>
+<h2 id="threat-model-and-residual-risks">Threat model and residual risks</h2>
+<p>Assets: passwords, session tokens, MFA seeds, resident names/emails, association register, private tickets, backup files and encryption keys. Attackers: anonymous internet client, malicious resident, compromised association admin and accidental developer/operator error. Trust boundaries: browser→API, API→database, API→identity provider, operator→deployment/backup. Admin compromise does not authorize another association.</p>
+<table>
+<thead>
+<tr>
+<th>Risk</th>
+<th>Impact / priority</th>
+<th>Control</th>
+<th>Required test / remaining limitation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Credential stuffing and password DB theft</td>
+<td>Account compromise / high</td>
+<td>Salted slow hashes, IP throttle, account lock, MFA</td>
+<td>Wrong/unknown accounts, concurrent lockout, independent hash salts; lockout can cause denial of service</td>
+</tr>
+<tr>
+<td>Forged roles / IDOR</td>
+<td>Cross-association disclosure / high</td>
+<td>Current membership and role lookup, scoped queries, composite FKs</td>
+<td>Swap all route/body IDs, list counts and paging; application filtering remains essential</td>
+</tr>
+<tr>
+<td>Stored XSS through names/comments</td>
+<td>Session actions/data theft / high</td>
+<td>React text rendering, CSP, no uploads/raw HTML</td>
+<td>Script/HTML payload displayed as text; XSS would still be serious despite HttpOnly</td>
+</tr>
+<tr>
+<td>CSRF/session theft</td>
+<td>Unauthorized mutation / high</td>
+<td>Framework tokens, Secure/HttpOnly cookies, TLS, idle/absolute expiry, revocation</td>
+<td>Missing/mismatched token, cookie replay after logout/change, expired session</td>
+</tr>
+<tr>
+<td>SQL injection/mass assignment</td>
+<td>Data loss/escalation / high</td>
+<td>Parameterized queries, explicit DTOs, schema constraints</td>
+<td>Quote/SQL payloads stored harmlessly or rejected; <code>roleId</code>/scope payload rejected</td>
+</tr>
+<tr>
+<td>MFA or OIDC bypass</td>
+<td>Account compromise / high</td>
+<td>Restricted sessions, replay protection, middleware verification</td>
+<td>Password-only and OIDC-only sessions cannot access association routes; wrong issuer/state/nonce/PKCE rejected</td>
+</tr>
+<tr>
+<td>Stolen disk/backup/key</td>
+<td>Personal-data disclosure / high</td>
+<td>Encrypted volume/backups, separate key storage, limited DB credentials</td>
+<td>Restore requires authorized keys; encryption does not protect data from a compromised running API</td>
+</tr>
+<tr>
+<td>Missing restore/incident practice</td>
+<td>Prolonged loss/undetected compromise / medium</td>
+<td>Tested backup, bounded logs, response drill</td>
+<td>Timed isolated restore and cookie revocation; no formal production recovery SLA</td>
+</tr>
+</tbody>
+</table>
+<h2 id="security-implementation-checklist">Security implementation checklist</h2>
+<ul>
+<li><strong>SEC-01 authentication:</strong> implement shared password/session rules; persist only hash/digest. Two equal passwords must yield different stored hashes and both verify. No secrets in logs, source, responses or browser storage.</li>
+<li><strong>SEC-02 least privilege/isolation:</strong> run all routes against admin A, resident A1, resident A2 in same unit, resident B and a dual-membership user. Test lists, totals, details and writes. Runtime DB role gets CONNECT, schema USAGE and necessary SELECT/INSERT/UPDATE/DELETE only; roles/association provisioning is operator-owned. Do not run the API using the database owner's credentials.</li>
+<li><strong>SEC-03 XSS/CSRF:</strong> production CSP <code>default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'</code>. Use external CSS/scripts; no unsafe-inline/eval. Set <code>X-Content-Type-Options: nosniff</code>, <code>Referrer-Policy: no-referrer</code>. Use same-origin production assets; development hot reload may use a separate development-only policy. Confirm actual headers in a browser, not just configuration text.</li>
+<li><strong>SEC-04 transport/storage:</strong> serve HTTPS (TLS 1.2 minimum, 1.3 preferred), redirect HTTP and enable HSTS on deployed HTTPS host. Use TLS with certificate verification for remote DB connections. Place PostgreSQL data on encrypted host/cloud storage and encrypt backups. Record actual encryption provider/algorithm/key custody. Protect MFA ciphertext with Data Protection; persist and encrypt its key ring outside DB and Git, accessible only to API identity. Password hashing is not “encryption at rest.” Whole-disk encryption does not make exports encrypted.</li>
+<li><strong>SEC-05 MFA:</strong> enforce TOTP for all full sessions by final delivery, including provider-login users. Use maintained library and test vectors, QR/secret display only during enrollment, no secret logs/cache. Verify step replay and parallel verification atomically. Pending setup does not grant full access. For lost device, use supervised operator recovery below; no self-service bypass or home-grown recovery tokens.</li>
+<li><strong>SEC-06 OAuth:</strong> implement <a href="../api-catalog/">API phase 2 flow</a>, explicitly set code/S256 PKCE, validate identity, discard tokens (<code>SaveTokens=false</code>), map only configured issuer+subject, then require app MFA. Test callback replay, changed state, wrong issuer/audience, expired signature, unknown subject and open redirects. Local logout ends only the Locatarius session; provider login can remain active, but a new Locatarius session still requires local MFA. Provider choice/configuration must be recorded before claiming this passed. <a href="https://learn.microsoft.com/en-us/aspnet/core/security/authentication/configure-oidc-web-authentication?view=aspnetcore-10.0">Microsoft OIDC guidance</a> and <a href="https://cheatsheetseries.owasp.org/cheatsheets/OAuth2_Cheat_Sheet.html">OWASP OAuth guidance</a>.</li>
+<li><strong>SEC-07 logging/patching:</strong> structured security logs contain UTC time, event code, correlation ID, actor UUID when known, association UUID where applicable and outcome. Include login failures, permission denials, access changes, recovery and successful login/logout; never request bodies, passwords, email as login identifier, cookies, tokens or MFA seeds. Store with restricted access and 14-day rotation for the demo; an attack burst is summarized/rate-limited to avoid log exhaustion. Operator reviews failed-auth/denial bursts before demos. Scan .NET/npm dependencies in CI, record findings and patch/retest relevant vulnerabilities.</li>
+</ul>
+<h2 id="tests-and-evidence">Tests and evidence</h2>
+<table>
+<thead>
+<tr>
+<th>Suite</th>
+<th>What to run</th>
+<th>Evidence</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Sprint 1 API</td>
+<td>Every S1 ID, exact JSON/status assertions, failure rollback, duplicate/concurrent attempts</td>
+<td>Test command/output, commit hash and date</td>
+</tr>
+<tr>
+<td>PostgreSQL 18</td>
+<td>Apply migrations to empty test DB; positive inserts and intentional cross-association FKs, duplicate emails/units; transaction rollback</td>
+<td>Engine version and integration test log; SQLite is not a substitute</td>
+</tr>
+<tr>
+<td>Browser</td>
+<td>Keyboard/focus/pending/error cases, XSS display, cookie flags, CSRF, association switch during requests</td>
+<td>Short recording or checklist with actual observations</td>
+</tr>
+<tr>
+<td>Phase 2</td>
+<td>UC-04–07 negatives and full reporter/admin conversation</td>
+<td>API/browser tests plus failed attacker scenario</td>
+</tr>
+<tr>
+<td>Delivery</td>
+<td>Clean frontend/backend build, dependency findings, encrypted backup restore and incident rehearsal</td>
+<td>Reproducible commands, outputs, observed duration, limitations</td>
+</tr>
+</tbody>
+</table>
+<p>For each control document five points required by the guidelines: <strong>attack/problem; relevance here; implementation location; test and observed result; remaining limitations</strong>. Use synthetic residents/tickets for assessment. This avoids needing real personal data for demonstrations; it is not a claim of legal compliance.</p>
+<h2 id="minimal-deployment-and-backup-runbook">Minimal deployment and backup runbook</h2>
+<ol>
+<li>Provision one API host and PostgreSQL 18 with separate runtime/migration credentials. Pin actual dependency versions in implementation lockfiles; set secrets in environment/secret storage. Persist protected Data Protection keys and enable encrypted disks. The existing Compose skeleton uses PostgreSQL 16, owner credentials and a nonexistent backend Dockerfile: it is not this deployment and must be corrected during implementation. Do not mount a PostgreSQL 16 data directory into PostgreSQL 18; use a tested dump/restore migration if data exists.</li>
+<li>Apply migrations using migration role; seed two synthetic associations and distinct users with one-time passwords via an operator command reading secrets interactively. Start API with runtime role, then run smoke login/creation/isolation tests through HTTPS.</li>
+<li>Nightly and before demo changes: create a consistent PostgreSQL logical backup using an operator backup role, encrypt it immediately with an established tool (for example age), copy to restricted storage outside the DB host, keep the latest seven daily encrypted copies. Back up the protected Data Protection key ring separately; store decryption keys outside backup storage. Never commit a dump or key.</li>
+<li>Restore before each assessed milestone: choose a copy, decrypt only inside an isolated encrypted test volume, restore to an empty PostgreSQL 18 database, provide protected application keys, <strong>delete all restored sessions</strong>, then verify login, memberships, tickets and cross-association denial. Record counts, backup timestamp, duration and errors; remove temporary restored personal-data copies afterward. A backup existing is not proof restoration works.</li>
+<li>Target for the classroom deployment: at most one day of data loss from nightly backups; measure actual recovery time without promising an untested RTO. On failed backup or restore, E investigates and records the gap before the next demonstration.</li>
+</ol>
+<h2 id="supervised-recovery-and-provisioning">Supervised recovery and provisioning</h2>
+<p>A restricted operator command (no web endpoint) creates associations/admins, links an existing user to another association, pre-links a verified OIDC issuer+subject, disables a compromised global user or resets credentials after identity verification. Use team-supervised identity verification for synthetic/demo accounts; no email-only recovery claim. Recovery requires one operator plus another student's recorded review. Verify intended association scope when adding membership; never change someone else's global password merely to add them to an association.</p>
+<p>On lost password/MFA device, first verify the person out of band, then in one transaction invalidate all their sessions, set a newly hashed temporary password and <code>must_change_password=true</code>, clear MFA seed/enabled/last-step fields if MFA recovery is needed, and log a recovery event without secrets. Hand temporary credential directly to verified user; next login requires password change and fresh MFA enrollment. Operator access is a powerful residual risk; restrict host/DB access and never use shared demo credentials. An operator mistake can bypass normal application permissions and must be visible in the assessment discussion.</p>
+<h2 id="incident-response-drill">Incident response drill</h2>
+<p><strong>Trigger:</strong> unexpected cross-association access, repeated auth failures, disclosed secret or reported suspicious activity. E coordinates; A contains authentication issues; B checks data impact; C/D validate affected UI and document evidence. No automated messages to residents are part of this project.</p>
+<ol>
+<li>Detect/triage: record UTC time, affected endpoint/account/association and symptom; reproduce using synthetic records without spreading leaked data. Preserve restricted logs and deployment/commit information. Severity is high for any confirmed data leak or authentication bypass.</li>
+<li>Contain: disable affected global user or membership as appropriate, revoke sessions, or temporarily stop the affected endpoint/service if isolation is broken. Rotate exposed DB/provider/application secrets. Rotating encryption keys requires retaining authorized old keys for recovery; do not destroy evidence or backups.</li>
+<li>Investigate: identify the missing check/configuration, query scoped logs for possible affected records, document uncertainty rather than invent an impact count. Escalate to mentor/course lead; real-data notification/legal decisions belong to the responsible organization, not an automatic student-app feature.</li>
+<li>Eradicate/recover: patch, add a regression test reproducing the attack, peer review, deploy and retest with two associations. Restore only if data corruption requires it; revoke restored sessions.</li>
+<li>Review: write one page covering timeline, root cause, containment, tests, impact/unknowns and prevention owner. Rehearse with a stolen synthetic session and show replay fails after revocation.</li>
+</ol>
+<h2 id="final-demonstration-1215-minutes">Final demonstration (12–15 minutes)</h2>
+<p>Show the threat diagram; create resident and force password change; fail a wrong-password attempt; authenticate with MFA; demonstrate the actual OAuth/OIDC round trip; deny resident→admin and association A→B calls; report/comment/resolve one ticket; show hashes/ciphertext without displaying secrets, cookie/CSP headers, encrypted backup restore evidence and incident drill. Each student explains one control and its limitations. Record each control’s implementation status and include test results for completed controls.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.instant", "navigation.tracking", "navigation.sections", "navigation.expand", "navigation.top", "search.suggest", "search.highlight", "content.code.copy"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

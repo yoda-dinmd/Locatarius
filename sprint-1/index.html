@@ -1,0 +1,1713 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="TUM secure application: scope, implementation contracts and assessment evidence">
+      
+      
+        <meta name="author" content="Locatarius Team">
+      
+      
+      
+        <link rel="prev" href="../frontend-mockups/">
+      
+      
+        <link rel="next" href="../data-model/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Sprint 1 acceptance - Locatarius Documentation</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#sprint-1-concrete-acceptance-criteria" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="Locatarius Documentation" class="md-header__button md-logo" aria-label="Locatarius Documentation" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Locatarius Documentation
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Sprint 1 acceptance
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/yoda-dinmd/Locatarius" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    yoda-dinmd/Locatarius
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="Locatarius Documentation" class="md-nav__button md-logo" aria-label="Locatarius Documentation" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Locatarius Documentation
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/yoda-dinmd/Locatarius" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    yoda-dinmd/Locatarius
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Start here
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Scope and delivery
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Scope and delivery
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../solution-design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Product and screens
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mvp-roadmap/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Two-phase roadmap
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../internship-backlog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Internship backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../use-case-catalog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Stories and use cases
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../decisions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Decisions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Implementation
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Implementation
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../frontend-mockups/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Screen mockups
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Sprint 1 acceptance
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Sprint 1 acceptance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#exact-validation-rules" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Exact validation rules
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#62-administrator-can-authenticate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        #62 — Administrator can Authenticate
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#63-administrator-can-create-users" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        #63 — Administrator can create users
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#64-registered-user-can-authenticate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        #64 — Registered user can authenticate
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#sprint-2-account-management-acceptance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sprint 2 account-management acceptance
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ui-acceptance-shared-across-these-stories" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        UI acceptance, shared across these stories
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#done-means-demonstrated" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Done means demonstrated
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../data-model/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Database
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api-catalog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API contract
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../shared-patterns/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Shared rules
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Detailed use cases
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Detailed use cases
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../use-cases/UC-01/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    UC-01 — Sign in and out
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../use-cases/UC-02/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    UC-02 — Manage residents
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../use-cases/UC-03/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    UC-03 — Own profile and password
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../use-cases/UC-04/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    UC-04 — Building and unit register
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../use-cases/UC-05/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    UC-05 — Report and read tickets
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../use-cases/UC-06/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    UC-06 — Comments and resolution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../use-cases/UC-07/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    UC-07 — MFA and provider login
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security and assessment
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Security and assessment
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../operations-and-testing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Controls, tests and runbooks
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../traceability/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Requirement traceability
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../sources/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Sources
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../validation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Documentation validation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#exact-validation-rules" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Exact validation rules
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#62-administrator-can-authenticate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        #62 — Administrator can Authenticate
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#63-administrator-can-create-users" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        #63 — Administrator can create users
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#64-registered-user-can-authenticate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        #64 — Registered user can authenticate
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#sprint-2-account-management-acceptance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sprint 2 account-management acceptance
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ui-acceptance-shared-across-these-stories" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        UI acceptance, shared across these stories
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#done-means-demonstrated" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Done means demonstrated
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="sprint-1-concrete-acceptance-criteria">Sprint 1: concrete acceptance criteria</h1>
+<p><strong>Epic #66 — Authentication &amp; User Management.</strong> Sprint 1 contains #62 “Administrator can Authenticate”, #63 “Administrator can create users” and #64 “Registered user can authenticate”. Both authentication stories use the same login implementation. <a href="../internship-backlog/">Internship backlog</a> assigns tasks and separates Sprint 2 extensions.</p>
+<p>September Sprint 1 does not require buildings, units, invitations, MFA or OAuth integration. MFA and OAuth remain phase 2 semester deliverables. <a href="../api-catalog/">API contract</a> defines exact payloads and statuses; <a href="../shared-patterns/">shared rules</a> define middleware and transaction behavior.</p>
+<h2 id="exact-validation-rules">Exact validation rules</h2>
+<p>Apply transformations in this order: reject missing/wrong types, normalize as below, validate length, then format. Missing/null required string gives <code>This field is required.</code>; a non-string value or unknown/duplicate property gives 400 INVALID_REQUEST. For strings that fail multiple rules, return the first failure below. Display all invalid fields in the response.</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Rules, in evaluation order</th>
+<th>Exact field error</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>email</code></td>
+<td>Strip only surrounding ASCII space U+0020; lowercase ASCII A–Z. Required after trimming. Length 3–254; ASCII only; local part ≤64; regex below; local part cannot start/end with dot or contain <code>..</code>; each domain label ≤63</td>
+<td>Empty: <code>This field is required.</code>; all other failures: <code>Enter a valid email address.</code></td>
+</tr>
+<tr>
+<td><code>displayName</code></td>
+<td>Strip surrounding ASCII space; 1–100 Unicode scalar values; reject U+0000–001F and U+007F–009F. Romanian diacritics, Cyrillic, punctuation and internal spaces allowed</td>
+<td>Empty: <code>This field is required.</code>; length: <code>Use between 1 and 100 characters.</code>; controls: <code>Remove control characters.</code></td>
+</tr>
+<tr>
+<td><code>temporaryPassword</code>, <code>newPassword</code></td>
+<td><strong>15–128 Unicode scalar values</strong>; no trim, normalization or truncation; reject C0/C1 controls (ranges above) and unpaired surrogates; permit spaces, Unicode letters, digits, punctuation and emoji. No uppercase/digit/symbol composition quota</td>
+<td>Empty: <code>This field is required.</code>; length: <code>Use between 15 and 128 characters.</code>; controls/invalid Unicode: <code>Remove control characters.</code></td>
+</tr>
+<tr>
+<td><code>confirmPassword</code></td>
+<td>Required; exact ordinal equality to temporary/new password including spaces and Unicode representation</td>
+<td>Empty: <code>This field is required.</code>; mismatch: <code>Passwords do not match.</code></td>
+</tr>
+<tr>
+<td>Login <code>password</code>, <code>currentPassword</code></td>
+<td>Required; 1–128 scalar values; same character restrictions; do not enforce new-password minimum at login, so malformed credentials do not reveal password policy/history</td>
+<td>Empty: <code>This field is required.</code>; length: <code>Use between 1 and 128 characters.</code>; controls: <code>Remove control characters.</code></td>
+</tr>
+<tr>
+<td><code>newPassword</code> additional</td>
+<td>Must differ ordinally from current password, after its format checks</td>
+<td><code>Choose a different password.</code></td>
+</tr>
+<tr>
+<td><code>isActive</code></td>
+<td>Required JSON boolean, never string/number/null</td>
+<td>400 INVALID_REQUEST (empty <code>fields</code>)</td>
+</tr>
+<tr>
+<td><code>page</code></td>
+<td>Canonical decimal integer 1–10000, default 1; reject <code>0</code>, <code>1.5</code>, <code>01</code>, whitespace, repeats</td>
+<td>Field <code>page</code>: <code>Enter a page number from 1 to 10000.</code></td>
+</tr>
+</tbody>
+</table>
+<p>Email regex (case-sensitive <strong>full-string match</strong> after lowercase; JS must additionally verify match length because <code>$</code> can match before a final newline; .NET use <code>\A</code>/<code>\z</code> or equivalent full-match check):</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>^[a-z0-9.!#$%&amp;'*+/=?^_`{|}~-]+@[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)+$
+</code></pre></div>
+<p>This is an intentionally restricted application email format, not a complete RFC mailbox parser or proof of mailbox ownership. Accept <code>Ana.Popescu+bloc@example.md</code> (stored <code>ana.popescu+bloc@example.md</code>). Reject <code>a..b@example.md</code>, <code>a@localhost</code>, <code>a@-bloc.md</code>, <code>a b@example.md</code>, line breaks and internationalized mailbox characters. Email verification/mail delivery are excluded; administrators verify contact details out of band. Global uniqueness is enforced after canonicalization.</p>
+<p>Use the same scalar count in JS (<code>Array.from(value).length</code> with separate invalid-surrogate rejection) and .NET (<code>EnumerateRunes</code> after well-formed UTF-16 validation). Do not rely solely on HTML <code>maxlength</code>, which counts UTF-16 units. No password trimming even at paste. For a new password of 14/15/128/129 scalars, expect reject/accept/accept/reject. Use 15 emoji to test client/server agreement. Validation is authoritative on the API.</p>
+<h2 id="62-administrator-can-authenticate">#62 — Administrator can Authenticate</h2>
+<p><strong>Story:</strong> As an administrator, I want to sign in securely and access my association’s administration functions. Authentication, password-change and sign-out behavior is shared with #64; implement one login flow and test both roles.</p>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Given / when</th>
+<th>Required outcome</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>S1-62-01</td>
+<td>Active user, permanent password, valid CSRF; POST valid login</td>
+<td>200 <code>{"next":"app"}</code>; new full session/cookie; GET me 200 with only active own memberships; never return password/hash/token in JSON</td>
+</tr>
+<tr>
+<td>S1-62-02</td>
+<td>Unknown email, wrong password, inactive user or locked account</td>
+<td>Exactly 401 <code>{"error":{"code":"INVALID_CREDENTIALS","message":"Email or password is incorrect.","fields":{}}}</code>; no session created</td>
+</tr>
+<tr>
+<td>S1-62-03</td>
+<td>Empty email/password</td>
+<td>400 VALIDATION_FAILED; both fields <code>This field is required.</code>; no credential lookup until validation passes</td>
+</tr>
+<tr>
+<td>S1-62-04</td>
+<td>Fifth consecutive failed password attempt</td>
+<td>Lock for 15 minutes; same 401, including correct password during lock; correct password succeeds at expiry; concurrent failure increments preserved</td>
+</tr>
+<tr>
+<td>S1-62-05</td>
+<td>Eleventh login attempt from same IP within 60s</td>
+<td>429 RATE_LIMITED and Retry-After; after reset another attempt may proceed</td>
+</tr>
+<tr>
+<td>S1-62-06</td>
+<td>Missing/invalid CSRF on login</td>
+<td>403 CSRF_INVALID, no session or login attempt against account; cookie attributes match shared rules</td>
+</tr>
+<tr>
+<td>S1-62-07</td>
+<td>Missing, forged, expired or deleted session on GET me</td>
+<td>401 UNAUTHENTICATED; full session works at 29m59s idle but fails at 30m; absolute 8h cannot be extended</td>
+</tr>
+<tr>
+<td>S1-62-08</td>
+<td>Valid logout with CSRF</td>
+<td>200 <code>{"message":"Signed out."}</code>; DB session removed, cookie expired; replay of old cookie yields 401; other sessions unaffected</td>
+</tr>
+<tr>
+<td>S1-62-09</td>
+<td>User has zero active memberships</td>
+<td>Login/me still 200; selector shows no-access message and profile/logout; all association routes return 404</td>
+</tr>
+<tr>
+<td>S1-62-10</td>
+<td>Temporary password verified</td>
+<td>200 <code>{"next":"change_password"}</code>; only restricted session; GET me and association endpoints 403 PASSWORD_CHANGE_REQUIRED</td>
+</tr>
+<tr>
+<td>S1-62-11</td>
+<td>Restricted session changes password with correct current password and valid new confirmation</td>
+<td>200 password-change message; stored hash changes; all sessions deleted; old password fails; fresh login with new password returns app</td>
+</tr>
+</tbody>
+</table>
+<h2 id="63-administrator-can-create-users">#63 — Administrator can create users</h2>
+<p><strong>Story:</strong> As an association admin, I want to create resident accounts so approved users can authenticate. Listing and activation/deactivation are delivered in Sprint 2.</p>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Given / when</th>
+<th>Required outcome</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>S1-63-01</td>
+<td>Active admin submits valid account creation</td>
+<td>201 membership-user DTO and Location; exactly one global user and one active resident membership committed; password salted+hashed; must-change flag true; never return temporary password</td>
+</tr>
+<tr>
+<td>S1-63-02</td>
+<td>Duplicate normalized email, including another association's user</td>
+<td>409 EMAIL_UNAVAILABLE, identical body; no new user/membership; concurrent duplicate requests produce one 201 and one 409</td>
+</tr>
+<tr>
+<td>S1-63-03</td>
+<td>Email/name/password/confirmation invalid</td>
+<td>400 field errors per rules; no DB writes; forced DB failure between user and membership inserts rolls both back</td>
+</tr>
+<tr>
+<td>S1-63-04</td>
+<td>POST includes <code>role</code>, <code>roleId</code>, <code>associationId</code>, <code>id</code>, <code>isActive</code> or any extra property</td>
+<td>400 INVALID_REQUEST after authorization; caller cannot create admin or inject scope</td>
+</tr>
+<tr>
+<td>S1-63-05</td>
+<td>Anonymous/resident/foreign-association caller</td>
+<td>Respectively 401 UNAUTHENTICATED / 403 FORBIDDEN / 404 NOT_FOUND; no change</td>
+</tr>
+</tbody>
+</table>
+<p>Temporary credentials are handed directly to the intended demo user out of band and cleared from UI memory after creation. The creator knows the temporary password until it is changed: demonstrate the forced change and explain this limitation. Do not send email, build invitation tokens or claim verified email in Sprint 1.</p>
+<h2 id="64-registered-user-can-authenticate">#64 — Registered user can authenticate</h2>
+<p><strong>Story:</strong> As a registered user, I want to authenticate, access permitted pages and sign out securely. The identity endpoint returns my profile and memberships; profile editing is a Sprint 2 extension.</p>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Given / when</th>
+<th>Required outcome</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>S1-64-01</td>
+<td>Active registered resident authenticates through the shared login endpoint, completes any required password change, then GET me</td>
+<td>200 login result and 200 exact profile DTO with only own active memberships; no separate resident login endpoint</td>
+</tr>
+<tr>
+<td>S1-64-02</td>
+<td>Login JSON includes role, id, passwordHash, associationId or isActive</td>
+<td>400 INVALID_REQUEST; caller cannot set identity, role or association through login fields</td>
+</tr>
+<tr>
+<td>S1-64-03</td>
+<td>Resident directly calls any admin user endpoint</td>
+<td>403 FORBIDDEN even if admin controls are hidden in React</td>
+</tr>
+<tr>
+<td>S1-64-04</td>
+<td>User A substitutes association B or its user ID in routes</td>
+<td>404 for inaccessible association/resource; no existence/details leak; same behavior for random well-formed IDs</td>
+</tr>
+<tr>
+<td>S1-64-05</td>
+<td>Same user resident in A and admin in B</td>
+<td>Resident permissions in A, admin permissions in B; switching UI association cannot carry role from B into A</td>
+</tr>
+<tr>
+<td>S1-64-06</td>
+<td>Missing/invalid CSRF during logout</td>
+<td>403 CSRF_INVALID; session remains valid until authorized logout or expiry</td>
+</tr>
+<tr>
+<td>S1-64-07</td>
+<td>Name contains <code>&lt;script&gt;alert(1)&lt;/script&gt;</code> within length</td>
+<td>Stored as text; rendered visibly as literal text, never executes on profile or admin list; no blanket HTML stripping required</td>
+</tr>
+<tr>
+<td>S1-64-08</td>
+<td>User signs out and replays that session, or presents an expired session</td>
+<td>401 UNAUTHENTICATED; protected UI redirects to login and clears account data</td>
+</tr>
+</tbody>
+</table>
+<h2 id="sprint-2-account-management-acceptance">Sprint 2 account-management acceptance</h2>
+<p>These cases belong to the Sprint 2 stories in the <a href="../internship-backlog/#sprint-2-1418-september">internship backlog</a>. They are not extra completion conditions for Sprint 1 #63/#64.</p>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Given / when</th>
+<th>Required outcome</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>S2-ADM-01</td>
+<td>Admin GET users, including page beyond end</td>
+<td>200 only own association membership-user DTOs; correct scoped total, max 20 items, empty page allowed; no hash, MFA secret or other memberships</td>
+</tr>
+<tr>
+<td>S2-ADM-02</td>
+<td>Admin disables resident membership</td>
+<td>200 DTO with isActive false; resident's next association request 404 despite existing session; own profile and other associations remain accessible</td>
+</tr>
+<tr>
+<td>S2-ADM-03</td>
+<td>Admin enables disabled resident membership</td>
+<td>200 DTO with isActive true; association becomes available again; credentials unchanged; repeating same active state is 200, no duplicate rows</td>
+</tr>
+<tr>
+<td>S2-ADM-04</td>
+<td>Admin attempts to disable self/another admin or a foreign user</td>
+<td>In-association admin target 403 FORBIDDEN; foreign/nonexistent user 404 NOT_FOUND; no credential/global activity changes</td>
+</tr>
+<tr>
+<td>S2-PRO-01</td>
+<td>Full session reads profile and PATCHes displayName</td>
+<td>200 exact profile DTO; normalized name persists; email is read-only</td>
+</tr>
+<tr>
+<td>S2-PRO-02</td>
+<td>Profile PATCH includes email, role, id, passwordHash, associationId or isActive</td>
+<td>400 INVALID_REQUEST; no changes</td>
+</tr>
+<tr>
+<td>S2-PRO-03</td>
+<td>Missing/invalid CSRF during profile mutation</td>
+<td>403 CSRF_INVALID; profile unchanged</td>
+</tr>
+<tr>
+<td>S2-PRO-04</td>
+<td>User changes password with two active sessions</td>
+<td>200 password-change message; both prior sessions return 401; only new password can authenticate</td>
+</tr>
+</tbody>
+</table>
+<h2 id="ui-acceptance-shared-across-these-stories">UI acceptance, shared across these stories</h2>
+<ul>
+<li>Each input has a visible label and associated error text (<code>aria-describedby</code>); invalid inputs set <code>aria-invalid=true</code>. Email uses <code>type=email</code>, <code>autocomplete=username</code>; login password <code>autocomplete=current-password</code>; temporary/new/confirmation use <code>autocomplete=new-password</code>. Server rules override browser email-validation differences (<code>noValidate</code> form plus explicit validation).</li>
+<li>On login page mount focus email; on create-user dialog open focus email; on profile page focus the page heading (<code>tabIndex=-1</code>), not an unexpected input. Dialog traps focus; Escape/cancel closes it when idle and restores focus to “Add resident.” No background close while saving.</li>
+<li>Submit starts enabled when idle, including empty forms, so clicking it reveals errors. On invalid submit prevent network request, show all field errors, focus the first invalid field in visible form order. Enter follows identical behavior. Pending submission disables fields, submit and dialog close; button says <code>Signing in…</code>, <code>Creating…</code> or <code>Saving…</code>, and form has <code>aria-busy=true</code>. Only one request may be in flight.</li>
+<li>A server 400 attaches field errors and focuses the first invalid field. A 401 login shows the exact generic credential message in a <code>role=alert</code> banner, clears password and focuses password. A 409 email conflict keeps non-secret fields, shows exact conflict message by email and focuses email. Other errors show the API message in a focusable alert banner. Network failure uses <code>Cannot reach the server. Try again.</code> and re-enables controls; do not automatically repeat account creation.</li>
+<li>All pending states end on success, rejection or network failure. Password show/hide button has an accessible label, defaults hidden, allows paste and password managers; secrets are never logged or stored persistently. Clear secret inputs after success, cancellation or leaving the form. Failed validation retains entered values for correction except the login 401 clearing rule.</li>
+<li>On login success go to association selector (auto-select if exactly one); temporary-password success goes to forced password change. On creation success close the dialog and focus the success notice <code>Resident created.</code>. When the Sprint 2 list exists, refresh page 1 and focus the new row if present, otherwise the notice. A 201 is never treated as a 200-only failure. Do not show the submitted password in a toast.</li>
+<li>Resident navigation has Profile, My units/Tickets when phase 2 exists, association switcher and Sign out. Hide Users/Register management. Direct navigation still relies on API authorization; route guard shows <code>Access denied.</code> on 403. On 401 clear in-memory profile/association data and navigate to login. On association 404 clear its data and return to selector with <code>Association unavailable.</code>. Cancel stale in-flight requests when switching associations and do not display previous-association results under a new heading.</li>
+<li>A 429 disables login submit for Retry-After seconds and shows <code>Too many requests. Try again later.</code> plus a visible countdown; fields remain editable. Retry requires explicit submit after countdown.</li>
+</ul>
+<h2 id="done-means-demonstrated">Done means demonstrated</h2>
+<p>All S1 IDs have recorded automated API test results or UI manual test evidence; schema migration succeeds on PostgreSQL 18; both frontend/backend builds pass; one peer reviews each security-relevant change. Record failing tests honestly. Sprint 1 completion requires all S1 cases; the S2 account-management cases are assessed in Sprint 2. No login story is done while role checks, password hashing, CSRF or multi-association tests are missing. Exact HTTP bodies are tested as structured JSON, including absence of sensitive fields.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.instant", "navigation.tracking", "navigation.sections", "navigation.expand", "navigation.top", "search.suggest", "search.highlight", "content.code.copy"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

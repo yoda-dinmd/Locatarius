@@ -1,0 +1,1689 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="TUM secure application: scope, implementation contracts and assessment evidence">
+      
+      
+        <meta name="author" content="Locatarius Team">
+      
+      
+      
+        <link rel="prev" href="../data-model/">
+      
+      
+        <link rel="next" href="../shared-patterns/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>API contract - Locatarius Documentation</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#api-contract" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="Locatarius Documentation" class="md-header__button md-logo" aria-label="Locatarius Documentation" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Locatarius Documentation
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              API contract
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/yoda-dinmd/Locatarius" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    yoda-dinmd/Locatarius
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="Locatarius Documentation" class="md-nav__button md-logo" aria-label="Locatarius Documentation" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Locatarius Documentation
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/yoda-dinmd/Locatarius" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    yoda-dinmd/Locatarius
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Start here
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Scope and delivery
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Scope and delivery
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../solution-design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Product and screens
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mvp-roadmap/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Two-phase roadmap
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../internship-backlog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Internship backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../use-case-catalog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Stories and use cases
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../decisions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Decisions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Implementation
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Implementation
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../frontend-mockups/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Screen mockups
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../sprint-1/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Sprint 1 acceptance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../data-model/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Database
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API contract
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API contract
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#error-envelope" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Error envelope
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#phase-1-routes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 1 routes
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#phase-2-register-and-ticket-routes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 2 register and ticket routes
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#phase-2-authentication-additions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 2 authentication additions
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../shared-patterns/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Shared rules
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Detailed use cases
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Detailed use cases
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../use-cases/UC-01/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    UC-01 — Sign in and out
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../use-cases/UC-02/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    UC-02 — Manage residents
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../use-cases/UC-03/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    UC-03 — Own profile and password
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../use-cases/UC-04/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    UC-04 — Building and unit register
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../use-cases/UC-05/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    UC-05 — Report and read tickets
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../use-cases/UC-06/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    UC-06 — Comments and resolution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../use-cases/UC-07/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    UC-07 — MFA and provider login
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security and assessment
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Security and assessment
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../operations-and-testing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Controls, tests and runbooks
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../traceability/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Requirement traceability
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../sources/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Sources
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../validation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Documentation validation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#error-envelope" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Error envelope
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#phase-1-routes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 1 routes
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#phase-2-register-and-ticket-routes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 2 register and ticket routes
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#phase-2-authentication-additions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 2 authentication additions
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="api-contract">API contract</h1>
+<p>Base path <code>/api</code>. JSON is camelCase. UUIDs are canonical hyphenated strings, timestamps UTC ISO 8601 (<code>2026-09-09T16:00:00Z</code>). Routes below are the entire application API scope; initial association/admin setup and recovery are operator commands. <a href="../sprint-1/">Validation</a> and <a href="../shared-patterns/">authorization order</a> apply to every route.</p>
+<h2 id="error-envelope">Error envelope</h2>
+<p>Every API error has exactly these fields; no timestamp, trace ID or framework ProblemDetails additions:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="p">{</span><span class="nt">"error"</span><span class="p">:{</span><span class="nt">"code"</span><span class="p">:</span><span class="s2">"VALIDATION_FAILED"</span><span class="p">,</span><span class="nt">"message"</span><span class="p">:</span><span class="s2">"Validation failed."</span><span class="p">,</span><span class="nt">"fields"</span><span class="p">:{</span><span class="nt">"email"</span><span class="p">:[</span><span class="s2">"Enter a valid email address."</span><span class="p">]}}}</span>
+</code></pre></div>
+<p><code>fields</code> is always an object; <code>{}</code> outside field validation. Validation returns all invalid fields in form order and one message per field, following the rule order in Sprint 1. JSON object ordering is not significant. The following table defines exact code/message pairs; every non-validation row has <code>fields:{}</code>.</p>
+<table>
+<thead>
+<tr>
+<th>HTTP</th>
+<th>code</th>
+<th>message</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>400</td>
+<td><code>VALIDATION_FAILED</code></td>
+<td><code>Validation failed.</code></td>
+</tr>
+<tr>
+<td>400</td>
+<td><code>INVALID_REQUEST</code></td>
+<td><code>Invalid request.</code></td>
+</tr>
+<tr>
+<td>401</td>
+<td><code>INVALID_CREDENTIALS</code></td>
+<td><code>Email or password is incorrect.</code></td>
+</tr>
+<tr>
+<td>401</td>
+<td><code>UNAUTHENTICATED</code></td>
+<td><code>Authentication required.</code></td>
+</tr>
+<tr>
+<td>403</td>
+<td><code>FORBIDDEN</code></td>
+<td><code>You do not have permission to perform this action.</code></td>
+</tr>
+<tr>
+<td>403</td>
+<td><code>CSRF_INVALID</code></td>
+<td><code>Refresh the page and try again.</code></td>
+</tr>
+<tr>
+<td>403</td>
+<td><code>PASSWORD_CHANGE_REQUIRED</code></td>
+<td><code>Change your password before continuing.</code></td>
+</tr>
+<tr>
+<td>403</td>
+<td><code>MFA_REQUIRED</code></td>
+<td><code>Complete multi-factor authentication.</code></td>
+</tr>
+<tr>
+<td>404</td>
+<td><code>NOT_FOUND</code></td>
+<td><code>Resource not found.</code></td>
+</tr>
+<tr>
+<td>409</td>
+<td><code>EMAIL_UNAVAILABLE</code></td>
+<td><code>This email cannot be used to create an account.</code></td>
+</tr>
+<tr>
+<td>409</td>
+<td><code>UNIT_EXISTS</code></td>
+<td><code>This unit number already exists in this building.</code></td>
+</tr>
+<tr>
+<td>409</td>
+<td><code>ASSIGNMENT_EXISTS</code></td>
+<td><code>This user is already assigned to this unit.</code></td>
+</tr>
+<tr>
+<td>409</td>
+<td><code>TICKET_STATE_CONFLICT</code></td>
+<td><code>The ticket state has changed or does not allow this action.</code></td>
+</tr>
+<tr>
+<td>413</td>
+<td><code>PAYLOAD_TOO_LARGE</code></td>
+<td><code>Request body exceeds 16 KiB.</code></td>
+</tr>
+<tr>
+<td>415</td>
+<td><code>UNSUPPORTED_MEDIA_TYPE</code></td>
+<td><code>Use application/json.</code></td>
+</tr>
+<tr>
+<td>429</td>
+<td><code>RATE_LIMITED</code></td>
+<td><code>Too many requests. Try again later.</code></td>
+</tr>
+<tr>
+<td>500</td>
+<td><code>INTERNAL_ERROR</code></td>
+<td><code>An unexpected error occurred.</code></td>
+</tr>
+</tbody>
+</table>
+<p>Successful requests return 200 or 201. Client and authorization errors use 400, 401, 403, 404 or 409. Statuses 413, 415, 429 and 500 cover oversized bodies, unsupported content types, rate limits and server failures. Proxy error handlers must use the same envelope for <code>/api</code> requests. 429 includes <code>Retry-After</code>. Example denial bodies:</p>
+<p><div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="p">{</span><span class="nt">"error"</span><span class="p">:{</span><span class="nt">"code"</span><span class="p">:</span><span class="s2">"UNAUTHENTICATED"</span><span class="p">,</span><span class="nt">"message"</span><span class="p">:</span><span class="s2">"Authentication required."</span><span class="p">,</span><span class="nt">"fields"</span><span class="p">:{}}}</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="p">{</span><span class="nt">"error"</span><span class="p">:{</span><span class="nt">"code"</span><span class="p">:</span><span class="s2">"FORBIDDEN"</span><span class="p">,</span><span class="nt">"message"</span><span class="p">:</span><span class="s2">"You do not have permission to perform this action."</span><span class="p">,</span><span class="nt">"fields"</span><span class="p">:{}}}</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="p">{</span><span class="nt">"error"</span><span class="p">:{</span><span class="nt">"code"</span><span class="p">:</span><span class="s2">"NOT_FOUND"</span><span class="p">,</span><span class="nt">"message"</span><span class="p">:</span><span class="s2">"Resource not found."</span><span class="p">,</span><span class="nt">"fields"</span><span class="p">:{}}}</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="p">{</span><span class="nt">"error"</span><span class="p">:{</span><span class="nt">"code"</span><span class="p">:</span><span class="s2">"EMAIL_UNAVAILABLE"</span><span class="p">,</span><span class="nt">"message"</span><span class="p">:</span><span class="s2">"This email cannot be used to create an account."</span><span class="p">,</span><span class="nt">"fields"</span><span class="p">:{}}}</span>
+</code></pre></div></p>
+<h2 id="phase-1-routes">Phase 1 routes</h2>
+<p>Sprint 1 delivers login, logout, CSRF, read-only identity, forced password change and account creation. Sprint 2 adds profile editing, account lists/details and activation/deactivation. Both sprints use the contracts below. Task route/authentication alignment is recorded in the <a href="../internship-backlog/#contract-alignment">internship backlog</a>.</p>
+<p><code>A</code> abbreviates <code>/api/associations/{associationId}</code> in tables only. API URLs must contain the full prefix. No public registration route exists.</p>
+<table>
+<thead>
+<tr>
+<th>Method and route</th>
+<th>Request</th>
+<th>Success</th>
+<th>Specific failures in addition to shared errors</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GET <code>/auth/csrf</code></td>
+<td>None; anonymous allowed</td>
+<td>200 <code>{"token":"..."}</code></td>
+<td>500</td>
+</tr>
+<tr>
+<td>POST <code>/auth/login</code></td>
+<td><code>{"email":"ana@example.com","password":"..."}</code></td>
+<td>200 <code>{"next":"app"}</code> or <code>{"next":"change_password"}</code>; sets session cookie</td>
+<td>400 validation, 401 invalid credentials, 429</td>
+</tr>
+<tr>
+<td>POST <code>/auth/logout</code></td>
+<td><code>{}</code>; valid session and CSRF required</td>
+<td>200 <code>{"message":"Signed out."}</code>; clears session</td>
+<td>401 if already logged out</td>
+</tr>
+<tr>
+<td>GET <code>/auth/me</code></td>
+<td>Full session</td>
+<td>200 profile DTO below</td>
+<td>401 or restricted-session 403</td>
+</tr>
+<tr>
+<td>PATCH <code>/auth/me</code></td>
+<td><code>{"displayName":"Ana Popescu"}</code></td>
+<td>200 profile DTO</td>
+<td>400 validation</td>
+</tr>
+<tr>
+<td>POST <code>/auth/password</code></td>
+<td><code>{"currentPassword":"...","newPassword":"...","confirmPassword":"..."}</code></td>
+<td>200 <code>{"message":"Password changed. Sign in again."}</code>; all sessions deleted</td>
+<td>400 validation, 401 invalid credentials</td>
+</tr>
+<tr>
+<td>GET <code>A/users?page=1</code></td>
+<td>Admin</td>
+<td>200 paged membership-user DTOs</td>
+<td>403 resident, 404 association</td>
+</tr>
+<tr>
+<td>POST <code>A/users</code></td>
+<td>Admin; <code>{"email":"ana@example.com","displayName":"Ana Popescu","temporaryPassword":"...","confirmPassword":"..."}</code></td>
+<td>201 membership-user DTO; <code>Location: /api/associations/{associationId}/users/{userId}</code></td>
+<td>400 validation, 409 email unavailable</td>
+</tr>
+<tr>
+<td>GET <code>A/users/{userId}</code></td>
+<td>Admin</td>
+<td>200 membership-user DTO</td>
+<td>404 absent/foreign user</td>
+</tr>
+<tr>
+<td>PATCH <code>A/users/{userId}</code></td>
+<td>Admin; <code>{"isActive":false}</code> or true</td>
+<td>200 membership-user DTO</td>
+<td>403 target is admin, 404 absent/foreign user</td>
+</tr>
+</tbody>
+</table>
+<p>Every route in the first column beginning <code>/auth</code> is prefixed with <code>/api</code>. Password-change restricted sessions can use the password route; MFA restricted sessions cannot. A full session may change its password. Incorrect current password returns 401 INVALID_CREDENTIALS; it does not change stored credentials. Apply the login attempt/lockout policy to current-password verification too, using a separate per-IP 10/minute budget.</p>
+<p>Profile DTO is exactly:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="p">{</span><span class="nt">"id"</span><span class="p">:</span><span class="s2">"11111111-1111-4111-8111-111111111111"</span><span class="p">,</span><span class="nt">"email"</span><span class="p">:</span><span class="s2">"ana@example.com"</span><span class="p">,</span><span class="nt">"displayName"</span><span class="p">:</span><span class="s2">"Ana Popescu"</span><span class="p">,</span><span class="nt">"memberships"</span><span class="p">:[{</span><span class="nt">"associationId"</span><span class="p">:</span><span class="s2">"aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa"</span><span class="p">,</span><span class="nt">"associationName"</span><span class="p">:</span><span class="s2">"Association A"</span><span class="p">,</span><span class="nt">"role"</span><span class="p">:</span><span class="s2">"resident"</span><span class="p">}]}</span>
+</code></pre></div>
+<p>Only active memberships are included; ordered by association name then ID. Membership-user DTO is exactly <code>{"id":"&lt;uuid&gt;","email":"ana@example.com","displayName":"Ana Popescu","role":"resident","isActive":true}</code>. Here <code>isActive</code> means <strong>membership</strong> state, not global user state. No API changes global account activity. List includes active and inactive association memberships; ordered by canonical email then ID. Page response: <code>{"items":[],"page":1,"pageSize":20,"total":0}</code>; <code>total</code> counts only visible records. <code>page</code> is an integer 1–10000, defaults to 1; beyond last page returns an empty list. Unknown query parameters return 400 INVALID_REQUEST.</p>
+<p>Admin creation always creates <code>role_id=2</code>; role/global activity are not accepted input. If canonical email already exists anywhere, return the same 409, do not reveal its association, link it, reset its password or create a membership. A trusted operator can separately attach an existing user to an association after verifying authorization. This small operator task avoids an invitation/linking subsystem.</p>
+<h2 id="phase-2-register-and-ticket-routes">Phase 2 register and ticket routes</h2>
+<p>Full session plus active association membership required. Same response envelope and 20-item pagination apply. There are no generic entity DELETE endpoints.</p>
+<table>
+<thead>
+<tr>
+<th>Method and route</th>
+<th>Access / request</th>
+<th>Success</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GET <code>A/buildings?page=1</code></td>
+<td>Admin</td>
+<td>200 page of building DTOs</td>
+</tr>
+<tr>
+<td>POST <code>A/buildings</code></td>
+<td>Admin; <code>{name,address}</code></td>
+<td>201 building DTO + Location <code>A/buildings/{id}</code></td>
+</tr>
+<tr>
+<td>GET <code>A/buildings/{id}</code></td>
+<td>Admin</td>
+<td>200 building DTO</td>
+</tr>
+<tr>
+<td>PATCH <code>A/buildings/{id}</code></td>
+<td>Admin; <code>{name,address}</code> both required</td>
+<td>200 building DTO</td>
+</tr>
+<tr>
+<td>GET <code>A/units?page=1&amp;assignedToMe=true</code></td>
+<td>Either role: own assigned units when filtered; without filter admin sees all and resident sees assigned only</td>
+<td>200 page of unit DTOs</td>
+</tr>
+<tr>
+<td>GET <code>A/units/{id}</code></td>
+<td>Same visibility</td>
+<td>200 unit DTO</td>
+</tr>
+<tr>
+<td>POST <code>A/units</code></td>
+<td>Admin; <code>{buildingId,number,floor}</code></td>
+<td>201 unit DTO + Location <code>A/units/{id}</code>; duplicate 409 UNIT_EXISTS</td>
+</tr>
+<tr>
+<td>PATCH <code>A/units/{id}</code></td>
+<td>Admin; <code>{number,floor}</code></td>
+<td>200 unit DTO; duplicate 409 UNIT_EXISTS</td>
+</tr>
+<tr>
+<td>GET <code>A/units/{unitId}/residents?page=1</code></td>
+<td>Admin</td>
+<td>200 page of membership-user DTOs currently assigned</td>
+</tr>
+<tr>
+<td>POST <code>A/units/{unitId}/residents</code></td>
+<td>Admin; <code>{userId}</code>; target globally active user with active membership in association, either role, including caller</td>
+<td>201 <code>{unitId,userId}</code>; duplicate 409 ASSIGNMENT_EXISTS</td>
+</tr>
+<tr>
+<td>DELETE <code>A/units/{unitId}/residents/{userId}</code></td>
+<td>Admin; no body</td>
+<td>200 <code>{"message":"Assignment removed."}</code>; missing assignment 404</td>
+</tr>
+<tr>
+<td>GET <code>A/tickets?page=1</code></td>
+<td>Reporter only or admin</td>
+<td>200 page of ticket DTOs</td>
+</tr>
+<tr>
+<td>POST <code>A/tickets</code></td>
+<td>Caller assigned to unit; <code>{unitId,title,description}</code></td>
+<td>201 ticket DTO + Location <code>A/tickets/{id}</code></td>
+</tr>
+<tr>
+<td>GET <code>A/tickets/{id}</code></td>
+<td>Reporter only or admin</td>
+<td>200 ticket DTO</td>
+</tr>
+<tr>
+<td>PATCH <code>A/tickets/{id}/status</code></td>
+<td>Admin; <code>{expectedStatus,status}</code></td>
+<td>200 ticket DTO; invalid/raced transition 409 TICKET_STATE_CONFLICT</td>
+</tr>
+<tr>
+<td>GET <code>A/tickets/{id}/comments?page=1</code></td>
+<td>Same as ticket</td>
+<td>200 page of comment DTOs</td>
+</tr>
+<tr>
+<td>POST <code>A/tickets/{id}/comments</code></td>
+<td>Same as ticket; <code>{body}</code></td>
+<td>201 comment DTO; resolved ticket 409 TICKET_STATE_CONFLICT</td>
+</tr>
+</tbody>
+</table>
+<p>The unit-list query accepts optional <code>assignedToMe=true</code> or <code>assignedToMe=false</code> (exact lowercase strings, default false). Invalid or repeated values return 400 INVALID_REQUEST. The filter always uses the caller's user ID; it does not accept a target user ID. A resident remains limited to assigned units regardless of this parameter. Both roles use <code>assignedToMe=true</code> for My units and the ticket unit picker.</p>
+<p>The <code>/units/{unitId}/residents</code> routes manage occupants, independently of their permission role. Their lists and assignment picker include active members with either <code>admin</code> or <code>resident</code> role, including the caller. Only an active association admin may add/remove assignments. Assignment does not change the target's role or grant access to another association. An admin's broad register visibility does not permit ticket creation for an unassigned unit: POST tickets returns 404 in that case.</p>
+<p>Building DTO: <code>{id,name,address}</code>. Unit DTO: <code>{id,buildingId,buildingName,buildingAddress,number,floor}</code>. Ticket DTO: <code>{id,unitId,reporterUserId,title,description,status,createdAt}</code>. Comment DTO: <code>{id,ticketId,authorUserId,body,createdAt}</code>. IDs/string fields are strings; <code>floor</code> is integer or null. No author email/name lookup is exposed to residents. Building lists sort by name then ID; unit lists by building ID, number then ID; tickets newest first then ID; comments oldest first then ID; assigned users by email then ID.</p>
+<p>Strings are trimmed using the same normalization as Sprint 1: building name 1–100, address 1–200, unit number 1–20, title 5–120, description 10–2000, comment body 1–2000 Unicode scalar values. Description/comments allow LF line breaks; normalize CRLF/CR to LF before length validation. Other C0/C1 control characters are rejected. Floor is required but nullable; if not null integer −5 through 200. Unit number is case-sensitive (<code>2A</code> differs from <code>2a</code>). Status is exactly <code>open</code>, <code>in_progress</code> or <code>resolved</code>; only <code>open→in_progress</code> and <code>in_progress→resolved</code> allowed. Wrong enum uses field message <code>Select a valid status.</code>; length message <code>Use between &lt;min&gt; and &lt;max&gt; characters.</code>; missing/invalid ID <code>Enter a valid ID.</code>; invalid floor <code>Enter a whole number from -5 to 200, or leave blank.</code>; disallowed control text <code>Remove control characters.</code>. Missing required strings use <code>This field is required.</code>; wrong types use INVALID_REQUEST. Foreign/non-visible unit, user, building, ticket or assignment returns 404; an assignment target with an inactive global account or inactive association membership also returns 404. Unknown properties are invalid, including <code>status</code> or <code>reporterUserId</code> on ticket creation.</p>
+<h2 id="phase-2-authentication-additions">Phase 2 authentication additions</h2>
+<p>Local login remains available. Successful first-factor verification now returns <code>{"next":"setup_mfa"}</code> or <code>{"next":"verify_mfa"}</code> with the respective restricted session, after any mandatory password change. Only successful MFA returns <code>{"next":"app"}</code> and a rotated full session. Deployment of mandatory MFA deletes all pre-MFA sessions.</p>
+<table>
+<thead>
+<tr>
+<th>Route</th>
+<th>Contract</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>POST <code>/api/auth/mfa/setup</code></td>
+<td><code>mfa_setup</code> session and <code>{}</code>; 200 <code>{secret,otpauthUri}</code>; encrypt pending secret, never enable until confirmed</td>
+</tr>
+<tr>
+<td>POST <code>/api/auth/mfa/confirm</code></td>
+<td><code>mfa_setup</code> session and <code>{code}</code>; validate pending secret; 200 <code>{"next":"app"}</code>, enable MFA and rotate session</td>
+</tr>
+<tr>
+<td>POST <code>/api/auth/mfa/verify</code></td>
+<td><code>mfa_challenge</code> session and <code>{code}</code>; 200 <code>{"next":"app"}</code> and rotate session</td>
+</tr>
+<tr>
+<td>GET <code>/api/auth/oidc/start</code></td>
+<td>Browser navigation; 302 to configured provider with authorization code + S256 PKCE, state, nonce</td>
+</tr>
+<tr>
+<td>GET <code>/api/auth/oidc/callback</code></td>
+<td>Framework validates response; pre-linked user only; issue appropriate password/MFA restricted session, 302 to fixed local step screen; failure 401 INVALID_CREDENTIALS</td>
+</tr>
+</tbody>
+</table>
+<p><code>code</code> must match <code>^[0-9]{6}$</code>; otherwise 400 VALIDATION_FAILED, field <code>code</code>: <code>Enter a 6-digit code.</code>. Wrong/expired/replayed code returns 401 INVALID_CREDENTIALS. Setup/confirm/verify limited to 5 requests per user per fixed 5-minute window, excess 429 + Retry-After; repeated setup must not bypass limit. Serialize setup/confirmation on the user row. If no seed exists, generate and encrypt one; concurrent/repeated setup returns that same pending seed and never replaces it. If MFA is already enabled, setup/confirm returns 403 MFA_REQUIRED and the client must restart login for a challenge; never reveal an enabled seed. Confirmation and verification lock the user row and rotate/delete the restricted session atomically, so parallel submissions cannot issue multiple full sessions. Use a maintained TOTP library: 30-second steps, 6 digits, HMAC-SHA1 for authenticator compatibility, allow previous/current/next step. Atomically record accepted step in <code>mfa_last_used_step</code>; require strictly greater than last accepted step to prevent replay, including across sessions.</p>
+<p>OIDC is authentication layered on OAuth 2.0. Configure <strong>one provider</strong>, scopes <code>openid profile</code>, exact callback URI, issuer/audience/signature/expiry/state/nonce validation, server-side code exchange, no implicit/password grant. Tokens never reach React and are discarded after validation; subsequent application API access uses its session and local authorization. Pre-link issuer+subject via operator; no public enrollment, email auto-link or provider-role trust. Local MFA is required on both login paths, so external login cannot bypass it. Transient OIDC correlation/nonce cookies are framework-managed, protected, Secure/HttpOnly and short-lived. Their cross-site attributes follow middleware protocol requirements; they are not application sessions. These two browser redirects are the explicit 302 exception to the JSON API contract. Document the demonstrated flow as OAuth/OIDC integration, not as an OAuth authorization server or bearer-token API.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.instant", "navigation.tracking", "navigation.sections", "navigation.expand", "navigation.top", "search.suggest", "search.highlight", "content.code.copy"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>
