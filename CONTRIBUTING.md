@@ -68,7 +68,7 @@ Follow Conventional Commits and append the OpenProject work package reference:
 
 
 
-*Example:* `feat(auth): implement login endpoint and JWT issuance #62`
+*Example:* `feat(auth): implement login endpoint and session creation #62`
 
 ---
 
@@ -87,7 +87,7 @@ All PR titles must strictly follow the work package pattern to maintain bidirect
 
 *Examples:*
 
-* `[#62] feat(auth): add ASP.NET Core login endpoint and JWT bearer issuance`
+* `[#62] feat(auth): add ASP.NET Core login endpoint and secure session creation`
 * `[#63] feat(users): add admin-guarded user creation endpoint and conflict validation`
 * `[#64] test(auth): add integration tests for resident role authorization boundaries`
 

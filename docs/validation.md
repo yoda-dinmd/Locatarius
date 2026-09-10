@@ -1,33 +1,38 @@
-# Documentation validation and completion report
+# Documentation validation
 
-[README](index.md) · [Catalogue](use-case-catalog.md) · [Traceability](traceability.md)
+Documentation checks cover navigation, links, schema consistency and diagram syntax. Application security requires the separate tests listed in [operations and testing](operations-and-testing.md).
 
-Validated on 7 September 2026. This report concerns the documentation artifact. No application was implemented, deployed, load-tested or certified.
+## Validation checklist
 
-| Check | Result |
+| Check | Scope |
 | --- | --- |
-| Declared business use cases | 55 stable IDs |
-| Dedicated use-case files | 55 of 55 present |
-| Mandatory specification template | All 55 contain numbered sections 1–14 |
-| Acceptance criteria | Four identified Given/When/Then criteria per use case, plus shared security/domain test matrices |
-| Dedicated end-to-end sequences | At least one per use case; extra continuations for external delivery, files, scheduled work and materially different actions |
-| Mermaid parser and SVG renderer | 103 of 103 diagrams successfully parsed and rendered with Mermaid 11.17.2 in headless Chromium |
-| Diagram source format | All diagrams remain fenced Mermaid in the delivered Markdown; no image substitutions |
-| Sequence conventions | Every sequence has autonumber; no sequence exceeds five declared participants |
-| Visual spot checks | Issue submission, financial posting and tenant lifecycle rendered views inspected; posting/preview boundary corrected |
-| Release assignment | MVP1: 19; MVP2: 10; MVP3: 12; MVP4: 9; MVP5: 5 |
-| Dependencies | All catalogue dependencies resolve to the same or an earlier release; no dependency cycles found |
-| Entity references | Referenced entity names resolve in data-model.md |
-| API consistency | Full API paths in main use-case sequences match their corresponding catalogue families; protocol exceptions reviewed |
-| Relative navigation | All local file links and checked heading anchors resolve |
-| Requirement coverage | BR-01–12 map to explicit use cases; X-01–13 declare exclusions; EN-001–12 and OP-001–08 remain separate |
-| Production safeguards | MVP1 gates include tenant/unit isolation, MFA/session/CSRF, audit, notification durability, monitoring, restore and deployment evidence |
-| MVP1 data separation | Future communication/file/finance/utility/community entities explicitly excluded from MVP1 migrations |
-| Deliverable format | 67 English Markdown files, including this report; archive preserves relative directories |
-| Continuation manifest | Not required: no catalogue specification or required document is missing |
+| Site build | Build all 22 documentation pages with MkDocs strict mode |
+| Navigation | Include every page and display UC-01 through UC-07 in the use-case sidebar labels |
+| Diagrams | Parse all nine Mermaid diagrams: seven sequences, one architecture diagram and one entity-relationship diagram |
+| Links | Check local page/file targets and section anchors in the generated site |
+| Schema | Confirm that the ten-table SQL file matches the DDL displayed on the database page |
+| Acceptance coverage | Check 24 unique Sprint 1 case IDs, eight Sprint 2 account-management case IDs and 16 phase 2 case IDs |
+| Formatting | Run `git diff --check` |
 
-The renderer was configured for message wrapping during visual QA. Different Markdown hosts may use different Mermaid versions, fonts and wrapping defaults; successful rendering here is not a guarantee of identical layout in every viewer. Wide ER diagrams are intended for zoomable desktop review. Temporary SVGs/screenshots and document-generation scripts are not deliverables.
+## Local setup
 
-Semantic checks corrected semicolon parsing, separate operator suspension permissions, read/preview versus posting actions, transaction boundaries, post-error UI outcomes, account-statement freezing, private delayed-download reauthorization and CSV source handling. Automated checks are supplemented by architecture review; they cannot prove every business assumption is correct.
+Run from the repository root:
 
-Outstanding stakeholder decisions are intentionally listed in decisions.md. Jurisdiction, provider selection/compatibility, actual capacity/budget and financial/governance policies remain unconfirmed. Required application test execution, legal review and operational rehearsals must occur during delivery; none is claimed to have passed merely because this design specifies it.
+```bash
+python3 -m venv .venv
+.venv/bin/pip install mkdocs-material
+.venv/bin/mkdocs build --strict
+.venv/bin/mkdocs serve
+```
+
+Use the virtual environment's executable so MkDocs loads Material and `pymdown-extensions` from the same installation. The latter provides `pymdownx.superfences`.
+
+## Diagram checks
+
+MkDocs preserves Mermaid source blocks for the browser to render. A successful site build therefore does not establish that diagram syntax is valid. Validate the source with Mermaid 11 and inspect diagrams in the served site.
+
+Use commas or separate messages inside sequence labels. Mermaid treats a literal semicolon as a statement separator; a displayed semicolon must use `#59;`. See the [Mermaid sequence syntax reference](https://mermaid.js.org/syntax/sequenceDiagram.html#entity-codes-to-escape-characters).
+
+## Application verification
+
+PostgreSQL 18 migration execution and application acceptance tests remain unverified. Record implementation results in [traceability](traceability.md), including authentication, authorization, MFA/OIDC, encryption and backup restoration. Documentation validation does not establish production readiness.

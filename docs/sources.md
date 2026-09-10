@@ -1,22 +1,26 @@
-# Primary sources and verification limits
+# Sources and interpretation
 
-Sources below were searched or opened during preparation on 7 September 2026. They support the specific technical claims identified, not the product's assumed business rules or legal compliance. Product versions, provider contract features, regions, package compatibility, license/support terms and exact prices must be verified again during implementation/procurement. No external source is invented or presented as evidence that this application has been tested.
+## Project references
 
-| ID | Primary source | Use and verification boundary |
+The university guidelines define assessment requirements. Domain research provides background and does not establish implementation requirements or legal compliance.
+
+| Material | Used for | Limits |
 | --- | --- | --- |
-| SRC-01 | [IETF RFC 9700 — OAuth 2.0 Security BCP](https://www.rfc-editor.org/info/rfc9700/) | Code/PKCE, redirect and token-security reasoning; opened primary text. Application-specific session durations are proposed policy |
-| SRC-02 | [OpenID Connect Core 1.0](https://openid.net/specs/openid-connect-core-1_0.html) | Identity issuer/subject and verification framework; primary source lookup. No selected provider compatibility claim |
-| SRC-03 | [OpenID RP-Initiated Logout 1.0](https://openid.net/specs/openid-connect-rpinitiated-1_0.html) | Mechanism for requesting IdP logout; local app revocation remains independent |
-| SRC-04 | [ASP.NET Core antiforgery](https://learn.microsoft.com/en-us/aspnet/core/security/anti-request-forgery?view=aspnetcore-10.0) | Cookie-authenticated request CSRF threat and middleware capability; primary documentation lookup |
-| SRC-05 | [ASP.NET Core SameSite](https://learn.microsoft.com/en-us/aspnet/core/security/samesite?view=aspnetcore-10.0) | Cookie/OIDC interaction; verify chosen middleware settings in browser integration tests |
-| SRC-06 | [PostgreSQL row security](https://www.postgresql.org/docs/current/ddl-rowsecurity.html) | RLS role bypass and FORCE semantics, integrity-check caveats; opened primary documentation |
-| SRC-07 | [PostgreSQL range types](https://www.postgresql.org/docs/current/rangetypes.html) | Exclusion constraints can prohibit overlapping ranges; actual operator class/extension/version availability needs migration spike |
-| SRC-08 | [PostgreSQL PITR and continuous archiving](https://www.postgresql.org/docs/current/continuous-archiving.html) | Backup/WAL restore mechanism; proposed RPO/RTO not guaranteed by document |
-| SRC-09 | [Microsoft .NET support policy](https://dotnet.microsoft.com/en-us/platform/support/policy/dotnet-core) | Support lifecycle selection; opened primary page. Exact current patch/package matrix deliberately unclaimed |
-| SRC-10 | [Microsoft .NET 10 announcement](https://devblogs.microsoft.com/dotnet/announcing-dotnet-10/) | Confirms .NET 10 LTS status; recheck support when building |
-| SRC-11 | [W3C WCAG 2.2](https://www.w3.org/TR/WCAG22/) | Accessibility technical criteria; opened recommendation, no conformance or legal certification claim |
-| SRC-12 | [OWASP authorization guidance](https://cheatsheetseries.owasp.org/cheatsheets/Authorization_Cheat_Sheet.html) | Deny-by-default/action/resource authorization rationale; not a substitute for application testing |
-| SRC-13 | [OWASP file upload guidance](https://cheatsheetseries.owasp.org/cheatsheets/File_Upload_Cheat_Sheet.html) | Layered type/size/scan/storage defenses; scanner product not selected |
-| SRC-14 | [Amazon S3 presigned access](https://docs.aws.amazon.com/AmazonS3/latest/userguide/using-presigned-url.html) | Time-limited reusable holder access explains authenticated download choice; no claim all S3-compatible stores behave identically |
+| **DAS_internship requirements.pdf**, 5 pages | pp. 1–2: encryption, MFA, OAuth 2.0, validation, XSS/CSP, CSRF/cookies, hashing, RBAC/backups. pp. 2–3: security documentation, incident response, presentation. pp. 3–5: September priorities, flexibility and five-point explanation for each security measure | No numeric password policy, exact HTTP status contract or three OpenProject story titles supplied; those are project design decisions |
+| **app.pdf**, Project Foundation & Research Charter | Broad research framing, five-person team, competing product hypotheses, separation of assumptions from validated evidence | Exploratory research; product hypotheses require validation before they can become requirements |
+| **Administratorul_de_bloc_Chisinau.pdf** | Association/resident domain vocabulary and examples of building problems | Legal/news/market claims in the research are not independently re-verified here; no legal rules or compliance claim are imported into the app |
+| **Solutii Existente.pdf**, dated 4 Sep 2026 | Existing-solution comparison as background to the project's motivation | Competitor features are not university requirements and are not a parity backlog; claims are not re-verified |
+| **Locatarius_Epic_66_Authentication_User_Management_2026-09-09_18-58.pdf** (epic export) | Confirms epic #66 name, Sprint 1, date range 7–11 Sep 2026 | Single page; does not include #62/#63/#64 descriptions or acceptance criteria |
 
-The modular-monolith choice, release plan, effort ranges, financial policies, polling/retention/session defaults and capacity targets are design recommendations/inferences for the declared assumptions. They are not statements sourced from these standards. Jurisdiction-specific legal citations are intentionally absent until jurisdiction and organizational obligations are established.
+**OpenProject_Work_packages_2026-09-0920260909-926-jqavya.xls** supplies the descriptions and relations for epic #66, stories #62–#64 and tasks #73–#86. The relation export has 34 data rows representing 18 unique work packages. All story/task descriptions are populated; the epic description is empty. All statuses are New and assignee fields are empty. This establishes the recorded requirements, not actual code progress. See the [description review](internship-backlog.md#work-package-description-review).
+
+## Technical references
+
+- [ASP.NET Core 10 Identity configuration](https://learn.microsoft.com/en-us/aspnet/core/security/authentication/identity-configuration?view=aspnetcore-10.0): configurable password hasher and authentication settings. This project explicitly configures its work factor instead of assuming defaults.
+- [OWASP password storage](https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html): PBKDF2 work-factor guidance. Our selected SHA512 work factor is 220,000 iterations; verify the actual library output.
+- [ASP.NET Core antiforgery](https://learn.microsoft.com/en-us/aspnet/core/security/anti-request-forgery?view=aspnetcore-10.0): framework CSRF token mechanisms.
+- [ASP.NET Core OIDC web authentication](https://learn.microsoft.com/en-us/aspnet/core/security/authentication/configure-oidc-web-authentication?view=aspnetcore-10.0) and [OWASP OAuth guidance](https://cheatsheetseries.owasp.org/cheatsheets/OAuth2_Cheat_Sheet.html): code flow, PKCE and server-side web authentication integration.
+- [OWASP MFA guidance](https://cheatsheetseries.owasp.org/cheatsheets/Multifactor_Authentication_Cheat_Sheet.html): MFA and recovery considerations; exact TOTP enrollment/recovery policy here is a project choice.
+- [PostgreSQL 18 constraints](https://www.postgresql.org/docs/18/ddl-constraints.html): primary, unique, check and composite foreign keys.
+
+Validation limits, screen behavior, pagination, schema and delivery estimates are project decisions. Implementation status and evidence are recorded in [traceability](traceability.md).
