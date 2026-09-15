@@ -5,4 +5,7 @@
     <Project Path="src/Locatarius.Domain/Locatarius.Domain.csproj" />
     <Project Path="src/Locatarius.Infrastructure/Locatarius.Infrastructure.csproj" />
   </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Locatarius.Infrastructure.Tests/Locatarius.Infrastructure.Tests.csproj" />
+  </Folder>
 </Solution>
