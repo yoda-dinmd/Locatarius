@@ -1,0 +1,35 @@
+# Shared implementation rules
+
+## AUTH-01: identity, association and role
+
+Read the user from the validated server session. Every association route includes `/api/associations/{associationId}`. Treat this ID as an untrusted scope selector: look up `(associationId, callerUserId)` and require an active membership. Never accept user ID, role, reporter ID or association ID from writable DTOs. Reject unknown JSON properties with `400 INVALID_REQUEST`.
+
+Check in this order: request size/content type; authentication for protected routes; CSRF for mutations; association membership; route role; input validation; scoped resource lookup; business conflict; write. Malformed route UUIDs return `400 INVALID_REQUEST` after authentication/CSRF; a well-formed foreign UUID returns `404 NOT_FOUND`. An inactive/missing association membership returns the same 404. An active resident calling an admin route returns `403 FORBIDDEN` regardless of target user existence. A resident asking for someone else's ticket gets 404. Return 401/403 JSON from API middleware, never a redirect to HTML login.
+
+Unit assignment eligibility depends on an active global user and active membership in the unit’s association, independently of role. Only an active admin in that association can manage assignments, including their own. Both roles require a current unit assignment to create a ticket; the server sets the reporter to the caller. Removing an assignment blocks new tickets for that unit but does not change membership role or the admin’s association-wide read permissions.
+
+Filter SQL by association and visibility before reading, counting or paging. Use DTO projections; never serialize tracked user entities. Global `is_active=false` invalidates all sessions; membership `is_active=false` blocks only that association. Read these current values every request, not from cached role claims. Database runtime credentials cannot create tables, change roles or bypass privileges; separate migration credentials. Application authorization is the chosen isolation mechanism; PostgreSQL RLS is not claimed or required.
+
+## AUTH-02: passwords and sessions
+
+Use ASP.NET Core `PasswordHasher<User>` in Identity V3 mode with **220,000 iterations**, PBKDF2-HMAC-SHA512; verify the chosen package emits that PRF and rehash when verification requests it. Framework generates a fresh salt. Benchmark on demo hardware. No manual salt table, plaintext, reversible password encryption, or fast SHA password hashes. [Microsoft configuration](https://learn.microsoft.com/en-us/aspnet/core/security/authentication/identity-configuration?view=aspnetcore-10.0) and [OWASP work factors](https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html) support these choices.
+
+Generate a new 32-byte CSPRNG token on authentication/privilege-stage transition; cookie `__Host-locatarius`, `Secure`, `HttpOnly`, `SameSite=Lax`, `Path=/`, no Domain. Store its SHA-256 digest in `sessions`. No browser local/session storage tokens. Full sessions expire after **8 hours absolute or 30 minutes idle**, whichever comes first (`now >= deadline` is expired); update `last_seen_at` only on accepted authenticated requests. Restricted sessions expire after **5 minutes absolute**, cannot read association data, and do not slide. Delete old session on rotation; logout deletes current session and expires cookie. Password change deletes all sessions and requires a fresh login.
+
+Temporary-password login returns only a `password_change` session. It can call `/auth/csrf`, `/auth/password`, `/auth/logout`, nothing else (`403 PASSWORD_CHANGE_REQUIRED`). Phase 2 login next requires local MFA: `mfa_setup` permits only CSRF/logout/setup/confirm; `mfa_challenge` permits only CSRF/logout/MFA verification. Other protected routes return `403 MFA_REQUIRED`. Only a `full` session is a complete authentication.
+
+After **5 consecutive invalid password attempts** for an existing user, lock for **15 minutes** atomically. Fifth attempt and every attempt during lock return the same 401 as a wrong password. On expiry reset the failure count before processing the next attempt; success resets it. Missing user, disabled user, wrong password and lockout have identical responses. Run a dummy password-hash verification for unknown/disabled/locked accounts to avoid an obvious fast path; this is not a constant-time-network claim. Concurrent attempts must not lose increments.
+
+Additionally limit login to **10 requests per source IP per fixed 60-second window**, no queue; excess returns 429 with integer `Retry-After` seconds until reset. Trust forwarded IP only from the configured reverse proxy. This limit is per API instance; the assessed deployment runs one instance. Missing CSRF attempts consume the IP budget too.
+
+## CSRF-01 and ERR-01
+
+`GET /api/auth/csrf` returns `200 {"token":"<framework-request-token>"}` and sets the framework antiforgery cookie (`__Host-locatarius-csrf`, HttpOnly, Secure, SameSite=Lax, Path=/). Keep request token in React memory; send `X-CSRF-TOKEN` for every POST/PATCH/PUT/DELETE, including login/logout. Fetch a new token after login/session rotation. Use framework validation, not a custom double-submit implementation. [Microsoft antiforgery guidance](https://learn.microsoft.com/en-us/aspnet/core/security/anti-request-forgery?view=aspnetcore-10.0).
+
+All API errors use exactly the [API error envelope](api-catalog.md#error-envelope), including framework model binding and middleware failures. No stack traces, SQL, exception messages, token values or password hashes. `Cache-Control: no-store` on auth, profile and association responses. TLS is required including local browser authentication (configure a trusted development certificate).
+
+## INPUT-01 and TX-01
+
+Validate on server even when React validated first. Use allowlisted DTO fields and parameterized EF queries. Render text through React interpolation; no raw HTML/Markdown rendering or `dangerouslySetInnerHTML`. Cap request bodies at 16 KiB. JSON names are case-sensitive camelCase; reject duplicate/unknown fields and wrong types. Creation/update requests require `application/json`. No partial writes on failed validation.
+
+Use database transactions for user+membership creation, password change+session invalidation, membership changes, and authorization-sensitive ticket/comment writes. Serialize credential verification/session creation, password change, MFA and global account disable on the user row so a concurrent login cannot recreate a session after revocation based on an old password. Use a consistent lock order: caller user, membership, assignment, ticket (only the rows relevant to the action). Never refresh an idle timestamp or change session kind by inserting a missing session; a deleted token stays invalid. Lock ticket before status update/comment insert so no comment commits after a resolution that won the lock. Last edit wins for ordinary building/profile text; status changes must compare expected current state. Unique email/unit/assignment races return 409, not 500. Roll back the whole transaction on failure.

@@ -1,0 +1,72 @@
+site_name: Locatarius Documentation
+site_description: "TUM secure application: scope, implementation contracts and assessment evidence"
+site_author: Locatarius Team
+repo_url: https://github.com/yoda-dinmd/Locatarius
+repo_name: yoda-dinmd/Locatarius
+
+theme:
+  name: material
+  palette:
+    - scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.instant
+    - navigation.tracking
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - admonition
+  - tables
+  - attr_list
+
+nav:
+  - Start here: index.md
+  - Scope and delivery:
+      - Product and screens: solution-design.md
+      - Two-phase roadmap: mvp-roadmap.md
+      - Internship backlog: internship-backlog.md
+      - Stories and use cases: use-case-catalog.md
+      - Decisions: decisions.md
+  - Implementation:
+      - Screen mockups: frontend-mockups.md
+      - Sprint 1 acceptance: sprint-1.md
+      - Database: data-model.md
+      - API contract: api-catalog.md
+      - Shared rules: shared-patterns.md
+  - Detailed use cases:
+      - UC-01 — Sign in and out: use-cases/UC-01.md
+      - UC-02 — Manage residents: use-cases/UC-02.md
+      - UC-03 — Own profile and password: use-cases/UC-03.md
+      - UC-04 — Building and unit register: use-cases/UC-04.md
+      - UC-05 — Report and read tickets: use-cases/UC-05.md
+      - UC-06 — Comments and resolution: use-cases/UC-06.md
+      - UC-07 — MFA and provider login: use-cases/UC-07.md
+  - Security and assessment:
+      - Controls, tests and runbooks: operations-and-testing.md
+      - Requirement traceability: traceability.md
+      - Sources: sources.md
+      - Documentation validation: validation.md
