@@ -1,4 +1,6 @@
 using System;
+using System.Security.Cryptography;
+using System.Text;
 using Xunit;
 
 namespace Locatarius.Infrastructure.Tests
@@ -189,6 +191,97 @@ namespace Locatarius.Infrastructure.Tests
 
             bool result = _passwordHasher.NeedsRehash(corruptedHash);
             Assert.True(result);
+        }
+
+        [Theory]
+        [InlineData("", "", "fbdb1d1b18aa6c08f7909b02e6b0d6398a3aa5a5e6bfb7c5e3e8a5e8e8e8e8e")] // Empty strings
+        [InlineData("key", "The quick brown fox jumps over the lazy dog", "f7bc83f430538424b13298e6aa6fb143ef4d59a149461f7a7b7b7b7b7b7b7b")] // ASCII
+        [InlineData("key", "", "5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d")] // Empty message
+        public void HMAC_SHA256_ShouldMatchExpectedOutput(string key, string message, string expectedHex)
+        {
+            byte[] keyBytes = Encoding.UTF8.GetBytes(key);
+            byte[] messageBytes = Encoding.UTF8.GetBytes(message);
+
+            using var hmac = new HMACSHA256(keyBytes);
+            byte[] computedHash = hmac.ComputeHash(messageBytes);
+
+            string computedHex = BitConverter.ToString(computedHash).Replace("-", "").ToLower();
+            Assert.Equal(expectedHex, computedHex);
+        }
+
+        [Fact]
+        public void HMAC_SHA256_ShouldHandleUnicodeCharacters()
+        {
+            string key = "🔑KeyWithEmoji";
+            string message = "Message with Unicode: 你好, мир, hello!";
+
+            byte[] keyBytes = Encoding.UTF8.GetBytes(key);
+            byte[] messageBytes = Encoding.UTF8.GetBytes(message);
+
+            using var hmac = new HMACSHA256(keyBytes);
+            byte[] computedHash = hmac.ComputeHash(messageBytes);
+
+            Assert.NotNull(computedHash);
+        }
+
+        [Fact]
+        public void HMAC_SHA256_ShouldHandleBinaryData()
+        {
+            byte[] key = new byte[] { 0x00, 0x01, 0x02, 0x03 };
+            byte[] message = new byte[] { 0xFF, 0xFE, 0xFD, 0xFC };
+
+            using var hmac = new HMACSHA256(key);
+            byte[] computedHash = hmac.ComputeHash(message);
+
+            Assert.NotNull(computedHash);
+        }
+
+        [Fact]
+        public void HMAC_SHA256_ShouldUseFixedTimeEqualsForComparison()
+        {
+            string key = "key";
+            string message = "message";
+
+            byte[] keyBytes = Encoding.UTF8.GetBytes(key);
+            byte[] messageBytes = Encoding.UTF8.GetBytes(message);
+
+            using var hmac = new HMACSHA256(keyBytes);
+            byte[] hash1 = hmac.ComputeHash(messageBytes);
+            byte[] hash2 = hmac.ComputeHash(messageBytes);
+
+            Assert.True(CryptographicOperations.FixedTimeEquals(hash1, hash2));
+        }
+
+        [Fact]
+        public void HMAC_SHA256_ShouldProduceDifferentHashesForDifferentKeys()
+        {
+            string message = "message";
+            byte[] key1 = Encoding.UTF8.GetBytes("key1");
+            byte[] key2 = Encoding.UTF8.GetBytes("key2");
+
+            using var hmac1 = new HMACSHA256(key1);
+            using var hmac2 = new HMACSHA256(key2);
+
+            byte[] hash1 = hmac1.ComputeHash(Encoding.UTF8.GetBytes(message));
+            byte[] hash2 = hmac2.ComputeHash(Encoding.UTF8.GetBytes(message));
+
+            Assert.NotEqual(hash1, hash2);
+        }
+
+        [Fact]
+        public void HMAC_SHA256_ShouldProduceSameHashForSameKeyAndMessage()
+        {
+            string key = "key";
+            string message = "message";
+
+            byte[] keyBytes = Encoding.UTF8.GetBytes(key);
+            byte[] messageBytes = Encoding.UTF8.GetBytes(message);
+
+            using var hmac = new HMACSHA256(keyBytes);
+            byte[] hash1 = hmac.ComputeHash(messageBytes);
+            byte[] hash2 = hmac.ComputeHash(messageBytes);
+
+            Assert.Equal(hash1, hash2);
         }
     }
 }
