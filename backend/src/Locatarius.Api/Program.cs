@@ -3,6 +3,7 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
+builder.Services.AddHealthChecks();
 
 var app = builder.Build();
 
@@ -12,7 +13,12 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
-app.UseHttpsRedirection();
+// Container liveness uses internal HTTP even when application HTTPS is configured.
+app.UseWhen(context => !context.Request.Path.Equals("/health/live"), branch =>
+{
+    branch.UseHttpsRedirection();
+});
+app.MapHealthChecks("/health/live");
 
 var summaries = new[]
 {
