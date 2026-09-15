@@ -18,6 +18,11 @@ var app = builder.Build();
 
 await using (var scope = app.Services.CreateAsyncScope())
 {
+    var dbContext = scope.ServiceProvider
+        .GetRequiredService<LocatariusDbContext>();
+
+    await dbContext.Database.MigrateAsync();
+
     var seeder = scope.ServiceProvider
         .GetRequiredService<DatabaseSeeder>();
 

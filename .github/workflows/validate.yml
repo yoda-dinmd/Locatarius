@@ -32,7 +32,13 @@ jobs:
       - name: Configure disposable database
         run: |
           umask 077
-          printf 'POSTGRES_PASSWORD=%s\n' "$(openssl rand -hex 32)" > .env
+          {
+            printf 'POSTGRES_PASSWORD=%s\n' "$(openssl rand -hex 32)"
+            printf 'SeedAdmin__Email=%s\n' 'admin@example.com'
+            printf 'SeedAdmin__Password=%s\n' 'ChangeMe123!'
+            printf 'SeedAdmin__FirstName=%s\n' 'Admin'
+            printf 'SeedAdmin__LastName=%s\n' 'User'
+          } > .env
       - name: Build and smoke-test containers
         run: |
           docker compose up --build --wait --wait-timeout 120
