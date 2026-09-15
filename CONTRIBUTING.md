@@ -1,49 +1,33 @@
 # Contributing to Locatarius
 
-
-
 ## 1. Scrum Workflow
-
-
 
 * Sprints run in **1-week cycles** starting Mondays.
 
-
 * Daily standups focus on: what was completed, what is planned today, and blockers.
 
-
 * All team members must log working hours daily in OpenProject (**Time and costs** module).
-
-
 
 ---
 
 ## 2. Git Branching Rules
 
+* Keep `main` as the only long-lived integration branch. Do not push directly to `main`.
 
+* Create each task branch from the current `main` branch:
 
-* **Never push directly to `main` or `develop`.**
+  * `feat/<area>-<short-description>`
+  * `fix/<area>-<short-description>`
+  * `test/<area>-<short-description>`
 
-* For Sprint 1, create task branches off `feat/auth-user-mgmt`:
+* Submit Pull Requests (PRs) targeting `main` once the task is complete.
 
-
-* `feat/<area>-<short-description>`
-
-* `fix/<area>-<short-description>`
-
-* `test/<area>-<short-description>`
-
-
-
-* Submit Pull Requests (PRs) targeting `feat/auth-user-mgmt`.
-
-
+* Delete the task branch after the PR is merged. Keep local and remote branch lists
+  pruned so they reflect the current repository state.
 
 ---
 
 ## 3. Commit Convention
-
-
 
 Follow Conventional Commits and append the OpenProject work package reference:
 
@@ -54,27 +38,19 @@ Follow Conventional Commits and append the OpenProject work package reference:
 
 * `feat`: New capability or endpoint
 
-
 * `fix`: Bug fix
-
 
 * `sec`: Security controls, RBAC, input sanitization
 
-
 * `test`: Automated unit or integration tests
 
-
 * `chore`: Tooling, Docker, or dependency configurations
-
-
 
 *Example:* `feat(auth): implement login endpoint and session creation #62`
 
 ---
 
 ## 4. Pull Requests & Review Checklist
-
-
 
 ### 4.1 PR Title Pattern
 
@@ -120,14 +96,10 @@ Resolves / Closes: #<WP-ID>
 
 ### 4.3 Review & Merge Gate
 
-
-
-Before merging into `feat/auth-user-mgmt`:
+Before merging into `main`:
 
 * [ ] Code builds cleanly in the CI pipeline without errors or warnings.
 
-
 * [ ] At least one peer review approval has been submitted.
-
 
 * [ ] Pull requests are squash-merged to maintain a clean git history.

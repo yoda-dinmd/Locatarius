@@ -1,0 +1,45 @@
+name: Validate
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+      - run: pip install mkdocs-material
+      - run: mkdocs build --strict
+
+  backend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - run: dotnet build backend/Locatarius.slnx --configuration Release --warnaserror
+      - name: Configure disposable database
+        run: |
+          umask 077
+          printf 'POSTGRES_PASSWORD=%s\n' "$(openssl rand -hex 32)" > .env
+      - name: Build and smoke-test containers
+        run: |
+          docker compose up --build --wait --wait-timeout 120
+          test "$(curl --fail --silent --show-error http://localhost:8080/health/live)" = Healthy
+      - name: Container logs
+        if: failure()
+        run: docker compose logs
+      - name: Clean up
+        if: always()
+        run: docker compose down --volumes

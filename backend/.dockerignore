@@ -1,0 +1,9 @@
+**/bin/
+**/obj/
+**/.env*
+**/appsettings.Development.json
+**/appsettings.Production.json
+**/*.pfx
+**/*.key
+**/*.pem
+tests/
