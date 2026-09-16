@@ -49,6 +49,7 @@ nav:
       - Product and screens: solution-design.md
       - Two-phase roadmap: mvp-roadmap.md
       - Internship backlog: internship-backlog.md
+      - OpenProject snapshots: openproject/README.md
       - Stories and use cases: use-case-catalog.md
       - Decisions: decisions.md
   - Implementation:
