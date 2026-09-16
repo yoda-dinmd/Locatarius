@@ -37,7 +37,7 @@ erDiagram
 
 ## Phase allocation and story coverage
 
-**Phase 1:** `users`, `associations`, `roles`, `memberships`, `sessions`. #62 verifies `password_hash`, creates a session, reads current memberships; #63 atomically creates a resident user and membership; #64 uses the shared login flow, reads the caller’s identity/memberships and enforces role boundaries. Profile editing is delivered in Sprint 2. No unit prerequisite.
+**Phase 1:** `users`, `associations`, `roles`, `memberships`, `sessions`. #62 verifies `password_hash`, creates a session, reads current memberships; #63 atomically creates a resident user and membership; #64 uses the shared login flow, reads the caller’s identity/memberships and enforces role boundaries. Profile editing is deferred until after the internship. No unit prerequisite.
 
 **Phase 2:** add the five register/ticket tables and enable user MFA/OIDC fields and restricted session kinds. The final DDL includes all of them now to define the complete application data model. `oidc_issuer` + `oidc_subject` identify one pre-linked external account; email is never used for automatic linking. Provider-owned internal databases are outside the application's schema. No access/refresh tokens are stored here.
 

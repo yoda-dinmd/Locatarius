@@ -6,14 +6,9 @@ The project runs through September–December 2026. Five students work during th
 
 **Outcome:** #62/#63/#64 work end to end with secure local authentication and basic user management. No building or ticket dependency.
 
-| Window | Deliverable | Evidence / exit |
-| --- | --- | --- |
-| Internship week 1, through 4 Sep | Agree scope, threat list, repo conventions and screen sketches | Scope signed off in team meeting; five students can explain the data boundary |
-| 7–11 Sep, Sprint 1 | Five foundation tables, two test associations, sign-in/out, read-only identity and administrator account creation | S1-62/63/64 acceptance evidence, including password hashing, sessions, CSRF protection and rejected unauthorized requests |
-| 14–18 Sep | Finish Sprint 1 carryover, add account lists/access control and own profile editing; integrate and test | Clean builds and reproducible setup; no critical access-control defects |
-| 21–25 Sep | Rehearse demo, backup/restore once, document threats and explain implemented protections | Working initial MVP, security analysis, evidence and phase 2 plan |
+**Replanned 16 September:** finish the original Sprint 1 stories #62–#64 and tasks #73–#90 through the remaining internship. The original 7–11 September plan was not completed; later calendar weeks do not imply new feature scope.
 
-A story is complete when its acceptance criteria pass and the evidence is recorded. Use the integration week to finish incomplete criteria before the internship demonstration.
+Implement, integrate, test and demonstrate the current tasks throughout the remaining time. Account lists, access-management features and profile editing are deferred. Required security checks and setup evidence for current tasks remain part of their completion criteria. See the [current backlog](internship-backlog.md) for work order and known schema gaps.
 
 ## Phase 2 — October–December practical extension and security completion
 
@@ -21,13 +16,16 @@ A story is complete when its acceptance criteria pass and the evidence is record
 
 | Window | Deliverable | Evidence / exit |
 | --- | --- | --- |
-| October first half | Create, list and edit buildings and units; manage current resident assignments | UC-04 authorization tests, composite foreign-key checks and resident unit visibility |
-| October second half | Ticket creation/list/detail/comments and two admin status transitions | UC-05/06 full private conversation and cross-user/cross-association tests |
+| After internship, dates to be scheduled | Complete deferred account management and prioritize additional delivery/recovery work | Reviewed scope and evidence from the [deferred backlog](deferred-backlog.md) |
+| October first half (tentative) | Create, list and edit buildings and units; manage current resident assignments | UC-04 authorization tests, composite foreign-key checks and resident unit visibility |
+| October second half (tentative) | Ticket creation/list/detail/comments and two admin status transitions | UC-05/06 full private conversation and cross-user/cross-association tests |
 | November first half | Mandatory local MFA enrollment/verification and supervised recovery | MFA bypass/replay/expiry/rate-limit tests; no pre-MFA sessions survive rollout |
 | November second half | One OAuth 2.0/OIDC provider integration through .NET middleware | Authorization code flow with PKCE, state/nonce validation and rejection of tampered responses |
 | December before final submission | Freeze business scope, fix security defects, encrypted backup restore, incident drill and presentation | Evidence matrix complete; known limitations written; reproducible final demo |
 
 The university guidelines require MFA and OAuth 2.0 (pp. 1–2). The API handles the OAuth/OIDC sign-in flow on behalf of React and uses a session cookie for subsequent application requests. Confirm this integration meets the lecturer's assessment expectations before implementation. If bearer-token API access is required, update the authentication contract accordingly.
+
+The semester windows are tentative and must be replanned against deferred work and actual availability.
 
 **Part-time planning assumption:** 4–6 focused hours per student per week, roughly 20–30 team hours/week, with 25% reserved for integration, tests and rework. Record real availability; if less, cut register polish and ticket UI extras first. Reserve time for security testing before adding interface improvements.
 

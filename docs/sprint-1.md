@@ -1,8 +1,8 @@
-# Sprint 1: concrete acceptance criteria
+# Internship authentication acceptance criteria
 
-**Epic #66 — Authentication & User Management.** Sprint 1 contains #62 “Administrator can Authenticate”, #63 “Administrator can create users” and #64 “Registered user can authenticate”. Both authentication stories use the same login implementation. [Internship backlog](internship-backlog.md) assigns tasks and separates Sprint 2 extensions.
+**Epic #66 — Authentication & User Management.** The remaining internship covers #62 “Administrator can Authenticate”, #63 “Administrator can create users” and #64 “Registered user can authenticate”. Both authentication stories use the same login implementation. [Internship backlog](internship-backlog.md) assigns tasks and separates deferred extensions.
 
-September Sprint 1 does not require buildings, units, invitations, MFA or OAuth integration. MFA and OAuth remain phase 2 semester deliverables. [API contract](api-catalog.md) defines exact payloads and statuses; [shared rules](shared-patterns.md) define middleware and transaction behavior.
+The current internship scope does not require buildings, units, invitations, MFA or OAuth integration. MFA and OAuth remain phase 2 semester deliverables. [API contract](api-catalog.md) defines exact payloads and statuses; [shared rules](shared-patterns.md) define middleware and transaction behavior.
 
 ## Exact validation rules
 
@@ -49,7 +49,7 @@ Use the same scalar count in JS (`Array.from(value).length` with separate invali
 
 ## #63 — Administrator can create users
 
-**Story:** As an association admin, I want to create resident accounts so approved users can authenticate. Listing and activation/deactivation are delivered in Sprint 2.
+**Story:** As an association admin, I want to create resident accounts so approved users can authenticate. Listing and activation/deactivation management are deferred until after the internship.
 
 | ID | Given / when | Required outcome |
 | --- | --- | --- |
@@ -63,7 +63,7 @@ Temporary credentials are handed directly to the intended demo user out of band 
 
 ## #64 — Registered user can authenticate
 
-**Story:** As a registered user, I want to authenticate, access permitted pages and sign out securely. The identity endpoint returns my profile and memberships; profile editing is a Sprint 2 extension.
+**Story:** As a registered user, I want to authenticate, access permitted pages and sign out securely. The identity endpoint returns my profile and memberships; profile editing is deferred until after the internship.
 
 | ID | Given / when | Required outcome |
 | --- | --- | --- |
@@ -76,9 +76,9 @@ Temporary credentials are handed directly to the intended demo user out of band 
 | S1-64-07 | Name contains `<script>alert(1)</script>` within length | Stored as text; rendered visibly as literal text, never executes on profile or admin list; no blanket HTML stripping required |
 | S1-64-08 | User signs out and replays that session, or presents an expired session | 401 UNAUTHENTICATED; protected UI redirects to login and clears account data |
 
-## Sprint 2 account-management acceptance
+## Deferred account-management acceptance
 
-These cases belong to the Sprint 2 stories in the [internship backlog](internship-backlog.md#sprint-2-1418-september). They are not extra completion conditions for Sprint 1 #63/#64.
+These cases belong to the [deferred backlog](deferred-backlog.md). They are not extra completion conditions for the current internship #63/#64. Historical S1/S2 IDs remain stable for traceability.
 
 | ID | Given / when | Required outcome |
 | --- | --- | --- |
@@ -98,10 +98,10 @@ These cases belong to the Sprint 2 stories in the [internship backlog](internshi
 - Submit starts enabled when idle, including empty forms, so clicking it reveals errors. On invalid submit prevent network request, show all field errors, focus the first invalid field in visible form order. Enter follows identical behavior. Pending submission disables fields, submit and dialog close; button says `Signing in…`, `Creating…` or `Saving…`, and form has `aria-busy=true`. Only one request may be in flight.
 - A server 400 attaches field errors and focuses the first invalid field. A 401 login shows the exact generic credential message in a `role=alert` banner, clears password and focuses password. A 409 email conflict keeps non-secret fields, shows exact conflict message by email and focuses email. Other errors show the API message in a focusable alert banner. Network failure uses `Cannot reach the server. Try again.` and re-enables controls; do not automatically repeat account creation.
 - All pending states end on success, rejection or network failure. Password show/hide button has an accessible label, defaults hidden, allows paste and password managers; secrets are never logged or stored persistently. Clear secret inputs after success, cancellation or leaving the form. Failed validation retains entered values for correction except the login 401 clearing rule.
-- On login success go to association selector (auto-select if exactly one); temporary-password success goes to forced password change. On creation success close the dialog and focus the success notice `Resident created.`. When the Sprint 2 list exists, refresh page 1 and focus the new row if present, otherwise the notice. A 201 is never treated as a 200-only failure. Do not show the submitted password in a toast.
+- On login success go to association selector (auto-select if exactly one); temporary-password success goes to forced password change. On creation success close the dialog and focus the success notice `Resident created.`. When the deferred user list exists, refresh page 1 and focus the new row if present, otherwise the notice. A 201 is never treated as a 200-only failure. Do not show the submitted password in a toast.
 - Resident navigation has Profile, My units/Tickets when phase 2 exists, association switcher and Sign out. Hide Users/Register management. Direct navigation still relies on API authorization; route guard shows `Access denied.` on 403. On 401 clear in-memory profile/association data and navigate to login. On association 404 clear its data and return to selector with `Association unavailable.`. Cancel stale in-flight requests when switching associations and do not display previous-association results under a new heading.
 - A 429 disables login submit for Retry-After seconds and shows `Too many requests. Try again later.` plus a visible countdown; fields remain editable. Retry requires explicit submit after countdown.
 
 ## Done means demonstrated
 
-All S1 IDs have recorded automated API test results or UI manual test evidence; schema migration succeeds on PostgreSQL 18; both frontend/backend builds pass; one peer reviews each security-relevant change. Record failing tests honestly. Sprint 1 completion requires all S1 cases; the S2 account-management cases are assessed in Sprint 2. No login story is done while role checks, password hashing, CSRF or multi-association tests are missing. Exact HTTP bodies are tested as structured JSON, including absence of sensitive fields.
+All S1 IDs have recorded automated API test results or UI manual test evidence; schema migration succeeds on PostgreSQL 18; both frontend/backend builds pass; one peer reviews each security-relevant change. Record failing tests honestly. Current internship story completion requires all S1 cases; S2 account-management cases are assessed when the deferred work is scheduled. No login story is done while role checks, password hashing, CSRF or multi-association tests are missing. Exact HTTP bodies are tested as structured JSON, including absence of sensitive fields.

@@ -1,15 +1,27 @@
 # OpenProject work package snapshots
 
-Latest snapshot: [2026-09-16 work packages](2026-09-16/work-packages.csv).
+Latest snapshot: [2026-09-16 updated work packages](2026-09-16-1613/work-packages.csv).
 
 This CSV contains 22 work packages: epic #66, stories #62–#64 and tasks #73–#90,
-including closed task #73. It records IDs, subjects, types, statuses, assignees,
+including reopened task #73 (In progress). It records IDs, subjects, types, statuses, assignees,
 priorities and full descriptions. It does **not** include parent/child relations
 or sprint/version fields. OpenProject remains the live planning source; this
 export records its state at export time.
 
-Source filename: `OpenProject_Work_packages_2026-09-1620260916-53139-25n336.csv`.
+Source filename: `OpenProject_Work_packages_2026-09-1620260916-53139-gujmkm.csv`.
 The stored file is an unchanged copy of the supplied export.
+
+## Snapshot history and current scope
+
+- [Latest export, received 16 September at 16:13 local time](2026-09-16-1613/work-packages.csv): #66 limits the remaining internship to the existing authentication work; #63/#64/#83 defer further account management; #73 is back In progress.
+- [Earlier 16 September export](2026-09-16/work-packages.csv), source `OpenProject_Work_packages_2026-09-1620260916-53139-25n336.csv`: retained unchanged for history.
+
+The directory suffix distinguishes same-day snapshots using the supplied file's
+local modification time; it is not a server export timestamp. The latest CSV
+aligns with the [current internship backlog](../internship-backlog.md).
+Former Sprint 2/3 proposals have not been created as work packages. Sprint dates,
+activation and board configuration cannot be verified from this export because
+it has no Sprint or Parent fields.
 
 ## Find your task
 
@@ -26,7 +38,7 @@ import csv
 import html
 from pathlib import Path
 
-snapshot = Path("docs/openproject/2026-09-16/work-packages.csv")
+snapshot = Path("docs/openproject/2026-09-16-1613/work-packages.csv")
 task_id = "78"
 with snapshot.open(encoding="utf-8-sig", newline="") as source:
     tasks = {row["id"]: row for row in csv.DictReader(source)}

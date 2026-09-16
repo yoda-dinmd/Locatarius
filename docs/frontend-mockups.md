@@ -1,22 +1,24 @@
 # Screen mockups and frontend handoff
 
+**Scheduling update (16 September):** [the current internship backlog](internship-backlog.md) takes precedence over former Sprint 2/3 scheduling below. “Sprint 1” identifies the authentication scope carried through the remaining internship; account lists/access management and profile editing are deferred. Full-product screens and contracts are future scope unless required by current tasks.
+
 [Open the interactive mockups](mockups/index.html) · [HTML](mockups/index.html) · [CSS](mockups/mockups.css) · [JavaScript](mockups/mockups.js)
 
-Seventeen screens share one visual system, with desktop and mobile PNG references. Use the prototype toolbar to choose a screen, administrator/resident role and visual state. The delivery label separates Sprint 1, Sprint 2 and semester work. S-01 retains the login screen ID used in task #76; the remaining screen IDs are local design references.
+Seventeen screens share one visual system, with desktop and mobile PNG references. Use the prototype toolbar to choose a screen, administrator/resident role and visual state. The delivery label separates Sprint 1, the deferred phase and semester work. S-01 retains the login screen ID used in task #76; the remaining screen IDs are local design references.
 
 The prototype runs directly in a browser or through MkDocs, requires no package installation and makes no network requests. It uses synthetic data. Buttons simulate navigation and outcomes; forms are not a validation or authentication implementation. Do not enter real passwords. The [API contract](api-catalog.md), [acceptance criteria](sprint-1.md) and server authorization remain authoritative. The visual reference does not settle the JWT/cookie implementation decision.
 
 ## Start with Sprint 1
 
-Implement **S-01 sign in, S-02 first-login password change, S-03 association selection and S-06 add resident**. Use shared input, button, banner and loading components. The September login has no provider button. User lists/profile editing belong to Sprint 2; the full app navigation illustrates the semester target and must be restricted to implemented screens in each release.
+Implement **S-01 sign in, S-02 first-login password change, S-03 association selection and S-06 add resident**. Use shared input, button, banner and loading components. The September login has no provider button. User lists/profile editing belong to the deferred phase; the full app navigation illustrates the semester target and must be restricted to implemented screens in each release.
 
 | Screen | Delivery | Work package / use case |
 | --- | --- | --- |
 | [S-01 — Sign in](#s-01) | Sprint 1 | UC-01 · #76/#77 |
-| [S-02 — Change password](#s-02) | Sprint 1; reused in Sprint 2 | UC-03 · S1-A2 / S2-T5 |
+| [S-02 — Change password](#s-02) | Sprint 1; reused in the deferred phase | UC-03 · #88 / S2-T5 |
 | [S-03 — Choose association](#s-03) | Sprint 1 | UC-01 · #77/#84 |
-| [S-04 — My profile](#s-04) | Sprint 2 | UC-03 · S2-T5 |
-| [S-05 — Users](#s-05) | Sprint 2 | UC-02 · S2-T2 |
+| [S-04 — My profile](#s-04) | the deferred phase | UC-03 · S2-T5 |
+| [S-05 — Users](#s-05) | the deferred phase | UC-02 · S2-T2 |
 | [S-06 — Add resident](#s-06) | Sprint 1 | UC-02 · #81/#82 |
 | [S-07 — Buildings](#s-07) | October | UC-04 |
 | [S-08 — Building form](#s-08) | October | UC-04 |
@@ -81,7 +83,7 @@ Desktop images are 1440px wide; mobile references are 390px wide. Full-page imag
 
 ### S-02 — Change password {#s-02}
 
-**Sprint 1; reused in Sprint 2 · UC-03 · S1-A2 / S2-T5.** First-login temporary password and account password change share the same component. Keep all three fields; never show the submitted password in a success notice.
+**Sprint 1; reused in the deferred phase · UC-03 · #88 / S2-T5.** First-login temporary password and account password change share the same component. Keep all three fields; never show the submitted password in a success notice.
 
 [Interactive](mockups/index.html?screen=S-02&role=admin) · [Desktop PNG](mockups/images/s-02-desktop.png) · [Mobile PNG](mockups/images/s-02-mobile.png)
 
@@ -97,7 +99,7 @@ Desktop images are 1440px wide; mobile references are 390px wide. Full-page imag
 
 ### S-04 — My profile {#s-04}
 
-**Sprint 2 · UC-03 · S2-T5.** Editable display name, read-only email and password action. MFA settings are a November extension; identity reading in Sprint 1 does not require this edit form.
+**the deferred phase · UC-03 · S2-T5.** Editable display name, read-only email and password action. MFA settings are a November extension; identity reading in Sprint 1 does not require this edit form.
 
 [Interactive](mockups/index.html?screen=S-04&role=admin) · [Desktop PNG](mockups/images/s-04-desktop.png) · [Mobile PNG](mockups/images/s-04-mobile.png)
 
@@ -105,7 +107,7 @@ Desktop images are 1440px wide; mobile references are 390px wide. Full-page imag
 
 ### S-05 — Users {#s-05}
 
-**Sprint 2 · UC-02 · S2-T2.** Scoped paged list with enable/disable actions for resident memberships. Admin accounts have no role-change or deactivation control here.
+**the deferred phase · UC-02 · S2-T2.** Scoped paged list with enable/disable actions for resident memberships. Admin accounts have no role-change or deactivation control here.
 
 [Interactive](mockups/index.html?screen=S-05&role=admin) · [Desktop PNG](mockups/images/s-05-desktop.png) · [Mobile PNG](mockups/images/s-05-mobile.png)
 

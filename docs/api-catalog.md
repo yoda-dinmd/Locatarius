@@ -1,5 +1,7 @@
 # API contract
 
+**Scheduling update (16 September):** [the current internship backlog](internship-backlog.md) takes precedence over former Sprint 2/3 scheduling below. “Sprint 1” identifies the authentication scope carried through the remaining internship; account lists/access management and profile editing are deferred. Full-product screens and contracts are future scope unless required by current tasks.
+
 Base path `/api`. JSON is camelCase. UUIDs are canonical hyphenated strings, timestamps UTC ISO 8601 (`2026-09-09T16:00:00Z`). Routes below are the entire application API scope; initial association/admin setup and recovery are operator commands. [Validation](sprint-1.md) and [authorization order](shared-patterns.md) apply to every route.
 
 ## Error envelope
@@ -49,7 +51,7 @@ Successful requests return 200 or 201. Client and authorization errors use 400, 
 
 ## Phase 1 routes
 
-Sprint 1 delivers login, logout, CSRF, read-only identity, forced password change and account creation. Sprint 2 adds profile editing, account lists/details and activation/deactivation. Both sprints use the contracts below. Task route/authentication alignment is recorded in the [internship backlog](internship-backlog.md#contract-alignment).
+Sprint 1 delivers login, logout, CSRF, read-only identity, forced password change and account creation. the deferred phase adds profile editing, account lists/details and activation/deactivation. Both phases use the contracts below. Task route/authentication alignment is recorded in the [internship backlog](internship-backlog.md#contract-alignment).
 
 `A` abbreviates `/api/associations/{associationId}` in tables only. API URLs must contain the full prefix. No public registration route exists.
 

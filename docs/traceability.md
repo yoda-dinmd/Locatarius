@@ -1,5 +1,7 @@
 # Requirement-to-evidence traceability
 
+**Scheduling update (16 September):** [the current internship backlog](internship-backlog.md) takes precedence over former Sprint 2/3 scheduling below. “Sprint 1” identifies the authentication scope carried through the remaining internship; account lists/access management and profile editing are deferred. Full-product screens and contracts are future scope unless required by current tasks.
+
 Implementation and evidence items below are **planned / not verified**. For each completed item, record the commit, test command, execution date, observed result and evidence link. Documentation validation and application security testing are separate checks.
 
 ## Product contract
@@ -9,8 +11,8 @@ Implementation and evidence items below are **planned / not verified**. For each
 | Secure login/session/logout | Sprint 1 #62 and #64 / [UC-01](use-cases/UC-01.md) | Sign in, selector / auth routes | users, sessions, memberships, associations | S1-62-01–11 |
 | Admin creates residents | Sprint 1 #63 / [UC-02](use-cases/UC-02.md) | Users / scoped users routes | users, memberships, roles | S1-63-01–05 |
 | Registered user authenticates and accesses permitted pages | Sprint 1 #64 / [UC-01](use-cases/UC-01.md) | Login, protected routes / auth me/logout | users, sessions, memberships | S1-64-01–08 |
-| Admin lists and controls resident access | Sprint 2 S2-US1 / [UC-02](use-cases/UC-02.md) | Users / scoped users routes | users, memberships | S2-ADM-01–04 |
-| Own profile/password management | Sprint 2 S2-US2 / [UC-03](use-cases/UC-03.md) | Profile / auth me/password | users, sessions | S2-PRO-01–04 |
+| Admin lists and controls resident access | the deferred phase S2-US1 / [UC-02](use-cases/UC-02.md) | Users / scoped users routes | users, memberships | S2-ADM-01–04 |
+| Own profile/password management | the deferred phase S2-US2 / [UC-03](use-cases/UC-03.md) | Profile / auth me/password | users, sessions | S2-PRO-01–04 |
 | Building/unit register and current assignments | [UC-04](use-cases/UC-04.md) | Register, My units / buildings, units, residents | buildings, units, unit_memberships | P2-04-01–04 |
 | Private ticket reporting | [UC-05](use-cases/UC-05.md) | Tickets / tickets list/create/detail | tickets, unit_memberships, memberships | P2-05-01–04 |
 | Private discussion and resolution | [UC-06](use-cases/UC-06.md) | Ticket detail / comments, status | tickets, comments, memberships | P2-06-01–04 |

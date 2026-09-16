@@ -12,7 +12,7 @@ The university guidelines define assessment requirements. Domain research provid
 | **Solutii Existente.pdf**, dated 4 Sep 2026 | Existing-solution comparison as background to the project's motivation | Competitor features are not university requirements and are not a parity backlog; claims are not re-verified |
 | **Locatarius_Epic_66_Authentication_User_Management_2026-09-09_18-58.pdf** (epic export) | Confirms epic #66 name, Sprint 1, date range 7–11 Sep 2026 | Single page; does not include #62/#63/#64 descriptions or acceptance criteria |
 
-**OpenProject_Work_packages_2026-09-0920260909-926-jqavya.xls** supplies the descriptions and relations for epic #66, stories #62–#64 and tasks #73–#86. The relation export has 34 data rows representing 18 unique work packages. All story/task descriptions are populated; the epic description is empty. All statuses are New and assignee fields are empty. This establishes the recorded requirements, not actual code progress. See the [description review](internship-backlog.md#work-package-description-review).
+The [latest OpenProject CSV snapshot](openproject/README.md) supplies the current recorded task descriptions and statuses. It includes 22 work packages, including #87–#90 and reopened #73 (In progress). It supersedes the September 9 export for task context. The updated export records the revised internship scope in #66 and deferral wording in #63/#64/#83, as summarized in the [internship backlog](internship-backlog.md). Status fields do not establish verified implementation.
 
 ## Technical references
 

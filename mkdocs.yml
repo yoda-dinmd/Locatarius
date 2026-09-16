@@ -49,12 +49,13 @@ nav:
       - Product and screens: solution-design.md
       - Two-phase roadmap: mvp-roadmap.md
       - Internship backlog: internship-backlog.md
+      - Deferred backlog: deferred-backlog.md
       - OpenProject snapshots: openproject/README.md
       - Stories and use cases: use-case-catalog.md
       - Decisions: decisions.md
   - Implementation:
       - Screen mockups: frontend-mockups.md
-      - Sprint 1 acceptance: sprint-1.md
+      - Internship acceptance: sprint-1.md
       - Database: data-model.md
       - API contract: api-catalog.md
       - Shared rules: shared-patterns.md

@@ -11,7 +11,7 @@ Documentation checks cover navigation, links, schema consistency and diagram syn
 | Diagrams | Parse all nine Mermaid diagrams: seven sequences, one architecture diagram and one entity-relationship diagram |
 | Links | Check local page/file targets and section anchors in the generated site |
 | Schema | Confirm that the ten-table SQL file matches the DDL displayed on the database page |
-| Acceptance coverage | Check 24 unique Sprint 1 case IDs, eight Sprint 2 account-management case IDs and 16 phase 2 case IDs |
+| Acceptance coverage | Check 24 unique Sprint 1 case IDs, eight deferred account-management case IDs and 16 phase 2 case IDs |
 | Formatting | Run `git diff --check` |
 
 ## Local setup
