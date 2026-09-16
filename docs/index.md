@@ -5,7 +5,7 @@ A third-year TUM **Development of Secure Applications (PBL)** project for five s
 ## Start here
 
 1. [Scope and screens](solution-design.md): what the finished application does.
-2. [Sprint 1 acceptance criteria](sprint-1.md): implement and test #62, #63 and #64.
+2. [Internship acceptance criteria](sprint-1.md): implement and test #62, #63 and #64.
 3. [Database](data-model.md): ten exact application tables and executable PostgreSQL DDL.
 4. [API contract](api-catalog.md): routes, payloads, status codes and error bodies.
 5. [Use cases and user stories](use-case-catalog.md): seven detailed workflows.
@@ -20,7 +20,7 @@ A third-year TUM **Development of Secure Applications (PBL)** project for five s
 
 ## Scope boundary
 
-**September:** users sign in and out, manage their profile and change their password. Administrators create resident accounts and enable or disable association access. Tests use two associations to verify data isolation.
+**Remaining internship:** finish #62–#64 and tasks #73–#90: sign-in/out, resident creation, first-login password change, authorization, database follow-ups and verification. Account lists, access-management features and profile editing are deferred until after the internship. Association-isolation requirements remain in scope.
 
 **By December:** administrators maintain buildings, apartments and current resident assignments. Residents submit private tickets and exchange comments with administrators. Security work includes multi-factor authentication (MFA), provider sign-in using OAuth 2.0/OpenID Connect (OIDC), and assessment evidence.
 
@@ -28,4 +28,4 @@ A third-year TUM **Development of Secure Applications (PBL)** project for five s
 
 ## Using this specification
 
-Use the API contract and shared rules when implementing the acceptance criteria. Record implementation progress and test evidence in [traceability](traceability.md). [Internship backlog](internship-backlog.md) maps the three authentication stories to task descriptions and Sprint 2/3 work.
+Use the API contract and shared rules when implementing the acceptance criteria. Record implementation progress and test evidence in [traceability](traceability.md). [Internship backlog](internship-backlog.md) defines the current commitment and links the deferred backlog.

@@ -1,5 +1,7 @@
 # Product scope and architecture
 
+**Scheduling update (16 September):** [the current internship backlog](internship-backlog.md) takes precedence over former Sprint 2/3 scheduling below. “Sprint 1” identifies the authentication scope carried through the remaining internship; account lists/access management and profile editing are deferred. Full-product screens and contracts are future scope unless required by current tasks.
+
 ## Purpose and actors
 
 Locatarius lets an association administrator manage resident access and a basic building register. A resident reports a private building problem and discusses it with the administrator. Security is the primary assessment outcome; breadth of condominium administration is not.

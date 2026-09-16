@@ -2,9 +2,9 @@
 
 A security-focused building management application for a five-student, third-year TUM Development of Secure Applications PBL project.
 
-**Target stack: .NET 10, PostgreSQL 18, React.** September delivers secure authentication and basic user management. October–December adds a small building/apartment register, private tickets/comments and the remaining university security controls.
+**Target stack: .NET 10, PostgreSQL 18, React.** The remaining September internship focuses on the original authentication and resident-creation tasks (#62–#64, #73–#90); further account-management features are deferred. October–December adds a small building/apartment register, private tickets/comments and the remaining university security controls.
 
-Start with the [documentation guide](docs/index.md), [Sprint 1 acceptance criteria](docs/sprint-1.md), [exact database schema](docs/data-model.md) and [two-phase roadmap](docs/mvp-roadmap.md). The [seven use cases](docs/use-case-catalog.md) retain detailed stories and flows. [Security evidence and incident response](docs/operations-and-testing.md) explain how the work is assessed.
+Start with the [documentation guide](docs/index.md), [Internship acceptance criteria](docs/sprint-1.md), [exact database schema](docs/data-model.md) and [two-phase roadmap](docs/mvp-roadmap.md). The [seven use cases](docs/use-case-catalog.md) retain detailed stories and flows. [Security evidence and incident response](docs/operations-and-testing.md) explain how the work is assessed.
 
 The application covers accounts, association access, a building/apartment register and private tickets. See the [scope boundary](docs/mvp-roadmap.md#out-of-scope) for excluded features.
 
