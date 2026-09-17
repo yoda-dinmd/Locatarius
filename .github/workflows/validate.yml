@@ -38,6 +38,8 @@ jobs:
             printf 'SeedAdmin__Password=%s\n' 'ChangeMe123!'
             printf 'SeedAdmin__FirstName=%s\n' 'Admin'
             printf 'SeedAdmin__LastName=%s\n' 'User'
+            printf 'SeedDemoData__Enabled=%s\n' 'true'
+            printf 'SeedDemoData__Password=%s\n' "$(openssl rand -hex 32)"
           } > .env
       - name: Build and smoke-test containers
         run: |
