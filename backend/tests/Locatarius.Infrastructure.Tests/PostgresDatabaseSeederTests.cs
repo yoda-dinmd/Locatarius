@@ -12,8 +12,7 @@ public sealed class PostgresDatabaseSeederTests
     : IAsyncLifetime
 {
     private readonly PostgreSqlContainer container =
-        new PostgreSqlBuilder()
-            .WithImage("postgres:18-alpine")
+        new PostgreSqlBuilder("postgres:18-alpine")
             .WithDatabase("locatarius_test")
             .WithUsername("locatarius_test")
             .WithPassword("locatarius_test_password")
