@@ -13,6 +13,7 @@ builder.Services.AddDbContext<LocatariusDbContext>(options =>
 
 builder.Services.AddSingleton<PasswordHasher>();
 builder.Services.AddScoped<DatabaseSeeder>();
+builder.Services.AddScoped<DemoDataSeeder>();
 
 var app = builder.Build();
 
@@ -27,6 +28,11 @@ await using (var scope = app.Services.CreateAsyncScope())
         .GetRequiredService<DatabaseSeeder>();
 
     await seeder.SeedAsync();
+
+    var demoDataSeeder = scope.ServiceProvider
+        .GetRequiredService<DemoDataSeeder>();
+
+    await demoDataSeeder.SeedAsync();
 }
 
 if (app.Environment.IsDevelopment())
