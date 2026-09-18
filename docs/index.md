@@ -6,7 +6,7 @@ A third-year TUM **Development of Secure Applications (PBL)** project for five s
 
 1. [Scope and screens](solution-design.md): what the finished application does.
 2. [Internship acceptance criteria](sprint-1.md): implement and test #62, #63 and #64.
-3. [Database](data-model.md): ten exact application tables and executable PostgreSQL DDL.
+3. [Database](data-model.md): eleven implemented application tables and migration-generated PostgreSQL DDL.
 4. [API contract](api-catalog.md): routes, payloads, status codes and error bodies.
 5. [Use cases and user stories](use-case-catalog.md): seven detailed workflows.
 6. [Two-phase roadmap](mvp-roadmap.md): September foundation, October–December extension.

@@ -39,8 +39,8 @@ endpoints must integrate this operation after authentication and authorization.
 The current global-role model still lacks #73's association memberships and active
 account state. #83's protected-request integration and #87's password-change flow
 remain dependencies; these changes do not mark the entire authentication story done.
-`schema.sql` is restored as the existing documented schema reference so links build;
-reconciling it with EF migrations and the required model remains #89 work.
+`schema.sql` is generated from the current EF migrations; the [database reference](data-model.md)
+documents regeneration and explicitly records the remaining required-model gaps.
 
 ## Verification
 
