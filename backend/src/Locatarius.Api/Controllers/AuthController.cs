@@ -19,10 +19,15 @@ public sealed class AuthController(
     private const long MaxBodyBytes = 16 * 1024;
 
     [HttpGet("csrf")]
-    public IActionResult GetCsrfToken()
+    public async Task<IActionResult> GetCsrfToken(CancellationToken cancellationToken)
     {
         Response.Headers.CacheControl = "no-store";
         var tokens = antiforgery.GetAndStoreTokens(HttpContext);
+        var lookup = await authenticationService.ResolveSessionAsync(
+            Request.Cookies[SessionCookieOptions.CookieName], cancellationToken);
+        if (lookup.IsValid)
+            await authenticationService.RecordAcceptedActivityAsync(
+                lookup.Session!.SessionId, cancellationToken);
         return Ok(new { token = tokens.RequestToken });
     }
 
@@ -135,17 +140,24 @@ public sealed class AuthController(
             return (null, ApiErrors.PayloadTooLarge());
         }
 
-        Request.EnableBuffering();
-        using var reader = new StreamReader(Request.Body, Encoding.UTF8, leaveOpen: true);
-        var body = await reader.ReadToEndAsync(ct);
-        Request.Body.Position = 0;
-
-        if (Encoding.UTF8.GetByteCount(body) > MaxBodyBytes)
+        // Read at most the limit plus one byte, including chunked requests.
+        var bytes = new byte[MaxBodyBytes + 1];
+        var total = 0;
+        while (total < bytes.Length)
         {
-            return (null, ApiErrors.PayloadTooLarge());
+            var read = await Request.Body.ReadAsync(bytes.AsMemory(total), ct);
+            if (read == 0) break;
+            total += read;
         }
-
-        return (body, null);
+        if (total > MaxBodyBytes) return (null, ApiErrors.PayloadTooLarge());
+        try
+        {
+            return (new UTF8Encoding(false, true).GetString(bytes, 0, total), null);
+        }
+        catch (DecoderFallbackException)
+        {
+            return (null, ApiErrors.InvalidRequest());
+        }
     }
 
     private static bool TryParseLoginBody(
@@ -188,7 +200,7 @@ public sealed class AuthController(
 
             if (document.RootElement.TryGetProperty("email", out var emailElement))
             {
-                if (emailElement.ValueKind != JsonValueKind.String)
+                if (emailElement.ValueKind is not (JsonValueKind.String or JsonValueKind.Null))
                 {
                     error = ApiErrors.InvalidRequest();
                     return false;
@@ -198,7 +210,7 @@ public sealed class AuthController(
 
             if (document.RootElement.TryGetProperty("password", out var passwordElement))
             {
-                if (passwordElement.ValueKind != JsonValueKind.String)
+                if (passwordElement.ValueKind is not (JsonValueKind.String or JsonValueKind.Null))
                 {
                     error = ApiErrors.InvalidRequest();
                     return false;

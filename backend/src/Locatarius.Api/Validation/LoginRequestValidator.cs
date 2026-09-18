@@ -37,6 +37,11 @@ public static class LoginRequestValidator
 
     private static string? ValidateEmail(string? raw, Dictionary<string, List<string>> fields)
     {
+        if (raw is not null && raw.Any(c => c > 127))
+        {
+            Add(fields, "email", "Enter a valid email address.");
+            return null;
+        }
         var lowered = (raw ?? string.Empty).Trim(' ').ToLowerInvariant();
 
         if (lowered.Length == 0)
