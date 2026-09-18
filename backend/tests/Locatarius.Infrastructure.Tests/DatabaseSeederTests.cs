@@ -192,6 +192,7 @@ public sealed class DatabaseSeederTests
 
     [Theory]
     [InlineData("not-an-email")]
+    [InlineData("K@example.test")]
     [InlineData("a@localhost")]
     [InlineData("a..b@example.md")]
     public async Task SeedAsync_RejectsMalformedEmail(
@@ -259,6 +260,17 @@ public sealed class DatabaseSeederTests
 
         Assert.Equal(originalHash, currentHash);
         Assert.Equal(1, await context.Users.CountAsync());
+    }
+
+    [Theory]
+    [InlineData("\tAdmin")]
+    [InlineData("Admin\n")]
+    public async Task SeedAsync_RejectsControlCharactersAtNameEdges(string name)
+    {
+        await using var context = CreateContext();
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            CreateSeeder(context, firstName: name).SeedAsync());
+        Assert.Empty(context.Users);
     }
 
     private static LocatariusDbContext CreateContext()

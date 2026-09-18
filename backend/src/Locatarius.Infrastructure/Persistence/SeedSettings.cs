@@ -26,6 +26,12 @@ internal static class SeedSettings
                 $"{settingName} is required.");
         }
 
+        // Reject non-ASCII before case folding (e.g. Kelvin sign must not become k).
+        if (email.Any(character => character > 0x7F))
+        {
+            throw new InvalidOperationException($"{settingName} is invalid.");
+        }
+
         var normalized = TrimAsciiSpaces(email).ToLowerInvariant();
 
         if (normalized.Length == 0)
@@ -75,7 +81,7 @@ internal static class SeedSettings
         string settingName,
         string? name)
     {
-        var trimmed = name?.Trim();
+        var trimmed = name?.Trim(' ');
 
         if (string.IsNullOrEmpty(trimmed))
         {
@@ -83,7 +89,7 @@ internal static class SeedSettings
                 $"{settingName} is required.");
         }
 
-        if (ContainsControlCharacter(trimmed))
+        if (HasUnpairedSurrogate(trimmed) || ContainsControlCharacter(trimmed))
         {
             throw new InvalidOperationException(
                 $"{settingName} must not contain control characters.");
