@@ -31,12 +31,6 @@ builder.Services.AddOptions<ForwardedHeadersOptions>()
         }
     });
 
-builder.Services.AddDbContext<LocatariusDbContext>(options =>
-    options.UseNpgsql(
-        builder.Configuration.GetConnectionString("DefaultConnection")));
-
-builder.Services.AddSingleton<PasswordHasher>();
-builder.Services.AddScoped<DatabaseSeeder>();
 builder.Services.AddScoped<AuthenticationService>();
 
 builder.Services.AddAntiforgery(options =>
@@ -87,6 +81,13 @@ builder.Services.AddRateLimiter(options =>
         await context.HttpContext.Response.WriteAsync(payload, cancellationToken);
     };
 });
+
+builder.Services.AddDbContext<LocatariusDbContext>(options =>
+    options.UseNpgsql(
+        builder.Configuration.GetConnectionString("DefaultConnection")));
+
+builder.Services.AddSingleton<PasswordHasher>();
+builder.Services.AddScoped<DatabaseSeeder>();
 
 var app = builder.Build();
 
