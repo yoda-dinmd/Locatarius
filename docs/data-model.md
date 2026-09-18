@@ -1,164 +1,128 @@
-# Exact final PostgreSQL schema
+# Implemented PostgreSQL schema
 
-The complete application database has **10 tables**. [schema.sql](schema.sql) is the authoritative executable DDL: it lists every column, data type, default, nullability, primary/foreign key, uniqueness rule and index. No ORM-created extra business tables are intended. EF's migration bookkeeping table is infrastructure only.
+EF Core migrations in `backend/src/Locatarius.Infrastructure/Persistence/Migrations/`
+are the executable schema source of truth. Entity configurations and the model
+snapshot describe the current .NET mapping. [schema.sql](schema.sql) is generated
+from the two committed migrations, through `20260917091807_AddSessionsAndLoginLockout`,
+using EF Core 10.0.0. It contains **11 application tables**, plus
+`__EFMigrationsHistory`. It is not the previously proposed association-based schema.
 
-| Table | Primary key | Purpose / foreign keys |
+## Tables and relationships
+
+All application primary keys are UUIDs without database-generated defaults.
+Dependent contact, credential and role rows use their user's UUID as both PK and FK.
+The generated SQL lists every column, SQL type, nullability, default, constraint
+name and index; it is linked rather than duplicated here.
+
+| Table / .NET entity | Primary key | Columns other than the primary key |
 | --- | --- | --- |
-| `users` | `id uuid` | Global login/profile; password hash, optional single OIDC identity and MFA configuration |
-| `associations` | `id uuid` | Independent association name |
-| `roles` | `id smallint` | Exactly `1=admin`, `2=resident` |
-| `memberships` | `(association_id, user_id)` | FKs to association, user and role; current access via `is_active` |
-| `sessions` | `token_hash bytea` | FK to user; hashed random session token and expiry; restricted authentication steps |
-| `buildings` | `id uuid` | FK to association; name/address |
-| `units` | `id uuid` | Composite FK to building within association; unit number and optional floor |
-| `unit_memberships` | `(association_id, unit_id, user_id)` | Composite FKs to unit and membership; current assignments only |
-| `tickets` | `id uuid` | Composite FKs to unit and reporter membership within association |
-| `comments` | `id uuid` | Composite FKs to ticket and author membership within association |
-
-## Relationships
+| `users` / User | `user_id` | `first_name`, `last_name`, nullable `date_of_birth`, nullable `apartment_id` |
+| `user_contacts` / UserContact | `user_id` | `phone_number` (unique) |
+| `user_credentials` / UserCredential | `user_id` | `email` (unique), `password_hash`, `must_change_password`, nullable `password_changed_at`, `failed_login_attempts`, nullable `locked_until` |
+| `user_role` / UserRole | `user_id` | `role` |
+| `otp_codes` / OtpCode | `otp_id` | `user_id`, `code_hash`, `purpose`, `expires_at`, nullable `used_at`, `attempts`, `created_at` |
+| `address` / Address | `address_id` | `locality`, `district`, `street` |
+| `buildings` / Building | `building_id` | `admin_id`, `building_nr`, `number_of_floors`, `address_id` |
+| `apartments` / Apartment | `apartment_id` | `building_id`, `apartment_nr`, `floor` |
+| `issues` / Issue | `issue_id` | `reported_by`, `building_id`, `title`, `description`, `status`, `priority`, `created_at`, nullable `updated_at`, nullable `resolved_at` |
+| `issue_attachments` / IssueAttachment | `attachment_id` | `issue_id`, `uploaded_by`, `file_url`, `file_type`, `created_at` |
+| `sessions` / Session | `session_id` | `user_id`, `token_hash` (unique), `session_type`, `created_at`, `expires_at`, nullable `last_seen_at`, nullable `revoked_at` |
 
 ```mermaid
 erDiagram
-    users ||--o{ memberships : joins
-    associations ||--o{ memberships : contains
-    roles ||--o{ memberships : grants
-    users ||--o{ sessions : authenticates
-    associations ||--o{ buildings : contains
-    buildings ||--o{ units : contains
-    units ||--o{ unit_memberships : assigned
-    memberships ||--o{ unit_memberships : receives
-    units ||--o{ tickets : concerns
-    memberships ||--o{ tickets : reports
-    tickets ||--o{ comments : contains
-    memberships ||--o{ comments : authors
+    users ||--o| user_contacts : contact
+    users ||--o| user_credentials : credentials
+    users ||--o| user_role : global_role
+    users ||--o{ otp_codes : codes
+    users ||--o{ sessions : sessions
+    users ||--o{ buildings : administers
+    address ||--o{ buildings : locates
+    buildings ||--o{ apartments : contains
+    apartments o|--o{ users : houses
+    buildings ||--o{ issues : concerns
+    users ||--o{ issues : reports
+    issues ||--o{ issue_attachments : attachments
+    users ||--o{ issue_attachments : uploads
 ```
 
-`association_id` is repeated in child keys deliberately so PostgreSQL rejects relationships crossing association boundaries. No lists of role names, resident IDs or comments are stored in a column. A user can have multiple current unit assignments; changing an assignment inserts/deletes a join row. Assignments accept active members with either role, including an admin who lives in the building. The existing `unit_memberships` foreign key references the association membership independently of its role; no extra role, account or schema column is needed. Ticket visibility uses reporter identity, not current assignment.
+Deleting a user cascades to contact, credentials, role, OTP codes and sessions.
+Buildings referencing an admin, issues referencing a reporter, and attachments
+referencing an uploader restrict user deletion. Building-to-address,
+apartment-to-building and issue-to-building relationships also use `RESTRICT`.
+Deleting an issue cascades to its attachments. Deleting an apartment sets its
+residents' `users.apartment_id` to null.
 
-## Phase allocation and story coverage
+Unique indexes cover email, phone number, session token hash and
+`(building_id, apartment_nr)`. Other indexes cover foreign keys, with
+`otp_codes(user_id, purpose)` indexing OTP lookup. Email normalization is an
+application rule; the database unique index does not enforce lowercase/trimmed
+email. These migrations define no CHECK constraints for enum ranges, lockout
+counters or session lifetime rules.
 
-**Phase 1:** `users`, `associations`, `roles`, `memberships`, `sessions`. #62 verifies `password_hash`, creates a session, reads current memberships; #63 atomically creates a resident user and membership; #64 uses the shared login flow, reads the caller’s identity/memberships and enforces role boundaries. Profile editing is deferred until after the internship. No unit prerequisite.
+Timestamps use `timestamp with time zone`; date of birth uses `date`. Creation
+timestamps default to `CURRENT_TIMESTAMP` on OTP codes, issues, attachments and
+sessions. `must_change_password` defaults to true; OTP attempts and failed login
+attempts default to zero. Other application columns have no SQL default.
+Session digests are hex-encoded SHA-256 in `varchar(64)`, not `bytea` primary keys.
+The API stores password hashes separately in `user_credentials.password_hash`.
 
-**Phase 2:** add the five register/ticket tables and enable user MFA/OIDC fields and restricted session kinds. The final DDL includes all of them now to define the complete application data model. `oidc_issuer` + `oidc_subject` identify one pre-linked external account; email is never used for automatic linking. Provider-owned internal databases are outside the application's schema. No access/refresh tokens are stored here.
+Enums are stored as PostgreSQL integers, not PostgreSQL enum types:
 
-## Integrity versus authorization
+| Column | .NET values |
+| --- | --- |
+| `user_role.role` | Resident=1, Admin=2 |
+| `otp_codes.purpose` | PasswordReset=1, EmailVerification=2, LoginVerification=3 |
+| `issues.status` | Open=1, InProgress=2, Resolved=3 |
+| `issues.priority` | Low=1, Medium=2, High=3, Critical=4 |
+| `sessions.session_type` | Full=1, PasswordChange=2 |
 
-DDL enforces same-association references and unique records. API checks enforce active membership, role, ticket ownership and assignment before inserts/reads. A FK alone does not authorize a caller. Global users are never listed outside a scoped membership query. `ON DELETE RESTRICT` preserves ticket authorship; disable accounts/memberships instead of deleting them. Removing a unit assignment is permitted because historical tickets do not reference that assignment.
+## Regenerate the SQL
 
-The API generates cryptographically random UUIDs. Timestamps are UTC `timestamptz`; creation/session timestamps do not implement property history. Update membership and authorization-sensitive writes in transactions locking the relevant membership row: revocation waits for already-authorized writes; no write beginning after revocation commits may succeed. Lock the assignment row during ticket creation. Catch only known uniqueness/FK failures and map them to the API contract.
+With .NET 10 installed, install a matching EF CLI once (or use an existing 10.0.0
+installation):
 
-`password_hash` contains the framework's salted/versioned hash. MFA secret ciphertext uses ASP.NET Data Protection with keys outside the database. Session tokens are random 32-byte values; only their SHA-256 digest is stored. High-entropy token hashing does not replace slow password hashing.
-
-The executable DDL is a specification artifact, not a migration already applied to a database. See [validation](validation.md) for actual checks and [security](operations-and-testing.md) for required integration tests.
-
-## Full DDL
-
-This block matches the downloadable [schema.sql](schema.sql). Apply through reviewed migrations; do not run it against an existing populated database.
-
-```sql
--- Locatarius final application schema, PostgreSQL 18.
--- Run once against an empty database. IDs are supplied by the application.
-BEGIN;
-CREATE TABLE users (
-    id uuid PRIMARY KEY,
-    email varchar(254) NOT NULL UNIQUE,
-    display_name varchar(100) NOT NULL CHECK (char_length(btrim(display_name)) BETWEEN 1 AND 100),
-    password_hash text NOT NULL,
-    must_change_password boolean NOT NULL DEFAULT true,
-    is_active boolean NOT NULL DEFAULT true,
-    failed_login_count integer NOT NULL DEFAULT 0 CHECK (failed_login_count >= 0),
-    locked_until timestamptz,
-    oidc_issuer text,
-    oidc_subject text,
-    mfa_secret_ciphertext text,
-    mfa_enabled boolean NOT NULL DEFAULT false,
-    mfa_last_used_step bigint,
-    created_at timestamptz NOT NULL DEFAULT now(),
-    CHECK (email = lower(btrim(email))),
-    CHECK ((oidc_issuer IS NULL) = (oidc_subject IS NULL)),
-    CHECK (NOT mfa_enabled OR mfa_secret_ciphertext IS NOT NULL),
-    UNIQUE (oidc_issuer, oidc_subject)
-);
-CREATE TABLE associations (
-    id uuid PRIMARY KEY,
-    name varchar(100) NOT NULL CHECK (char_length(btrim(name)) BETWEEN 1 AND 100)
-);
-CREATE TABLE roles (
-    id smallint PRIMARY KEY,
-    name varchar(20) NOT NULL UNIQUE,
-    CHECK ((id = 1 AND name = 'admin') OR (id = 2 AND name = 'resident'))
-);
-INSERT INTO roles (id, name) VALUES (1, 'admin'), (2, 'resident');
-CREATE TABLE memberships (
-    association_id uuid NOT NULL REFERENCES associations(id) ON DELETE RESTRICT,
-    user_id uuid NOT NULL REFERENCES users(id) ON DELETE RESTRICT,
-    role_id smallint NOT NULL REFERENCES roles(id) ON DELETE RESTRICT,
-    is_active boolean NOT NULL DEFAULT true,
-    PRIMARY KEY (association_id, user_id)
-);
-CREATE INDEX memberships_user_idx ON memberships(user_id);
-CREATE TABLE sessions (
-    token_hash bytea PRIMARY KEY CHECK (octet_length(token_hash) = 32),
-    user_id uuid NOT NULL REFERENCES users(id) ON DELETE RESTRICT,
-    kind varchar(20) NOT NULL CHECK (kind IN ('full', 'password_change', 'mfa_setup', 'mfa_challenge')),
-    created_at timestamptz NOT NULL DEFAULT now(),
-    last_seen_at timestamptz NOT NULL DEFAULT now(),
-    expires_at timestamptz NOT NULL,
-    CHECK (expires_at > created_at),
-    CHECK (last_seen_at >= created_at)
-);
-CREATE INDEX sessions_user_idx ON sessions(user_id);
-CREATE TABLE buildings (
-    id uuid PRIMARY KEY,
-    association_id uuid NOT NULL REFERENCES associations(id) ON DELETE RESTRICT,
-    name varchar(100) NOT NULL CHECK (char_length(btrim(name)) BETWEEN 1 AND 100),
-    address varchar(200) NOT NULL CHECK (char_length(btrim(address)) BETWEEN 1 AND 200),
-    UNIQUE (association_id, id)
-);
-CREATE TABLE units (
-    id uuid PRIMARY KEY,
-    association_id uuid NOT NULL,
-    building_id uuid NOT NULL,
-    number varchar(20) NOT NULL CHECK (char_length(btrim(number)) BETWEEN 1 AND 20),
-    floor smallint CHECK (floor BETWEEN -5 AND 200),
-    FOREIGN KEY (association_id, building_id) REFERENCES buildings(association_id, id) ON DELETE RESTRICT,
-    UNIQUE (association_id, id),
-    UNIQUE (building_id, number)
-);
-CREATE TABLE unit_memberships (
-    association_id uuid NOT NULL,
-    unit_id uuid NOT NULL,
-    user_id uuid NOT NULL,
-    PRIMARY KEY (association_id, unit_id, user_id),
-    FOREIGN KEY (association_id, unit_id) REFERENCES units(association_id, id) ON DELETE RESTRICT,
-    FOREIGN KEY (association_id, user_id) REFERENCES memberships(association_id, user_id) ON DELETE RESTRICT
-);
-CREATE INDEX unit_memberships_user_idx ON unit_memberships(association_id, user_id);
-CREATE TABLE tickets (
-    id uuid PRIMARY KEY,
-    association_id uuid NOT NULL,
-    unit_id uuid NOT NULL,
-    reporter_user_id uuid NOT NULL,
-    title varchar(120) NOT NULL CHECK (char_length(btrim(title)) BETWEEN 5 AND 120),
-    description varchar(2000) NOT NULL CHECK (char_length(btrim(description)) BETWEEN 10 AND 2000),
-    status varchar(20) NOT NULL DEFAULT 'open' CHECK (status IN ('open', 'in_progress', 'resolved')),
-    created_at timestamptz NOT NULL DEFAULT now(),
-    FOREIGN KEY (association_id, unit_id) REFERENCES units(association_id, id) ON DELETE RESTRICT,
-    FOREIGN KEY (association_id, reporter_user_id) REFERENCES memberships(association_id, user_id) ON DELETE RESTRICT,
-    UNIQUE (association_id, id)
-);
-CREATE INDEX tickets_reporter_idx ON tickets(association_id, reporter_user_id, created_at, id);
-CREATE INDEX tickets_queue_idx ON tickets(association_id, created_at, id);
-CREATE TABLE comments (
-    id uuid PRIMARY KEY,
-    association_id uuid NOT NULL,
-    ticket_id uuid NOT NULL,
-    author_user_id uuid NOT NULL,
-    body varchar(2000) NOT NULL CHECK (char_length(btrim(body)) BETWEEN 1 AND 2000),
-    created_at timestamptz NOT NULL DEFAULT now(),
-    FOREIGN KEY (association_id, ticket_id) REFERENCES tickets(association_id, id) ON DELETE RESTRICT,
-    FOREIGN KEY (association_id, author_user_id) REFERENCES memberships(association_id, user_id) ON DELETE RESTRICT
-);
-CREATE INDEX comments_ticket_idx ON comments(association_id, ticket_id, created_at, id);
-COMMIT;
+```sh
+dotnet tool install --global dotnet-ef --version 10.0.0
 ```
+
+From the repository root:
+
+```sh
+dotnet ef migrations has-pending-model-changes \
+  --project backend/src/Locatarius.Infrastructure \
+  --startup-project backend/src/Locatarius.Api \
+  --context LocatariusDbContext
+
+dotnet ef migrations script 0 20260917091807_AddSessionsAndLoginLockout \
+  --project backend/src/Locatarius.Infrastructure \
+  --startup-project backend/src/Locatarius.Api \
+  --context LocatariusDbContext \
+  --output docs/schema.sql
+
+# Normalize the generated BOM/trailing blank line for repository formatting.
+python3 -c "from pathlib import Path; p=Path('docs/schema.sql'); p.write_text(p.read_text(encoding='utf-8-sig').rstrip()+'\n')"
+```
+
+After adding migrations, update the ending migration above and regenerate the
+file. Do not hand-edit generated SQL. Generation needs no live database or seed
+password. The script initializes an **empty database once**, including EF migration
+history; it is not an idempotent upgrade script for an existing database and does
+not seed application accounts. Use reviewed EF migration updates for existing data.
+
+The API currently applies migrations and seeds the administrator on startup using
+`ConnectionStrings__DefaultConnection` and `SeedAdmin__Email`, `SeedAdmin__Password`,
+`SeedAdmin__FirstName`, `SeedAdmin__LastName`. Daniel's #90 branch owns validation,
+repeat-startup guarantees and optional demo fixtures. Migration SQL contains no
+seed credentials. See [backend integration](backend-auth-integration.md) and
+[operations](operations-and-testing.md) for the remaining runtime/deployment work.
+
+## Outstanding requirements
+
+#73 still requires associations, association-scoped memberships and their seed
+fixtures. This schema has a single global role per user, a single optional apartment
+reference, and no account/membership active flag. It has no OIDC/MFA user fields,
+unit-membership join table or comments table. Those requirements remain outstanding;
+documenting the implementation does not remove them or prove tenant isolation.
+
+This update aligns the SQL and its database reference with the current migrations.
+It does not mark all of #89 or the authentication/deployment work complete.

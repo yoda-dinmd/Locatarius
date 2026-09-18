@@ -21,11 +21,9 @@ public sealed class UserCredentialConfiguration
             .HasMaxLength(254)
             .IsRequired();
 
-        builder.HasIndex(credential => credential.Email)
-            .IsUnique();
-
         builder.Property(credential => credential.PasswordHash)
             .HasColumnName("password_hash")
+            .HasColumnType("text")
             .IsRequired();
 
         builder.Property(credential => credential.MustChangePassword)
@@ -35,6 +33,19 @@ public sealed class UserCredentialConfiguration
 
         builder.Property(credential => credential.PasswordChangedAt)
             .HasColumnName("password_changed_at");
+
+        builder.Property(credential => credential.FailedLoginAttempts)
+            .HasColumnName("failed_login_attempts")
+            .HasDefaultValue(0)
+            .IsConcurrencyToken()
+            .IsRequired();
+
+        builder.Property(credential => credential.LockedUntil)
+            .HasColumnName("locked_until")
+            .IsConcurrencyToken();
+
+        builder.HasIndex(credential => credential.Email)
+            .IsUnique();
 
         builder.HasOne(credential => credential.User)
             .WithOne(user => user.Credential)

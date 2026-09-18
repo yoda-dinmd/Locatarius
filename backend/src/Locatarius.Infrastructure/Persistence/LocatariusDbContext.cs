@@ -21,6 +21,7 @@ public sealed class LocatariusDbContext : DbContext
     public DbSet<Apartment> Apartments => Set<Apartment>();
     public DbSet<Issue> Issues => Set<Issue>();
     public DbSet<IssueAttachment> IssueAttachments => Set<IssueAttachment>();
+    public DbSet<Session> Sessions => Set<Session>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

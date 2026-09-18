@@ -10,7 +10,7 @@ Documentation checks cover navigation, links, schema consistency and diagram syn
 | Navigation | Include every page and display UC-01 through UC-07 in the use-case sidebar labels |
 | Diagrams | Parse all nine Mermaid diagrams: seven sequences, one architecture diagram and one entity-relationship diagram |
 | Links | Check local page/file targets and section anchors in the generated site |
-| Schema | Confirm that the ten-table SQL file matches the DDL displayed on the database page |
+| Schema | Regenerate schema.sql from EF migrations and compare its PostgreSQL schema with a freshly migrated database |
 | Acceptance coverage | Check 24 unique Sprint 1 case IDs, eight deferred account-management case IDs and 16 phase 2 case IDs |
 | Formatting | Run `git diff --check` |
 
@@ -35,4 +35,14 @@ Use commas or separate messages inside sequence labels. Mermaid treats a literal
 
 ## Application verification
 
-PostgreSQL 18 migration execution and application acceptance tests remain unverified. Record implementation results in [traceability](traceability.md), including authentication, authorization, MFA/OIDC, encryption and backup restoration. Documentation validation does not establish production readiness.
+On 18 September 2026, the SQL generated through
+`20260917091807_AddSessionsAndLoginLockout` was applied to an empty PostgreSQL 18
+database and compared with a second database initialized using `dotnet ef database
+update`. Schema-only dumps (excluding PostgreSQL dump guard tokens) and both EF
+migration-history rows matched. EF reported no pending model changes, and the
+strict MkDocs build passed. The disposable databases were removed afterward.
+
+This verifies the current SQL artifact, not association isolation or a complete
+application acceptance run. Record broader results in [traceability](traceability.md),
+including authorization, MFA/OIDC, encryption and backup restoration. Documentation
+validation does not establish production readiness.
