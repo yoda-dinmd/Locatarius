@@ -1,4 +1,6 @@
+using System.Net;
 using System.Text.Json;
+using Microsoft.AspNetCore.HttpOverrides;
 using System.Threading.RateLimiting;
 using Locatarius.Infrastructure;
 using Locatarius.Infrastructure.Auth;
@@ -12,6 +14,22 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddOpenApi();
 builder.Services.AddHealthChecks();
 builder.Services.AddControllers();
+builder.Services.AddSingleton(TimeProvider.System);
+builder.Services.AddOptions<ForwardedHeadersOptions>()
+    .Configure<IConfiguration>((options, configuration) =>
+    {
+        options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+        options.ForwardLimit = 1;
+        var value = configuration["Proxy:TrustedProxy"];
+        if (!string.IsNullOrWhiteSpace(value))
+        {
+            if (!IPAddress.TryParse(value, out var address))
+                throw new InvalidOperationException("Proxy:TrustedProxy must be one IP address.");
+            options.KnownIPNetworks.Clear();
+            options.KnownProxies.Clear();
+            options.KnownProxies.Add(address);
+        }
+    });
 
 builder.Services.AddDbContext<LocatariusDbContext>(options =>
     options.UseNpgsql(
@@ -72,6 +90,11 @@ builder.Services.AddRateLimiter(options =>
 
 var app = builder.Build();
 
+// Without an explicitly configured proxy, ignore all forwarded headers.
+// DevOps supplies Proxy__TrustedProxy after assigning nginx's Docker address.
+if (!string.IsNullOrWhiteSpace(app.Configuration["Proxy:TrustedProxy"]))
+    app.UseForwardedHeaders();
+
 // Safety net: never leak exception details through the /api contract.
 app.Use(async (context, next) =>
 {
@@ -119,16 +142,11 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
-app.UseWhen(
-    context => !context.Request.Path.Equals("/health/live"),
-    branch =>
-    {
-        branch.UseHttpsRedirection();
-    });
-
 app.UseRateLimiter();
 
 app.MapHealthChecks("/health/live");
 app.MapControllers();
 
 app.Run();
+
+public partial class Program { }
