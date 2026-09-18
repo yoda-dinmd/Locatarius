@@ -27,6 +27,59 @@ curl --fail http://localhost:8080/health/live
 docker compose down
 ```
 
+The backend applies EF Core migrations and seeds one administrator plus the
+development demo dataset during startup. Keep the seed credentials in the
+ignored `.env` file:
+
+```dotenv
+POSTGRES_PASSWORD=replace-with-a-local-password
+SeedAdmin__Email=admin@locatarius.md
+SeedAdmin__Password=replace-with-a-local-admin-password
+SeedAdmin__FirstName=Ion
+SeedAdmin__LastName=Popescu
+SeedDemoData__Enabled=true
+SeedDemoData__Password=replace-with-a-local-demo-password
+```
+
+`SeedAdmin__Password` and `SeedDemoData__Password` must follow the
+creation-password rules (15–128 characters, no control characters). Invalid
+non-empty values fail startup with an actionable error and do not write secrets
+to logs. Demo residents are seeded with temporary credentials that require a
+first-login password change. Restarting against an existing database does not
+overwrite an existing administrator password.
+
+Start the database and backend with:
+
+```bash
+docker compose up --build --wait
+```
+
+To recreate the development database from scratch, run:
+
+```bash
+docker compose down -v
+docker compose up --build --wait
+```
+
+Start PostgreSQL, migrations, and the administrator without demo data:
+
+```bash
+SeedDemoData__Enabled=false docker compose up --build --wait
+```
+
+The three seeding configurations behave as follows:
+
+| Configuration | Expected result |
+|---|---|
+| `SeedDemoData__Enabled=false`, no demo password | Starts successfully; only the administrator is seeded |
+| `SeedDemoData__Enabled=true`, password provided | Starts successfully; administrator and demo data are seeded |
+| `SeedDemoData__Enabled=true`, no password | Startup fails with `SeedDemoData:Password is required when demo seeding is enabled.` |
+
+The expected demo dataset contains 8 users, 8 credentials, 8 roles, 8
+contacts, 2 addresses, 2 buildings, 7 apartments, 3 issues, 2 attachments
+and 1 expired OTP record. Restarting the backend must not increase these
+counts.
+
 Compose runs .NET 10 and PostgreSQL 18, with ports bound to localhost. Set `BACKEND_PORT` or `POSTGRES_PORT` in `.env` if the defaults (8080/5432) are occupied. Build the API alone with `docker build -t locatarius-api ./backend`.
 
 The database uses the `pgdata18` volume mounted at `/var/lib/postgresql`, following the [PostgreSQL 18 image layout](https://hub.docker.com/_/postgres). `docker compose down` preserves it. An older `pgdata` volume is left untouched; migrate PostgreSQL 16 data using a tested dump/restore instead of attaching it to PostgreSQL 18. Changing `.env` does not change the password of an already initialized database.

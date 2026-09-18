@@ -3,6 +3,7 @@ using Locatarius.Domain.Enums;
 using Locatarius.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+
 namespace Locatarius.Infrastructure.Persistence;
 
 public sealed class DatabaseSeeder(
@@ -15,45 +16,56 @@ public sealed class DatabaseSeeder(
     {
         var settings = configuration.GetSection("SeedAdmin");
 
-        var email = settings["Email"]?
-            .Trim()
-            .ToLowerInvariant();
+        var email = SeedSettings.RequireNormalizedEmail(
+            "SeedAdmin:Email",
+            settings["Email"]);
 
-        var password = settings["Password"];
-        var firstName = settings["FirstName"]?.Trim();
-        var lastName = settings["LastName"]?.Trim();
+        var password = SeedSettings.RequireCreationPassword(
+            "SeedAdmin:Password",
+            settings["Password"]);
 
-        if (string.IsNullOrWhiteSpace(email))
-        {
-            throw new InvalidOperationException(
-                "SeedAdmin:Email is required.");
-        }
+        var firstName = SeedSettings.RequireName(
+            "SeedAdmin:FirstName",
+            settings["FirstName"]);
 
-        if (string.IsNullOrWhiteSpace(password))
-        {
-            throw new InvalidOperationException(
-                "SeedAdmin:Password is required.");
-        }
-
-        if (string.IsNullOrWhiteSpace(firstName))
-        {
-            throw new InvalidOperationException(
-                "SeedAdmin:FirstName is required.");
-        }
-
-        if (string.IsNullOrWhiteSpace(lastName))
-        {
-            throw new InvalidOperationException(
-                "SeedAdmin:LastName is required.");
-        }
+        var lastName = SeedSettings.RequireName(
+            "SeedAdmin:LastName",
+            settings["LastName"]);
 
         var existingCredential = await dbContext.UserCredentials
+            .Include(credential => credential.User)
+            .ThenInclude(user => user.Role)
             .SingleOrDefaultAsync(
                 credential => credential.Email == email,
                 cancellationToken);
 
         if (existingCredential is not null)
         {
+            if (existingCredential.User is null)
+            {
+                throw new InvalidOperationException(
+                    "The configured administrator credential has no user record.");
+            }
+
+            if (existingCredential.User.Role is null)
+            {
+                throw new InvalidOperationException(
+                    "The configured administrator account has no role record.");
+            }
+
+            if (existingCredential.User.Role.Role != UserRoleType.Admin)
+            {
+                throw new InvalidOperationException(
+                    "The configured administrator email belongs to a non-admin account.");
+            }
+
+            if (string.IsNullOrWhiteSpace(
+                    existingCredential.PasswordHash))
+            {
+                throw new InvalidOperationException(
+                    "The configured administrator account has incomplete credentials.");
+            }
+
             return;
         }
 
@@ -71,6 +83,10 @@ public sealed class DatabaseSeeder(
             Role = new UserRole
             {
                 Role = UserRoleType.Admin
+            },
+            Contact = new UserContact
+            {
+                PhoneNumber = "+37369100000"
             }
         };
 
