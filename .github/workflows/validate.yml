@@ -29,13 +29,27 @@ jobs:
         with:
           dotnet-version: '10.0.x'
       - run: dotnet build backend/Locatarius.slnx --configuration Release --warnaserror
+      - name: Run tests
+        run: >
+          dotnet test backend/Locatarius.slnx
+          --configuration Release
+          --no-build
+          --logger "trx;LogFileName=backend-tests.trx"
+          --results-directory TestResults
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-test-results
+          path: TestResults
+          if-no-files-found: ignore
       - name: Configure disposable database
         run: |
           umask 077
           {
             printf 'POSTGRES_PASSWORD=%s\n' "$(openssl rand -hex 32)"
             printf 'SeedAdmin__Email=%s\n' 'admin@example.com'
-            printf 'SeedAdmin__Password=%s\n' 'ChangeMe123!'
+            printf 'SeedAdmin__Password=%s\n' 'ChangeMe1234567!'
             printf 'SeedAdmin__FirstName=%s\n' 'Admin'
             printf 'SeedAdmin__LastName=%s\n' 'User'
           } > .env
