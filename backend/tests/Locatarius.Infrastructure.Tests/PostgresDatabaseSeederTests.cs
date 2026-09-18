@@ -50,7 +50,7 @@ public sealed class PostgresDatabaseSeederTests
         Assert.True(
             new PasswordHasher().VerifyPassword(
                 credential.PasswordHash,
-                "Admin123!"));
+                SeedTestCredentials.AdminPassword));
     }
 
     [Fact]
@@ -70,7 +70,7 @@ public sealed class PostgresDatabaseSeederTests
 
         await using var secondContext = CreateContext();
 
-        await CreateAdminSeeder(secondContext, "Different123!")
+        await CreateAdminSeeder(secondContext, SeedTestCredentials.AlternateAdminPassword)
             .SeedAsync();
 
         Assert.Equal(1, await secondContext.Users.CountAsync());
@@ -95,7 +95,7 @@ public sealed class PostgresDatabaseSeederTests
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
                 ["SeedAdmin:Email"] = "admin@locatarius.md",
-                ["SeedAdmin:Password"] = "SuperSecretPassword123!",
+                ["SeedAdmin:Password"] = SeedTestCredentials.SecretPassword,
                 ["SeedAdmin:FirstName"] = "Ion",
                 ["SeedAdmin:LastName"] = null
             })
@@ -111,8 +111,46 @@ public sealed class PostgresDatabaseSeederTests
 
         Assert.Contains("SeedAdmin:LastName", exception.Message);
         Assert.DoesNotContain(
-            "SuperSecretPassword123!",
+            SeedTestCredentials.SecretPassword,
             exception.Message);
+        Assert.Equal(0, await context.Users.CountAsync());
+    }
+
+    [Fact]
+    public async Task MalformedEmail_ReturnsActionableErrorWithoutSecrets()
+    {
+        await ResetDatabaseAsync();
+
+        await using var context = CreateContext();
+
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => CreateAdminSeeder(
+                context,
+                email: "not-an-email").SeedAsync());
+
+        Assert.Contains("SeedAdmin:Email", exception.Message);
+        Assert.DoesNotContain("not-an-email", exception.Message);
+        Assert.DoesNotContain(
+            SeedTestCredentials.AdminPassword,
+            exception.Message);
+        Assert.Equal(0, await context.Users.CountAsync());
+    }
+
+    [Fact]
+    public async Task OneCharacterPassword_ReturnsActionableErrorWithoutSecrets()
+    {
+        await ResetDatabaseAsync();
+
+        await using var context = CreateContext();
+
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => CreateAdminSeeder(context, password: "x").SeedAsync());
+
+        Assert.Contains("SeedAdmin:Password", exception.Message);
+        Assert.DoesNotContain(
+            SeedTestCredentials.AdminPassword,
+            exception.Message);
+        Assert.Equal(0, await context.Users.CountAsync());
     }
 
     [Fact]
@@ -131,7 +169,7 @@ public sealed class PostgresDatabaseSeederTests
             {
                 Email = "admin@locatarius.md",
                 PasswordHash = new PasswordHasher()
-                    .HashPassword("Existing123!"),
+                    .HashPassword(SeedTestCredentials.ExistingPassword),
                 MustChangePassword = false
             },
             Role = new UserRole
@@ -205,6 +243,10 @@ public sealed class PostgresDatabaseSeederTests
         Assert.Equal(3, await context.Issues.CountAsync());
         Assert.Equal(2, await context.IssueAttachments.CountAsync());
         Assert.Equal(1, await context.OtpCodes.CountAsync());
+
+        Assert.All(
+            await context.UserCredentials.ToListAsync(),
+            credential => Assert.True(credential.MustChangePassword));
     }
 
     [Fact]
@@ -250,12 +292,13 @@ public sealed class PostgresDatabaseSeederTests
 
     private static DatabaseSeeder CreateAdminSeeder(
         LocatariusDbContext context,
-        string password = "Admin123!")
+        string password = SeedTestCredentials.AdminPassword,
+        string email = "ADMIN@LOCATARIUS.MD")
     {
         var configuration = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
-                ["SeedAdmin:Email"] = "ADMIN@LOCATARIUS.MD",
+                ["SeedAdmin:Email"] = email,
                 ["SeedAdmin:Password"] = password,
                 ["SeedAdmin:FirstName"] = "Ion",
                 ["SeedAdmin:LastName"] = "Popescu"
@@ -276,7 +319,7 @@ public sealed class PostgresDatabaseSeederTests
             {
                 ["SeedAdmin:Email"] = "admin@locatarius.md",
                 ["SeedDemoData:Enabled"] = "true",
-                ["SeedDemoData:Password"] = "Demo123!"
+                ["SeedDemoData:Password"] = SeedTestCredentials.DemoPassword
             })
             .Build();
 

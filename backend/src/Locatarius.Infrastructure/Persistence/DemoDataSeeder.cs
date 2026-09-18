@@ -72,23 +72,13 @@ public sealed class DemoDataSeeder(
             return;
         }
 
-        var password = configuration["SeedDemoData:Password"];
+        var password = SeedSettings.RequireCreationPassword(
+            "SeedDemoData:Password",
+            configuration["SeedDemoData:Password"]);
 
-        if (string.IsNullOrWhiteSpace(password))
-        {
-            throw new InvalidOperationException(
-                "SeedDemoData:Password is required when demo seeding is enabled.");
-        }
-
-        var adminEmail = configuration["SeedAdmin:Email"]?
-            .Trim()
-            .ToLowerInvariant();
-
-        if (string.IsNullOrWhiteSpace(adminEmail))
-        {
-            throw new InvalidOperationException(
-                "SeedAdmin:Email is required before demo data is seeded.");
-        }
+        var adminEmail = SeedSettings.RequireNormalizedEmail(
+            "SeedAdmin:Email",
+            configuration["SeedAdmin:Email"]);
 
         var adminCredential = await dbContext.UserCredentials
             .SingleOrDefaultAsync(
@@ -395,7 +385,7 @@ public sealed class DemoDataSeeder(
             {
                 Email = email,
                 PasswordHash = passwordHasher.HashPassword(password),
-                MustChangePassword = false
+                MustChangePassword = true
             },
             Role = new UserRole
             {

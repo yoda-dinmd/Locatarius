@@ -41,6 +41,13 @@ SeedDemoData__Enabled=true
 SeedDemoData__Password=replace-with-a-local-demo-password
 ```
 
+`SeedAdmin__Password` and `SeedDemoData__Password` must follow the
+creation-password rules (15–128 characters, no control characters). Invalid
+non-empty values fail startup with an actionable error and do not write secrets
+to logs. Demo residents are seeded with temporary credentials that require a
+first-login password change. Restarting against an existing database does not
+overwrite an existing administrator password.
+
 Start the database and backend with:
 
 ```bash

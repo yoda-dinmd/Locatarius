@@ -16,7 +16,7 @@ public sealed class DatabaseSeederTests
         await CreateSeeder(
             context,
             email: " ADMIN@LOCATARIUS.MD ",
-            password: "Admin123!").SeedAsync();
+            password: SeedTestCredentials.AdminPassword).SeedAsync();
 
         var user = await context.Users.SingleAsync();
         var credential = await context.UserCredentials.SingleAsync();
@@ -30,14 +30,14 @@ public sealed class DatabaseSeederTests
         Assert.True(
             new PasswordHasher().VerifyPassword(
                 credential.PasswordHash,
-                "Admin123!"));
+                SeedTestCredentials.AdminPassword));
     }
 
     [Fact]
     public async Task SeedAsync_DoesNotCreateDuplicates()
     {
         await using var context = CreateContext();
-        var seeder = CreateSeeder(context, password: "Admin123!");
+        var seeder = CreateSeeder(context, password: SeedTestCredentials.AdminPassword);
 
         await seeder.SeedAsync();
         await seeder.SeedAsync();
@@ -52,7 +52,7 @@ public sealed class DatabaseSeederTests
     {
         await using var context = CreateContext();
 
-        await CreateSeeder(context, password: "Admin123!").SeedAsync();
+        await CreateSeeder(context, password: SeedTestCredentials.AdminPassword).SeedAsync();
 
         var originalHash = await context.UserCredentials
             .Select(credential => credential.PasswordHash)
@@ -60,7 +60,7 @@ public sealed class DatabaseSeederTests
 
         await CreateSeeder(
             context,
-            password: "DifferentPassword123!").SeedAsync();
+            password: SeedTestCredentials.AlternateAdminPassword).SeedAsync();
 
         var currentHash = await context.UserCredentials
             .Select(credential => credential.PasswordHash)
@@ -83,7 +83,7 @@ public sealed class DatabaseSeederTests
             {
                 Email = "admin@locatarius.md",
                 PasswordHash = new PasswordHasher()
-                    .HashPassword("Existing123!"),
+                    .HashPassword(SeedTestCredentials.ExistingPassword),
                 MustChangePassword = false
             },
             Role = new UserRole
@@ -98,10 +98,10 @@ public sealed class DatabaseSeederTests
         var exception = await Assert.ThrowsAsync<InvalidOperationException>(
             () => CreateSeeder(
                 context,
-                password: "Admin123!").SeedAsync());
+                password: SeedTestCredentials.AdminPassword).SeedAsync());
 
         Assert.Contains("non-admin", exception.Message);
-        Assert.DoesNotContain("Admin123!", exception.Message);
+        Assert.DoesNotContain(SeedTestCredentials.AdminPassword, exception.Message);
 
         Assert.Equal(
             UserRoleType.Resident,
@@ -167,10 +167,10 @@ public sealed class DatabaseSeederTests
     }
 
     [Theory]
-    [InlineData(null, "Admin123!", "Admin", "User")]
+    [InlineData(null, SeedTestCredentials.AdminPassword, "Admin", "User")]
     [InlineData("admin@locatarius.md", null, "Admin", "User")]
-    [InlineData("admin@locatarius.md", "Admin123!", null, "User")]
-    [InlineData("admin@locatarius.md", "Admin123!", "Admin", null)]
+    [InlineData("admin@locatarius.md", SeedTestCredentials.AdminPassword, null, "User")]
+    [InlineData("admin@locatarius.md", SeedTestCredentials.AdminPassword, "Admin", null)]
     public async Task SeedAsync_RejectsMissingConfiguration(
         string? email,
         string? password,
@@ -187,7 +187,78 @@ public sealed class DatabaseSeederTests
                 firstName,
                 lastName).SeedAsync());
 
-        Assert.DoesNotContain("Admin123!", exception.Message);
+        Assert.DoesNotContain(SeedTestCredentials.AdminPassword, exception.Message);
+    }
+
+    [Theory]
+    [InlineData("not-an-email")]
+    [InlineData("a@localhost")]
+    [InlineData("a..b@example.md")]
+    public async Task SeedAsync_RejectsMalformedEmail(
+        string email)
+    {
+        await using var context = CreateContext();
+
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => CreateSeeder(context, email: email).SeedAsync());
+
+        Assert.Contains("SeedAdmin:Email", exception.Message);
+        Assert.DoesNotContain(email, exception.Message);
+        Assert.DoesNotContain(SeedTestCredentials.AdminPassword, exception.Message);
+        Assert.Equal(0, await context.Users.CountAsync());
+    }
+
+    [Fact]
+    public async Task SeedAsync_RejectsOneCharacterPassword()
+    {
+        await using var context = CreateContext();
+
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => CreateSeeder(context, password: "x").SeedAsync());
+
+        Assert.Contains("SeedAdmin:Password", exception.Message);
+        Assert.DoesNotContain("x", exception.Message);
+        Assert.Equal(0, await context.Users.CountAsync());
+    }
+
+    [Fact]
+    public async Task SeedAsync_RejectsNameLongerThanModelLimit()
+    {
+        await using var context = CreateContext();
+        var tooLongName = new string('A', 101);
+
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => CreateSeeder(
+                context,
+                firstName: tooLongName).SeedAsync());
+
+        Assert.Contains("SeedAdmin:FirstName", exception.Message);
+        Assert.DoesNotContain(tooLongName, exception.Message);
+        Assert.Equal(0, await context.Users.CountAsync());
+    }
+
+    [Fact]
+    public async Task SeedAsync_RejectsInvalidPasswordWithoutChangingExistingHash()
+    {
+        await using var context = CreateContext();
+
+        await CreateSeeder(context).SeedAsync();
+
+        var originalHash = await context.UserCredentials
+            .Select(credential => credential.PasswordHash)
+            .SingleAsync();
+
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => CreateSeeder(context, password: "x").SeedAsync());
+
+        Assert.Contains("SeedAdmin:Password", exception.Message);
+
+        var currentHash = await context.UserCredentials
+            .Select(credential => credential.PasswordHash)
+            .SingleAsync();
+
+        Assert.Equal(originalHash, currentHash);
+        Assert.Equal(1, await context.Users.CountAsync());
     }
 
     private static LocatariusDbContext CreateContext()
@@ -202,7 +273,7 @@ public sealed class DatabaseSeederTests
     private static DatabaseSeeder CreateSeeder(
         LocatariusDbContext context,
         string? email = "ADMIN@LOCATARIUS.MD",
-        string? password = "Admin123!",
+        string? password = SeedTestCredentials.AdminPassword,
         string? firstName = "Admin",
         string? lastName = "User")
     {

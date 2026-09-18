@@ -37,6 +37,10 @@ public sealed class DemoDataSeederTests
             7,
             await context.UserRoles.CountAsync(
                 role => role.Role == UserRoleType.Resident));
+
+        Assert.All(
+            await context.UserCredentials.ToListAsync(),
+            credential => Assert.True(credential.MustChangePassword));
     }
 
     [Fact]
@@ -133,6 +137,34 @@ public sealed class DemoDataSeederTests
         Assert.Contains("SeedDemoData:Password", exception.Message);
     }
 
+    [Fact]
+    public async Task SeedAsync_RejectsOneCharacterDemoPassword()
+    {
+        await using var context = CreateContext();
+
+        await CreateAdminSeeder(context).SeedAsync();
+
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["SeedDemoData:Enabled"] = "true",
+                ["SeedDemoData:Password"] = "x",
+                ["SeedAdmin:Email"] = "admin@locatarius.md"
+            })
+            .Build();
+
+        var seeder = new DemoDataSeeder(
+            context,
+            configuration,
+            new PasswordHasher());
+
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => seeder.SeedAsync());
+
+        Assert.Contains("SeedDemoData:Password", exception.Message);
+        Assert.Equal(1, await context.Users.CountAsync());
+    }
+
     private static LocatariusDbContext CreateContext()
     {
         var options = new DbContextOptionsBuilder<LocatariusDbContext>()
@@ -149,7 +181,7 @@ public sealed class DemoDataSeederTests
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
                 ["SeedAdmin:Email"] = "admin@locatarius.md",
-                ["SeedAdmin:Password"] = "Admin123!",
+                ["SeedAdmin:Password"] = SeedTestCredentials.AdminPassword,
                 ["SeedAdmin:FirstName"] = "Ion",
                 ["SeedAdmin:LastName"] = "Popescu"
             })
@@ -168,7 +200,7 @@ public sealed class DemoDataSeederTests
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
                 ["SeedDemoData:Enabled"] = "true",
-                ["SeedDemoData:Password"] = "Demo123!",
+                ["SeedDemoData:Password"] = SeedTestCredentials.DemoPassword,
                 ["SeedAdmin:Email"] = "admin@locatarius.md"
             })
             .Build();

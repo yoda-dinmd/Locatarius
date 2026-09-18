@@ -16,37 +16,21 @@ public sealed class DatabaseSeeder(
     {
         var settings = configuration.GetSection("SeedAdmin");
 
-        var email = settings["Email"]?
-            .Trim()
-            .ToLowerInvariant();
+        var email = SeedSettings.RequireNormalizedEmail(
+            "SeedAdmin:Email",
+            settings["Email"]);
 
-        var password = settings["Password"];
-        var firstName = settings["FirstName"]?.Trim();
-        var lastName = settings["LastName"]?.Trim();
+        var password = SeedSettings.RequireCreationPassword(
+            "SeedAdmin:Password",
+            settings["Password"]);
 
-        if (string.IsNullOrWhiteSpace(email))
-        {
-            throw new InvalidOperationException(
-                "SeedAdmin:Email is required.");
-        }
+        var firstName = SeedSettings.RequireName(
+            "SeedAdmin:FirstName",
+            settings["FirstName"]);
 
-        if (string.IsNullOrWhiteSpace(password))
-        {
-            throw new InvalidOperationException(
-                "SeedAdmin:Password is required.");
-        }
-
-        if (string.IsNullOrWhiteSpace(firstName))
-        {
-            throw new InvalidOperationException(
-                "SeedAdmin:FirstName is required.");
-        }
-
-        if (string.IsNullOrWhiteSpace(lastName))
-        {
-            throw new InvalidOperationException(
-                "SeedAdmin:LastName is required.");
-        }
+        var lastName = SeedSettings.RequireName(
+            "SeedAdmin:LastName",
+            settings["LastName"]);
 
         var existingCredential = await dbContext.UserCredentials
             .Include(credential => credential.User)
