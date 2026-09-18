@@ -1,0 +1,38 @@
+.google-button {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 0.6rem;
+	width: 100%;
+	height: 43px;
+	margin-top: 1rem;
+	border: 1px solid #cfe1e4;
+	border-radius: 9px;
+	color: #164950;
+	background: transparent;
+	font-size: 0.82rem;
+	font-weight: 700;
+}
+
+.google-button:hover {
+	background: #f0faf7;
+}
+
+.google-button:disabled {
+	cursor: not-allowed;
+	opacity: 0.7;
+}
+
+.google-icon {
+	width: 20px;
+	height: 20px;
+	object-fit: contain;
+}
+
+.support-copy {
+	margin-top: 2rem;
+	color: #4c8790;
+	font-size: 0.73rem;
+	line-height: 1.7;
+	text-align: center;
+}
