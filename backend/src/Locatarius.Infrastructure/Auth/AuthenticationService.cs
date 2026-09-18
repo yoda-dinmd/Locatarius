@@ -34,14 +34,15 @@ public sealed class SessionLookup
 
 public sealed class AuthenticationService(
     LocatariusDbContext dbContext,
-    PasswordHasher passwordHasher)
+    PasswordHasher passwordHasher,
+    TimeProvider? timeProvider = null)
 {
     private static readonly TimeSpan LockoutDuration = TimeSpan.FromMinutes(15);
     private static readonly TimeSpan FullSessionIdleTimeout = TimeSpan.FromMinutes(30);
     private static readonly TimeSpan FullSessionAbsoluteTimeout = TimeSpan.FromHours(8);
     private static readonly TimeSpan RestrictedSessionAbsoluteTimeout = TimeSpan.FromMinutes(5);
     private const int MaxFailedAttempts = 5;
-    private const int MaxConcurrencyRetries = 5;
+    private TimeProvider Clock => timeProvider ?? TimeProvider.System;
 
     // Computed once so unknown-email/locked-account paths still pay a
     // comparable hashing cost to a real verification attempt.
@@ -53,12 +54,31 @@ public sealed class AuthenticationService(
         string password,
         CancellationToken cancellationToken)
     {
-        var credential = await dbContext.UserCredentials
-            .Include(c => c.User)
-            .ThenInclude(u => u!.Role)
-            .SingleOrDefaultAsync(c => c.Email == canonicalEmail, cancellationToken);
+        // All auth-sensitive writes must lock user, then credential, then sessions.
+        // InMemory is used by sequential unit tests only; concurrency tests use PostgreSQL.
+        await using var transaction = dbContext.Database.IsRelational()
+            ? await dbContext.Database.BeginTransactionAsync(cancellationToken)
+            : null;
+        if (dbContext.Database.IsRelational())
+        {
+            await dbContext.Users.FromSqlInterpolated($"""
+                SELECT u.* FROM users AS u
+                JOIN user_credentials AS c ON c.user_id = u.user_id
+                WHERE c.email = {canonicalEmail} FOR UPDATE OF u
+                """).AsNoTracking().ToListAsync(cancellationToken);
+        }
 
-        var now = DateTimeOffset.UtcNow;
+        var credential = dbContext.Database.IsRelational()
+            ? await dbContext.UserCredentials.FromSqlInterpolated($"""
+                SELECT * FROM user_credentials WHERE email = {canonicalEmail} FOR UPDATE
+                """).SingleOrDefaultAsync(cancellationToken)
+            : await dbContext.UserCredentials.SingleOrDefaultAsync(
+                c => c.Email == canonicalEmail, cancellationToken);
+        // Never make a security decision using an entity tracked before the lock.
+        if (credential is not null && dbContext.Database.IsRelational())
+            await dbContext.Entry(credential).ReloadAsync(cancellationToken);
+
+        var now = Clock.GetUtcNow();
 
         if (credential is null)
         {
@@ -74,18 +94,24 @@ public sealed class AuthenticationService(
 
         if (credential.LockedUntil is { } expiredLock && expiredLock <= now)
         {
-            await ResetFailedAttemptsAsync(credential, cancellationToken);
+            credential.FailedLoginAttempts = 0;
+            credential.LockedUntil = null;
         }
 
         var passwordValid = passwordHasher.VerifyPassword(credential.PasswordHash, password);
 
         if (!passwordValid)
         {
-            await RecordFailedAttemptAsync(credential, now, cancellationToken);
+            credential.FailedLoginAttempts++;
+            if (credential.FailedLoginAttempts >= MaxFailedAttempts)
+                credential.LockedUntil = now.Add(LockoutDuration);
+            await dbContext.SaveChangesAsync(cancellationToken);
+            if (transaction is not null) await transaction.CommitAsync(cancellationToken);
             return new LoginOutcome(LoginResultStatus.InvalidCredentials, null, null, null);
         }
 
-        await ResetFailedAttemptsAsync(credential, cancellationToken);
+        credential.FailedLoginAttempts = 0;
+        credential.LockedUntil = null;
 
         var sessionType = credential.MustChangePassword
             ? SessionType.PasswordChange
@@ -113,6 +139,8 @@ public sealed class AuthenticationService(
         dbContext.Sessions.Add(session);
         await dbContext.SaveChangesAsync(cancellationToken);
 
+        if (transaction is not null) await transaction.CommitAsync(cancellationToken);
+
         var nextStep = sessionType == SessionType.Full ? "app" : "change_password";
 
         return new LoginOutcome(LoginResultStatus.Success, nextStep, rawToken, sessionType);
@@ -136,7 +164,7 @@ public sealed class AuthenticationService(
             return SessionLookup.Invalid;
         }
 
-        var now = DateTimeOffset.UtcNow;
+        var now = Clock.GetUtcNow();
 
         if (session.ExpiresAt <= now)
         {
@@ -144,8 +172,8 @@ public sealed class AuthenticationService(
         }
 
         if (session.SessionType == SessionType.Full
-            && session.LastSeenAt is { } lastSeen
-            && now - lastSeen > FullSessionIdleTimeout)
+            && (session.LastSeenAt is not { } lastSeen
+                || now - lastSeen >= FullSessionIdleTimeout))
         {
             return SessionLookup.Invalid;
         }
@@ -160,69 +188,28 @@ public sealed class AuthenticationService(
     }
 
     /// <summary>
-    /// Increments the failure counter and applies the lockout window once the
-    /// threshold is hit. FailedLoginAttempts/LockedUntil are configured as
-    /// concurrency tokens, so a concurrent writer that already touched this
-    /// row causes SaveChangesAsync to throw DbUpdateConcurrencyException
-    /// instead of silently losing an increment; we reload the current DB
-    /// values and reapply on top of them.
+    /// Call only after an accepted authenticated request. Does not resurrect
+    /// revoked/expired sessions or slide restricted sessions. #83's protected
+    /// request pipeline must call this after its authentication/authorization checks.
     /// </summary>
-    private async Task RecordFailedAttemptAsync(
-        UserCredential credential, DateTimeOffset now, CancellationToken ct)
+    public async Task<bool> RecordAcceptedActivityAsync(Guid sessionId, CancellationToken ct)
     {
-        for (var attempt = 0; attempt < MaxConcurrencyRetries; attempt++)
+        var now = Clock.GetUtcNow();
+        var cutoff = now.Subtract(FullSessionIdleTimeout);
+        var active = dbContext.Sessions.Where(s => s.SessionId == sessionId
+            && s.SessionType == SessionType.Full && s.RevokedAt == null
+            && s.ExpiresAt > now && s.LastSeenAt > cutoff);
+        if (dbContext.Database.IsRelational())
         {
-            credential.FailedLoginAttempts += 1;
-
-            if (credential.FailedLoginAttempts >= MaxFailedAttempts)
-            {
-                credential.LockedUntil = now.Add(LockoutDuration);
-            }
-
-            try
-            {
-                await dbContext.SaveChangesAsync(ct);
-                return;
-            }
-            catch (DbUpdateConcurrencyException ex)
-            {
-                await ReloadFromDatabaseAsync(ex, ct);
-            }
+            // A concurrent later request must not have its timestamp moved backwards.
+            var updated = await active.Where(s => s.LastSeenAt <= now)
+                .ExecuteUpdateAsync(setters => setters.SetProperty(s => s.LastSeenAt, now), ct);
+            return updated != 0 || await active.AnyAsync(ct);
         }
-
-        throw new InvalidOperationException(
-            "Could not persist failed login attempt after retrying on concurrent writes.");
-    }
-
-    private async Task ResetFailedAttemptsAsync(
-        UserCredential credential, CancellationToken ct)
-    {
-        for (var attempt = 0; attempt < MaxConcurrencyRetries; attempt++)
-        {
-            credential.FailedLoginAttempts = 0;
-            credential.LockedUntil = null;
-
-            try
-            {
-                await dbContext.SaveChangesAsync(ct);
-                return;
-            }
-            catch (DbUpdateConcurrencyException ex)
-            {
-                await ReloadFromDatabaseAsync(ex, ct);
-            }
-        }
-
-        throw new InvalidOperationException(
-            "Could not reset failed login attempts after retrying on concurrent writes.");
-    }
-
-    private static async Task ReloadFromDatabaseAsync(
-        DbUpdateConcurrencyException ex, CancellationToken ct)
-    {
-        foreach (var entry in ex.Entries)
-        {
-            await entry.ReloadAsync(ct);
-        }
+        var session = await active.SingleOrDefaultAsync(ct);
+        if (session is null) return false;
+        if (session.LastSeenAt < now) session.LastSeenAt = now;
+        await dbContext.SaveChangesAsync(ct);
+        return true;
     }
 }
