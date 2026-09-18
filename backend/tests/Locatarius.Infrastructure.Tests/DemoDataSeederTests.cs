@@ -92,7 +92,6 @@ public sealed class DemoDataSeederTests
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
                 ["SeedDemoData:Enabled"] = "false",
-                ["SeedDemoData:Password"] = "Demo123!",
                 ["SeedAdmin:Email"] = "admin@locatarius.md"
             })
             .Build();

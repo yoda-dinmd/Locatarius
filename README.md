@@ -54,6 +54,20 @@ docker compose down -v
 docker compose up --build --wait
 ```
 
+Start PostgreSQL, migrations, and the administrator without demo data:
+
+```bash
+SeedDemoData__Enabled=false docker compose up --build --wait
+```
+
+The three seeding configurations behave as follows:
+
+| Configuration | Expected result |
+|---|---|
+| `SeedDemoData__Enabled=false`, no demo password | Starts successfully; only the administrator is seeded |
+| `SeedDemoData__Enabled=true`, password provided | Starts successfully; administrator and demo data are seeded |
+| `SeedDemoData__Enabled=true`, no password | Startup fails with `SeedDemoData:Password is required when demo seeding is enabled.` |
+
 The expected demo dataset contains 8 users, 8 credentials, 8 roles, 8
 contacts, 2 addresses, 2 buildings, 7 apartments, 3 issues, 2 attachments
 and 1 expired OTP record. Restarting the backend must not increase these

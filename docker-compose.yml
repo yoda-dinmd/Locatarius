@@ -29,8 +29,8 @@ services:
       SeedAdmin__Password: ${SeedAdmin__Password:?Set SeedAdmin__Password}
       SeedAdmin__FirstName: ${SeedAdmin__FirstName:?Set SeedAdmin__FirstName}
       SeedAdmin__LastName: ${SeedAdmin__LastName:?Set SeedAdmin__LastName}
-      SeedDemoData__Enabled: ${SeedDemoData__Enabled:-true}
-      SeedDemoData__Password: ${SeedDemoData__Password:?Set SeedDemoData__Password}
+      SeedDemoData__Enabled: ${SeedDemoData__Enabled:-false}
+      SeedDemoData__Password: ${SeedDemoData__Password:-}
     ports:
       - "127.0.0.1:${BACKEND_PORT:-8080}:8080"
     depends_on:
