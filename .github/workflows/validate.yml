@@ -46,6 +46,19 @@ jobs:
         with:
           dotnet-version: '10.0.x'
       - run: dotnet build backend/Locatarius.slnx --configuration Release --warnaserror
+      - name: Configure disposable database
+        run: |
+          umask 077
+          {
+            printf 'POSTGRES_PASSWORD=%s\n' "$(openssl rand -hex 32)"
+            printf 'RUNTIME_DB_PASSWORD=%s\n' "$(openssl rand -hex 32)"
+            printf 'SeedAdmin__Email=%s\n' 'admin@example.com'
+            printf 'SeedAdmin__Password=%s\n' 'ChangeMe1234567!'
+            printf 'SeedAdmin__FirstName=%s\n' 'Admin'
+            printf 'SeedAdmin__LastName=%s\n' 'User'
+            printf 'SeedDemoData__Enabled=%s\n' 'true'
+            printf 'SeedDemoData__Password=%s\n' "$(openssl rand -hex 32)"
+          } > .env
       - name: Run tests
         run: >
           dotnet test backend/Locatarius.slnx
@@ -60,19 +73,6 @@ jobs:
           name: backend-test-results
           path: TestResults
           if-no-files-found: ignore
-      - name: Configure disposable database
-        run: |
-          umask 077
-          {
-            printf 'POSTGRES_PASSWORD=%s\n' "$(openssl rand -hex 32)"
-            printf 'RUNTIME_DB_PASSWORD=%s\n' "$(openssl rand -hex 32)"
-            printf 'SeedAdmin__Email=%s\n' 'admin@example.com'
-            printf 'SeedAdmin__Password=%s\n' 'ChangeMe1234567!'
-            printf 'SeedAdmin__FirstName=%s\n' 'Admin'
-            printf 'SeedAdmin__LastName=%s\n' 'User'
-            printf 'SeedDemoData__Enabled=%s\n' 'true'
-            printf 'SeedDemoData__Password=%s\n' "$(openssl rand -hex 32)"
-          } > .env
       - name: Build and smoke-test containers
         run: |
           docker compose up --build --wait --wait-timeout 120

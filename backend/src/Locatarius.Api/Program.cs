@@ -1,4 +1,5 @@
 using System.Globalization;
+using Microsoft.Net.Http.Headers;
 using System.Net;
 using System.Text.Json;
 using Microsoft.AspNetCore.HttpOverrides;
@@ -58,14 +59,15 @@ builder.Services.AddRateLimiter(options =>
 
     options.OnRejected = async (context, cancellationToken) =>
     {
-        context.HttpContext.Response.StatusCode = StatusCodes.Status429TooManyRequests;
-        context.HttpContext.Response.ContentType = "application/json";
-
+        var retryAfterSeconds = 60;
         if (context.Lease.TryGetMetadata(MetadataName.RetryAfter, out TimeSpan retryAfter))
         {
-            context.HttpContext.Response.Headers.RetryAfter =
-                ((long)Math.Ceiling(retryAfter.TotalSeconds)).ToString(CultureInfo.InvariantCulture);
+            retryAfterSeconds = Math.Max(1, (int)Math.Ceiling(retryAfter.TotalSeconds));
         }
+
+        context.HttpContext.Response.StatusCode = StatusCodes.Status429TooManyRequests;
+        context.HttpContext.Response.ContentType = "application/json";
+        context.HttpContext.Response.Headers[HeaderNames.RetryAfter] = retryAfterSeconds.ToString(CultureInfo.InvariantCulture);
 
         var payload = JsonSerializer.Serialize(new
         {
