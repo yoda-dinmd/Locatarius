@@ -29,3 +29,7 @@ npm-debug.log*
 pgdata/
 *.log
 !/.env.example
+
+## Local HTTPS material
+/.local/
+/nginx/certs/
