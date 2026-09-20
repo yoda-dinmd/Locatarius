@@ -14,13 +14,15 @@ COPY . .
 RUN npm run build
 
 # Stage 2: Serve the application with Nginx
-FROM nginx:alpine-slim AS runner
+FROM nginx:1.28-alpine AS runner
 
 # Remove default nginx static assets
 RUN rm -rf /usr/share/nginx/html/*
 
 # Copy the build output from the builder stage
 COPY --from=builder /app/dist /usr/share/nginx/html
+
+COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 # Expose port 80 for Nginx
 EXPOSE 80
