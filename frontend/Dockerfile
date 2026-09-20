@@ -14,7 +14,7 @@ COPY . .
 RUN npm run build
 
 # Stage 2: Serve the application with Nginx
-FROM nginx:alpine AS runner
+FROM nginx:alpine-slim AS runner
 
 # Remove default nginx static assets
 RUN rm -rf /usr/share/nginx/html/*

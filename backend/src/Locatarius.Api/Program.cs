@@ -126,22 +126,31 @@ app.Use(async (context, next) =>
     }
 });
 
-await using (var scope = app.Services.CreateAsyncScope())
+if (app.Configuration.GetValue<bool>("RUN_MIGRATIONS"))
 {
-    var dbContext = scope.ServiceProvider
-        .GetRequiredService<LocatariusDbContext>();
+    await using (var scope = app.Services.CreateAsyncScope())
+    {
+        var dbContext = scope.ServiceProvider
+            .GetRequiredService<LocatariusDbContext>();
 
-    await dbContext.Database.MigrateAsync();
+        await dbContext.Database.MigrateAsync();
 
-    var seeder = scope.ServiceProvider
-        .GetRequiredService<DatabaseSeeder>();
+        var seeder = scope.ServiceProvider
+            .GetRequiredService<DatabaseSeeder>();
 
-    await seeder.SeedAsync();
+        await seeder.SeedAsync();
 
-    var demoDataSeeder = scope.ServiceProvider
-        .GetRequiredService<DemoDataSeeder>();
+        var demoDataSeeder = scope.ServiceProvider
+            .GetRequiredService<DemoDataSeeder>();
 
-    await demoDataSeeder.SeedAsync();
+        await demoDataSeeder.SeedAsync();
+    }
+    
+    // If this instance is only running as a migrator, we can exit gracefully
+    if (app.Configuration.GetValue<bool>("EXIT_AFTER_MIGRATIONS"))
+    {
+        return;
+    }
 }
 
 if (app.Environment.IsDevelopment())

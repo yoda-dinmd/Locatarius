@@ -1,4 +1,16 @@
 services:
+  nginx:
+    image: nginx:alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - backend
+      - frontend
+
   postgres:
     image: postgres:18-alpine
     restart: unless-stopped
@@ -6,16 +18,36 @@ services:
       POSTGRES_DB: locatarius_db
       POSTGRES_USER: locatarius_admin
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+      RUNTIME_DB_PASSWORD: ${RUNTIME_DB_PASSWORD:?Set RUNTIME_DB_PASSWORD in .env}
     ports:
       - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"
     volumes:
-      # Keep PostgreSQL 16 data separate; migrate existing data by dump/restore.
       - pgdata18:/var/lib/postgresql
+      - ./docker/postgres/init-runtime-user.sql:/docker-entrypoint-initdb.d/init-runtime-user.sql:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U locatarius_admin -d locatarius_db"]
       interval: 5s
       timeout: 5s
       retries: 5
+
+  db-migrator:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__DefaultConnection: Host=postgres;Port=5432;Database=locatarius_db;Username=locatarius_admin;Password=${POSTGRES_PASSWORD}
+      RUN_MIGRATIONS: "true"
+      EXIT_AFTER_MIGRATIONS: "true"
+      SeedAdmin__Email: ${SeedAdmin__Email:-admin@locatarius.local}
+      SeedAdmin__Password: ${SeedAdmin__Password:-ChangeMe1234567!}
+      SeedAdmin__FirstName: ${SeedAdmin__FirstName:-System}
+      SeedAdmin__LastName: ${SeedAdmin__LastName:-Admin}
+      SeedDemoData__Enabled: ${SeedDemoData__Enabled:-false}
+      SeedDemoData__Password: ${SeedDemoData__Password:-}
+    depends_on:
+      postgres:
+        condition: service_healthy
 
   backend:
     build:
@@ -24,18 +56,13 @@ services:
     restart: unless-stopped
     environment:
       ASPNETCORE_ENVIRONMENT: Development
-      ConnectionStrings__DefaultConnection: Host=postgres;Port=5432;Database=locatarius_db;Username=locatarius_admin;Password=${POSTGRES_PASSWORD}
-      SeedAdmin__Email: ${SeedAdmin__Email:?Set SeedAdmin__Email}
-      SeedAdmin__Password: ${SeedAdmin__Password:?Set SeedAdmin__Password}
-      SeedAdmin__FirstName: ${SeedAdmin__FirstName:?Set SeedAdmin__FirstName}
-      SeedAdmin__LastName: ${SeedAdmin__LastName:?Set SeedAdmin__LastName}
-      SeedDemoData__Enabled: ${SeedDemoData__Enabled:-false}
-      SeedDemoData__Password: ${SeedDemoData__Password:-}
+      ConnectionStrings__DefaultConnection: Host=postgres;Port=5432;Database=locatarius_db;Username=locatarius_app;Password=${RUNTIME_DB_PASSWORD}
+      RUN_MIGRATIONS: "false"
     ports:
       - "127.0.0.1:${BACKEND_PORT:-8080}:8080"
     depends_on:
-      postgres:
-        condition: service_healthy
+      db-migrator:
+        condition: service_completed_successfully
 
   frontend:
     build:
