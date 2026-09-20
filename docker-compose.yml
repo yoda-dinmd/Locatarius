@@ -6,7 +6,7 @@ services:
       - "80:80"
       - "443:443"
     volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro,Z
     depends_on:
       - backend
       - frontend
@@ -23,7 +23,7 @@ services:
       - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"
     volumes:
       - pgdata18:/var/lib/postgresql
-      - ./docker/postgres/init-runtime-user.sql:/docker-entrypoint-initdb.d/init-runtime-user.sql:ro
+      - ./docker/postgres/init-runtime-user.sql:/docker-entrypoint-initdb.d/init-runtime-user.sql:ro,Z
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U locatarius_admin -d locatarius_db"]
       interval: 5s
@@ -39,10 +39,10 @@ services:
       ConnectionStrings__DefaultConnection: Host=postgres;Port=5432;Database=locatarius_db;Username=locatarius_admin;Password=${POSTGRES_PASSWORD}
       RUN_MIGRATIONS: "true"
       EXIT_AFTER_MIGRATIONS: "true"
-      SeedAdmin__Email: ${SeedAdmin__Email:-admin@locatarius.local}
-      SeedAdmin__Password: ${SeedAdmin__Password:-ChangeMe1234567!}
-      SeedAdmin__FirstName: ${SeedAdmin__FirstName:-System}
-      SeedAdmin__LastName: ${SeedAdmin__LastName:-Admin}
+      SeedAdmin__Email: ${SeedAdmin__Email:?Set SeedAdmin__Email}
+      SeedAdmin__Password: ${SeedAdmin__Password:?Set SeedAdmin__Password}
+      SeedAdmin__FirstName: ${SeedAdmin__FirstName:?Set SeedAdmin__FirstName}
+      SeedAdmin__LastName: ${SeedAdmin__LastName:?Set SeedAdmin__LastName}
       SeedDemoData__Enabled: ${SeedDemoData__Enabled:-false}
       SeedDemoData__Password: ${SeedDemoData__Password:-}
     depends_on:
