@@ -14,12 +14,17 @@ Node 22 are needed only to run source builds/tests outside Docker.
 ## Get the code
 
 ```sh
-git clone https://github.com/yoda-dinmd/Locatarius.git
+git clone --branch main https://github.com/yoda-dinmd/Locatarius.git
 cd Locatarius
 ```
 
-Until the #78 PR is merged, run `git switch feat/devops-task-78-new`.
-After it is merged, use updated `main`. Confirm `scripts/setup-local.py` exists.
+For an existing checkout, commit or stash your local changes before updating:
+
+```sh
+git switch main
+git pull --ff-only origin main
+```
+
 The commands below use a POSIX shell. Windows users must install the CA in the
 Windows browser's trust store too if running the stack inside WSL; trusting only
 the WSL Linux system does not establish Windows browser trust.
