@@ -45,7 +45,6 @@ jobs:
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '10.0.x'
-      - run: dotnet build backend/Locatarius.slnx --configuration Release --warnaserror
       - name: Configure disposable database
         run: |
           umask 077
@@ -59,6 +58,7 @@ jobs:
             printf 'SeedDemoData__Enabled=%s\n' 'true'
             printf 'SeedDemoData__Password=%s\n' "$(openssl rand -hex 32)"
           } > .env
+      - run: dotnet build backend/Locatarius.slnx --configuration Release --warnaserror
       - name: Run tests
         run: >
           dotnet test backend/Locatarius.slnx
@@ -79,13 +79,13 @@ jobs:
           test "$(curl --fail --silent --show-error http://localhost:8080/health/live)" = Healthy
           curl --fail --silent --show-error -I http://localhost/ | grep "200 OK"
       - name: Container logs
-        if: failure()
-        run: docker compose logs
+        if: failure() && hashFiles('.env') != ''
+        run: docker compose --env-file .env logs
       - name: Clean up
         if: always()
         run: |
           if [ -f .env ]; then
-            docker compose down --volumes --remove-orphans
+            docker compose --env-file .env down --volumes --remove-orphans
           else
             echo "No .env file was created; nothing to clean up."
           fi
