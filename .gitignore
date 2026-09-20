@@ -22,11 +22,14 @@ node_modules/
 out/
 build/
 dist/
-.env
-.env.local
-.env.production
+.env*
 npm-debug.log*
 
 ## Docker & Persistence
 pgdata/
 *.log
+!/.env.example
+
+## Local HTTPS material
+/.local/
+/nginx/certs/

@@ -14,6 +14,12 @@ A third-year TUM **Development of Secure Applications (PBL)** project for five s
 
 [Shared implementation rules](shared-patterns.md) · [Traceability](traceability.md) · [Decisions](decisions.md) · [Sources](sources.md) · [Documentation validation](validation.md)
 
+## Local development
+
+Use the [HTTPS/container runbook](local-https.md) for setup and the real-backend smoke
+demo. The React auth flow remains a mock; see the [backlog](internship-backlog.md)
+for application dependencies and task closure guidance.
+
 ## Frontend reference
 
 [Screen mockups](frontend-mockups.md) include an interactive prototype, desktop/mobile images, form states and work-package mapping.

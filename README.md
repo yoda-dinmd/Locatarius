@@ -10,83 +10,72 @@ The application covers accounts, association access, a building/apartment regist
 
 ## Repository status
 
-The repository contains the application specification, a .NET backend scaffold and a reserved `frontend/` directory. Implementation progress and security evidence are tracked in [traceability](docs/traceability.md).
+The backend implements cookie login, CSRF and logout with PostgreSQL sessions.
+The React login/password-change/dashboard flow remains a **localStorage mock**;
+it is not connected to the real API. Use synthetic input only. Association policies,
+server identity loading and real password change remain separate application work.
 
-The backend currently exposes the template weather endpoint and `/health/live` (process liveness only). Database access and authentication are not wired up yet. No legal compliance or security certification is claimed.
+## Local containers and HTTPS
 
-## Run the local containers
+Prerequisites: Docker/Compose v2, Python 3, OpenSSL and mkcert. Follow the
+[local HTTPS runbook](docs/local-https.md) for installation, browser trust,
+network conflicts, existing data and troubleshooting.
 
-Prerequisites: Docker Engine with Docker Compose v2 or newer, and `openssl`.
+```sh
+python3 scripts/setup-local.py
+CAROOT="$PWD/.local/ca" mkcert -install
+docker compose config --quiet
+docker compose up --build --wait --wait-timeout 180
+python3 scripts/smoke-local.py --recreate
+```
 
-Create an ignored `.env` file once, without overwriting an existing one:
+Open **https://localhost**. nginx is the only published application service;
+backend/frontend run internally. PostgreSQL retains its loopback DB-tools port.
+`HTTP_PORT`, `HTTPS_PORT`, `POSTGRES_PORT`, `DOCKER_SUBNET` and `NGINX_IP` in `.env`
+control local conflicts. No Let's Encrypt or public domain is needed for this demo.
 
-```bash
-(test -e .env || (umask 077; printf 'POSTGRES_PASSWORD=%s\n' "$(openssl rand -hex 32)" > .env))
-docker compose up --build --wait
-curl --fail http://localhost:8080/health/live
+Setup creates ignored independent secrets and local certificates without replacing
+existing configuration. Add missing keys from `.env.example` when upgrading an older
+checkout. Install the local CA into your trust stores and restart the browser; the
+smoke script's explicit CA verification does not install interactive browser trust.
+Never commit `.env`, leaf keys or the CA key.
+
+Startup runs `db-provision` → `db-migrator` → `db-grants` before the API. The migration
+owner is not a superuser; the runtime role cannot modify EF migration history or
+create tables. Existing PostgreSQL 18 data and seed passwords are preserved.
+Optional demo seeding defaults off; enabling it requires `SeedDemoData__Password`.
+All seed passwords must satisfy the application's creation-password rules.
+
+```sh
+docker compose ps -a
+docker compose logs --tail 100 backend nginx db-migrator
 docker compose down
 ```
 
-The backend applies EF Core migrations and seeds one administrator plus the
-development demo dataset during startup. Keep the seed credentials in the
-ignored `.env` file:
+`down` retains database and Data Protection volumes. Do not use `down --volumes`
+on data you need to keep. Preserve older PostgreSQL 16 volumes and use an isolated,
+tested dump/restore migration instead of an in-place image swap. See the runbook
+for project names, protected secrets and existing-volume provisioning.
 
-```dotenv
-POSTGRES_PASSWORD=replace-with-a-local-password
-SeedAdmin__Email=admin@locatarius.md
-SeedAdmin__Password=replace-with-a-local-admin-password
-SeedAdmin__FirstName=Ion
-SeedAdmin__LastName=Popescu
-SeedDemoData__Enabled=true
-SeedDemoData__Password=replace-with-a-local-demo-password
+The smoke command verifies actual backend auth through nginx independently of the
+mock UI, including cookie flags, CSRF, replay, rate limiting and service recreation.
+It intentionally exhausts login throttling; wait a minute before another login test.
+`/health/live` is process-only; internal `/health/ready` queries PostgreSQL.
+
+Source verification (.NET 10, Node 22 and Docker):
+
+```sh
+dotnet build backend/Locatarius.slnx -c Release --warnaserror
+dotnet test backend/Locatarius.slnx -c Release --no-build
+npm ci --prefix frontend
+npm run lint --prefix frontend
+npm run build --prefix frontend
 ```
 
-`SeedAdmin__Password` and `SeedDemoData__Password` must follow the
-creation-password rules (15–128 characters, no control characters). Invalid
-non-empty values fail startup with an actionable error and do not write secrets
-to logs. Demo residents are seeded with temporary credentials that require a
-first-login password change. Restarting against an existing database does not
-overwrite an existing administrator password.
-
-Start the database and backend with:
-
-```bash
-docker compose up --build --wait
-```
-
-To recreate the development database from scratch, run:
-
-```bash
-docker compose down -v
-docker compose up --build --wait
-```
-
-Start PostgreSQL, migrations, and the administrator without demo data:
-
-```bash
-SeedDemoData__Enabled=false docker compose up --build --wait
-```
-
-The three seeding configurations behave as follows:
-
-| Configuration | Expected result |
-|---|---|
-| `SeedDemoData__Enabled=false`, no demo password | Starts successfully; only the administrator is seeded |
-| `SeedDemoData__Enabled=true`, password provided | Starts successfully; administrator and demo data are seeded |
-| `SeedDemoData__Enabled=true`, no password | Startup fails with `SeedDemoData:Password is required when demo seeding is enabled.` |
-
-The expected demo dataset contains 8 users, 8 credentials, 8 roles, 8
-contacts, 2 addresses, 2 buildings, 7 apartments, 3 issues, 2 attachments
-and 1 expired OTP record. Restarting the backend must not increase these
-counts.
-
-Compose runs .NET 10 and PostgreSQL 18, with ports bound to localhost. Set `BACKEND_PORT` or `POSTGRES_PORT` in `.env` if the defaults (8080/5432) are occupied. Build the API alone with `docker build -t locatarius-api ./backend`.
-
-The database uses the `pgdata18` volume mounted at `/var/lib/postgresql`, following the [PostgreSQL 18 image layout](https://hub.docker.com/_/postgres). `docker compose down` preserves it. An older `pgdata` volume is left untouched; migrate PostgreSQL 16 data using a tested dump/restore instead of attaching it to PostgreSQL 18. Changing `.env` does not change the password of an already initialized database.
-
-This is a local HTTP scaffold. Before implementing browser authentication, configure trusted HTTPS and separate limited runtime/migration database identities as specified in [environment work package #78](docs/internship-backlog.md). The API receives no database owner credentials or sample JWT secrets.
-
-Build all backend projects with `dotnet build backend/Locatarius.slnx --configuration Release`. The existing `backend/tests/PasswordHasherTests.cs` has no test project and is not included in the solution, so `dotnet test` does not currently validate those tests.
+For direct migration-only execution, set `RUN_MIGRATIONS=true`,
+`EXIT_AFTER_MIGRATIONS=true`, migration credentials and all required seed settings.
+Normal API processes do not migrate. Table grants follow migrations as documented
+in the runbook. Backend owners continue to supply migrations and seed behavior.
 
 ## Preview documentation
 

@@ -109,12 +109,15 @@ password. The script initializes an **empty database once**, including EF migrat
 history; it is not an idempotent upgrade script for an existing database and does
 not seed application accounts. Use reviewed EF migration updates for existing data.
 
-The API currently applies migrations and seeds the administrator on startup using
+The dedicated migrator (`RUN_MIGRATIONS=true`, `EXIT_AFTER_MIGRATIONS=true`)
+applies migrations and seeds the administrator using
 `ConnectionStrings__DefaultConnection` and `SeedAdmin__Email`, `SeedAdmin__Password`,
-`SeedAdmin__FirstName`, `SeedAdmin__LastName`. Daniel's #90 branch owns validation,
-repeat-startup guarantees and optional demo fixtures. Migration SQL contains no
+`SeedAdmin__FirstName`, `SeedAdmin__LastName`. The merged #90 work implements seed validation,
+repeat-startup checks and optional demo fixtures. Migration SQL contains no
 seed credentials. See [backend integration](backend-auth-integration.md) and
-[operations](operations-and-testing.md) for the remaining runtime/deployment work.
+[local HTTPS runbook](local-https.md) for the provisioning, migration and grant jobs.
+Application migrations are unchanged by #78; the explicit runtime grant list must
+be reviewed whenever new business tables are added.
 
 ## Outstanding requirements
 

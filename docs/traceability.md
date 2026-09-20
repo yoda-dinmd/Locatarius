@@ -40,3 +40,14 @@ Source: **DAS_internship requirements.pdf**. The technical requirements apply ac
 | Presentation and control explanation, pp. 2–5 | September and final demo | Each control: problem, relevance, implementation, test, limitations; all five students explain contributions |
 
 The guidelines' illustrative CAPTCHA/uploads are not selected features. Their presence in a list of possible controls does not require building file handling or bot challenges. Required semester MFA/OAuth entries are retained separately above.
+
+
+## Local infrastructure evidence (#78)
+
+The [local HTTPS runbook](local-https.md) and [validation record](validation.md#local-78-verification-20-september-2026)
+record tested nginx routing, TLS with explicit CA verification, backend session/CSRF
+behavior, container recreation, database permissions and existing-volume startup.
+This evidence covers local infrastructure controls, not the frontend mock, complete
+association authorization, encrypted production storage, public deployment or every
+S1 acceptance case. Browser trust installation and final PR/CI/peer acceptance remain
+closure checks; no work-package status is inferred from a branch merge.

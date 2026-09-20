@@ -141,6 +141,8 @@ public sealed class AuthHttpTests : IAsyncLifetime
             builder.ConfigureAppConfiguration((_, configuration) => configuration.AddInMemoryCollection(new Dictionary<string, string?>
             {
                 ["ConnectionStrings:DefaultConnection"] = connection,
+                ["RUN_MIGRATIONS"] = "true",
+                ["EXIT_AFTER_MIGRATIONS"] = "false",
                 ["SeedAdmin:Email"] = "admin@example.test", ["SeedAdmin:Password"] = Password,
                 ["SeedAdmin:FirstName"] = "Test", ["SeedAdmin:LastName"] = "Admin",
                 ["Proxy:TrustedProxy"] = proxy

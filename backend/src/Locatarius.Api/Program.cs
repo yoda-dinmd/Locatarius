@@ -1,3 +1,6 @@
+using Microsoft.AspNetCore.DataProtection;
+using System.Globalization;
+using HeaderNames = Microsoft.Net.Http.Headers.HeaderNames;
 using System.Net;
 using System.Text.Json;
 using Microsoft.AspNetCore.HttpOverrides;
@@ -10,6 +13,12 @@ using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Compose persists these keys across backend recreation; host access controls
+// protect the local development volume. Production needs key encryption at rest.
+if (builder.Configuration["DataProtection:KeyPath"] is { Length: > 0 } keyPath)
+    builder.Services.AddDataProtection().SetApplicationName("Locatarius")
+        .PersistKeysToFileSystem(new DirectoryInfo(keyPath));
 
 builder.Services.AddOpenApi();
 builder.Services.AddHealthChecks();
@@ -57,16 +66,15 @@ builder.Services.AddRateLimiter(options =>
 
     options.OnRejected = async (context, cancellationToken) =>
     {
-        context.HttpContext.Response.StatusCode = StatusCodes.Status429TooManyRequests;
-        context.HttpContext.Response.ContentType = "application/json";
-
         var retryAfterSeconds = 60;
-        if (context.Lease.TryGetMetadata(MetadataName.RetryAfter, out var retryAfter))
+        if (context.Lease.TryGetMetadata(MetadataName.RetryAfter, out TimeSpan retryAfter))
         {
-            retryAfterSeconds = (int)Math.Ceiling(retryAfter.TotalSeconds);
+            retryAfterSeconds = Math.Max(1, (int)Math.Ceiling(retryAfter.TotalSeconds));
         }
 
-        context.HttpContext.Response.Headers.RetryAfter = retryAfterSeconds.ToString();
+        context.HttpContext.Response.StatusCode = StatusCodes.Status429TooManyRequests;
+        context.HttpContext.Response.ContentType = "application/json";
+        context.HttpContext.Response.Headers[HeaderNames.RetryAfter] = retryAfterSeconds.ToString(CultureInfo.InvariantCulture);
 
         var payload = JsonSerializer.Serialize(new
         {
@@ -126,22 +134,31 @@ app.Use(async (context, next) =>
     }
 });
 
-await using (var scope = app.Services.CreateAsyncScope())
+if (app.Configuration.GetValue<bool>("RUN_MIGRATIONS"))
 {
-    var dbContext = scope.ServiceProvider
-        .GetRequiredService<LocatariusDbContext>();
+    await using (var scope = app.Services.CreateAsyncScope())
+    {
+        var dbContext = scope.ServiceProvider
+            .GetRequiredService<LocatariusDbContext>();
 
-    await dbContext.Database.MigrateAsync();
+        await dbContext.Database.MigrateAsync();
 
-    var seeder = scope.ServiceProvider
-        .GetRequiredService<DatabaseSeeder>();
+        var seeder = scope.ServiceProvider
+            .GetRequiredService<DatabaseSeeder>();
 
-    await seeder.SeedAsync();
+        await seeder.SeedAsync();
 
-    var demoDataSeeder = scope.ServiceProvider
-        .GetRequiredService<DemoDataSeeder>();
+        var demoDataSeeder = scope.ServiceProvider
+            .GetRequiredService<DemoDataSeeder>();
 
-    await demoDataSeeder.SeedAsync();
+        await demoDataSeeder.SeedAsync();
+    }
+    
+    // If this instance is only running as a migrator, we can exit gracefully
+    if (app.Configuration.GetValue<bool>("EXIT_AFTER_MIGRATIONS"))
+    {
+        return;
+    }
 }
 
 if (app.Environment.IsDevelopment())
@@ -152,6 +169,18 @@ if (app.Environment.IsDevelopment())
 app.UseRateLimiter();
 
 app.MapHealthChecks("/health/live");
+app.MapGet("/health/ready", async (LocatariusDbContext db, CancellationToken ct) =>
+{
+    try
+    {
+        await db.Users.AsNoTracking().Select(user => user.UserId).Take(1).ToListAsync(ct);
+        return Results.Text("Ready");
+    }
+    catch (Exception)
+    {
+        return Results.StatusCode(StatusCodes.Status503ServiceUnavailable);
+    }
+});
 app.MapControllers();
 
 app.Run();

@@ -26,7 +26,7 @@ The [internship acceptance criteria](sprint-1.md) retain `S1-*` IDs for traceabi
 
 The current CSV already contains the revised two-role, shared-authentication task descriptions. The old September 9 review of JWT, role dropdowns and hashing alternatives is no longer the current task specification.
 
-There is still an implementation gap: #73 is now In progress, and the merged EF Core model lacks the associations, memberships and sessions described in its task and referenced by current authentication/authorization requirements. #89 must describe the actual schema and the gap; #90 verifies initialization and admin seeding, not the entire missing authorization model. Reconcile the remaining #73 requirements with its owner and track them explicitly before treating dependent stories as complete. Do not silently remove association isolation or other acceptance requirements to match the current code.
+There is still an implementation gap: #73 is now In progress, and the merged EF Core model has sessions but still lacks the associations and memberships described in its task and referenced by current authentication/authorization requirements. #89 must describe the actual schema and the gap; #90 verifies initialization and admin seeding, not the entire missing authorization model. Reconcile the remaining #73 requirements with its owner and track them explicitly before treating dependent stories as complete. Do not silently remove association isolation or other acceptance requirements to match the current code.
 
 Before integration, agree routes, DTO fields, authentication/session behavior and errors across #75/#77/#79/#80/#83. Record implementation-affecting decisions in [decisions](decisions.md) and align the API, frontend and tests together.
 
@@ -56,3 +56,53 @@ The latest CSV confirms the scope update to #66, deferral wording in #63/#64/#83
 - Add a new CSV snapshot after future OpenProject changes and update the [snapshot guide](openproject/README.md). Never edit a historical export to simulate a live update.
 
 The CSV does not include sprint assignments, dates, activation or board information. It cannot establish which tasks are in the active sprint; verify those in OpenProject rather than inferring them from titles or status.
+
+
+## Proposed #78 description update after local container implementation
+
+Keep ID **78**, owner Victor Gafenco and the dependency on #73. Suggested title:
+**[DEVOPS] Local HTTPS container stack, database identities and CI verification**.
+This expands the wording to represent the delivered work; it does not remove the
+original PostgreSQL/.NET, secret-protection or migration requirements.
+
+Suggested description to copy into OpenProject:
+
+> Deliver a reproducible local development stack using PostgreSQL 18, .NET 10,
+> the React production container and nginx HTTPS termination. Keep backend/frontend
+> internal, provision separate restricted migration/runtime database identities,
+> execute backend-owned migrations and seeds, protect local secrets and document
+> clean-checkout and existing-volume startup. Preserve older PostgreSQL data through
+> migration rather than reusing an incompatible data directory. Verify the setup in CI.
+>
+> Acceptance criteria:
+> - Clean-checkout setup generates independent ignored secrets and SAN-bearing local
+>   certificates, with documented browser CA trust installation and renewal.
+> - nginx provides HTTPS, HTTP redirects, exact single-proxy trust and unchanged
+>   API routes; only nginx publishes application ports, bound to loopback.
+> - Production frontend assets support SPA deep links and upstream recreation.
+> - Startup orders provisioning, non-superuser migration/seeding and reviewed runtime
+>   grants; API has no owner credentials, DDL or EF-history privileges.
+> - Existing PostgreSQL 18 data survives provisioning/restart; PostgreSQL 16 uses
+>   documented isolated dump/restore, with no destructive image/data-directory swap.
+> - Liveness and database readiness are distinct; Data Protection keys persist across
+>   API recreation with documented local/production protection boundaries.
+> - CI builds/tests the application and verifies trusted HTTPS, CSRF/cookies,
+>   restricted login/logout/replay, proxy spoofing, rate limits and database grants.
+> - README/runbooks/configuration describe the tested setup and outstanding app work.
+>
+> Dependencies and boundaries: #73/#90 supply EF migrations and seed logic; #75
+> supplies authentication; #76/#77/#83/#87/#88 own UI/API/identity/password-change
+> integration. This task verifies backend auth through nginx but does not implement
+> those application features. Public VM/domain/Let's Encrypt deployment is separate.
+
+Do not alter the historical CSV to simulate this change. Update OpenProject, link
+PRs/test evidence and export a new snapshot when convenient.
+
+Closure guidance: #78 is ready for review once the infrastructure checks pass;
+close after the final PR/CI passes, local browser trust is installed and the documented
+setup is reproduced. #90 and #89 are closure candidates after their owners confirm
+all acceptance evidence (initialization/repeat-seed tests and schema/docs validation).
+Update #90's startup wording to the dedicated migration job; retain every seeding
+safety requirement. A merged PR alone is not closure evidence for #73, #75, #76,
+#77, #83, #86, #87 or #88; their remaining model, application or interaction checks
+must be assessed separately. No OpenProject statuses are changed by this document.
