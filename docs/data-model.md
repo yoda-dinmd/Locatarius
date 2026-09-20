@@ -115,7 +115,9 @@ applies migrations and seeds the administrator using
 `SeedAdmin__FirstName`, `SeedAdmin__LastName`. The merged #90 work implements seed validation,
 repeat-startup checks and optional demo fixtures. Migration SQL contains no
 seed credentials. See [backend integration](backend-auth-integration.md) and
-[operations](operations-and-testing.md) for the remaining runtime/deployment work.
+[local HTTPS runbook](local-https.md) for the provisioning, migration and grant jobs.
+Application migrations are unchanged by #78; the explicit runtime grant list must
+be reviewed whenever new business tables are added.
 
 ## Outstanding requirements
 

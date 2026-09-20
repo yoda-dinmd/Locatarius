@@ -1,5 +1,11 @@
 # Container and CI consistency review — 20 September 2026
 
+**Historical checkpoint, superseded by the [local HTTPS runbook](../local-https.md).**
+The later #78 implementation fixes TLS/proxy wiring, SPA fallback, existing-volume
+provisioning and migration/runtime grants described below. The frontend mock and
+missing association/password-change integration remain outstanding. Route results
+below describe the earlier snapshot, not the current stack.
+
 Reviewed `origin/main` at `28ba1b6` and the Antigravity DevOps branch
 `feat/devops-task-78-new` at `dfa31e3`. Changes were checked out in a separate
 worktree to preserve the original checkout's uncommitted `.gitignore` edit.

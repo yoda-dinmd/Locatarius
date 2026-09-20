@@ -6,7 +6,7 @@ Documentation checks cover navigation, links, schema consistency and diagram syn
 
 | Check | Scope |
 | --- | --- |
-| Site build | Build all 22 documentation pages with MkDocs strict mode |
+| Site build | Build all documentation pages with MkDocs strict mode |
 | Navigation | Include every page and display UC-01 through UC-07 in the use-case sidebar labels |
 | Diagrams | Parse all nine Mermaid diagrams: seven sequences, one architecture diagram and one entity-relationship diagram |
 | Links | Check local page/file targets and section anchors in the generated site |
@@ -46,3 +46,25 @@ This verifies the current SQL artifact, not association isolation or a complete
 application acceptance run. Record broader results in [traceability](traceability.md),
 including authorization, MFA/OIDC, encryption and backup restoration. Documentation
 validation does not establish production readiness.
+
+
+## Local #78 verification — 20 September 2026
+
+The local container implementation passes a clean-checkout CI-style OpenSSL-CA
+HTTPS smoke run (on an independent network/ports), the .NET Release build with warnings as
+errors and all 59 tests. The real nginx HTTPS smoke suite passes with certificate
+chain/hostname verification against the local CA: HTTP redirects, SPA deep links,
+secure cookie attributes, CSRF denial, restricted seeded login, logout/replay,
+forwarding-header rejection, rate limiting and runtime privilege checks. Stopping PostgreSQL makes `/health/ready` return 503. Recreating
+backend/frontend preserves CSRF validation and nginx resolves the replacement
+upstreams. An existing-volume probe restores legacy bootstrap ownership and removes
+the runtime role, then verifies normal provisioning/startup preserves credential
+rows and passwords while transferring ownership and restoring limited grants.
+
+Browser/system trust installation still needs the developer's OS credentials;
+explicit CA verification by the smoke client does not establish browser trust.
+The full UI is still a mock, association authorization and real password change
+remain unimplemented, and no public VM deployment or PostgreSQL 16 data conversion
+is claimed. See the [runbook](local-https.md) for repeatable commands and the
+[backlog](internship-backlog.md#proposed-78-description-update-after-local-container-implementation)
+for proposed task wording and closure gates.
