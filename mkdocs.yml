@@ -54,6 +54,7 @@ nav:
       - Stories and use cases: use-case-catalog.md
       - Decisions: decisions.md
   - Implementation:
+      - Container and CI review: reviews/2026-09-20-consistency.md
       - Backend auth integration: backend-auth-integration.md
       - Screen mockups: frontend-mockups.md
       - Internship acceptance: sprint-1.md

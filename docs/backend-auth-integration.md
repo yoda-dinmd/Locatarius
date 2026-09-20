@@ -1,8 +1,8 @@
 # Backend authentication integration (#75)
 
-The API listens on plain HTTP port 8080. TLS terminates at the future nginx
-container; HTTPS redirection belongs there. The current Compose stack does not
-yet provide that proxy, so its HTTP health check does not prove browser login works.
+The API listens on plain HTTP port 8080. The current nginx container forwards HTTP only;
+TLS termination and HTTP-to-HTTPS redirection remain pending. Publishing port 443
+does not provide a TLS listener. The HTTP health check does not prove browser login works.
 Secure, HttpOnly, SameSite=Lax and host-only session/CSRF cookies remain required.
 
 ## nginx handoff
