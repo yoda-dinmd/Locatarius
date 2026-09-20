@@ -11,7 +11,23 @@ Install Docker Engine/Compose v2 (including `--wait` support), Python 3, OpenSSL
 needs NSS tools (on openSUSE: `sudo zypper install mozilla-nss-tools`). .NET 10 and
 Node 22 are needed only to run source builds/tests outside Docker.
 
-From the checkout that contains this branch:
+## Get the code
+
+```sh
+git clone https://github.com/yoda-dinmd/Locatarius.git
+cd Locatarius
+```
+
+Until the #78 PR is merged, run `git switch feat/devops-task-78-new`.
+After it is merged, use updated `main`. Confirm `scripts/setup-local.py` exists.
+The commands below use a POSIX shell. Windows users must install the CA in the
+Windows browser's trust store too if running the stack inside WSL; trusting only
+the WSL Linux system does not establish Windows browser trust.
+
+Each developer runs setup on their own machine. Do not copy another developer's
+`.env`, `.local/ca` directory or private keys.
+
+From the repository root:
 
 ```sh
 python3 scripts/setup-local.py
@@ -39,6 +55,41 @@ For CI, `python3 scripts/setup-local.py --ci` creates a disposable OpenSSL CA an
 leaf certificate without installing host trust. The smoke client verifies chain
 and hostname using `.local/ca/rootCA.pem`; it never disables TLS verification.
 This test alone does not prove the interactive browser trust store is configured.
+
+## Certificate troubleshooting
+
+If mkcert reports **“The local CA is now installed in the system trust store”**
+followed by **“no Firefox and/or Chrome/Chromium security databases found”**, the
+system installation succeeded but browser-profile discovery failed. Reinstalling
+NSS tools does not fix a profile-location mismatch.
+
+1. Start the intended browser once so it creates its profile, then fully close it.
+2. Retry `CAROOT="$PWD/.local/ca" mkcert -install` (or the local binary).
+3. If it still fails, find the actual browser certificate database. Firefox's
+   `about:support` page shows its Profile Directory. Newer Linux locations can
+   include `~/.config/mozilla/firefox/<profile>` and `~/.local/share/pki/nssdb`;
+   Flatpak/browser variants may use other locations. The folder must contain
+   `cert9.db`; do not create or overwrite a browser database to fix discovery.
+4. With the browser closed, import this project's public CA into that existing
+   database, replacing the example path with the actual directory:
+
+```sh
+certutil -A -d "sql:/absolute/path/to/browser/profile" \
+  -n "Locatarius local development CA" -t "C,," \
+  -i "$PWD/.local/ca/rootCA.pem"
+certutil -V -d "sql:/absolute/path/to/browser/profile" \
+  -n "Locatarius local development CA" -u L
+```
+
+Restart the browser and open `https://localhost`. Import `rootCA.pem`, never
+`rootCA-key.pem`. This fallback uses the same CA as mkcert and does not require
+regenerating the server certificate. See [mkcert's trust-store documentation](https://github.com/FiloSottile/mkcert#supported-root-stores).
+
+With the stack running, `curl --head https://localhost/` checks system trust without
+an override. If it reports connection refused, check `docker compose ps -a`: that
+is a service/port issue, not certificate validation. If it succeeds but the browser
+still warns, check browser-specific trust and confirm the exact hostname/port.
+Never bypass the warning as the permanent setup solution.
 
 ## Services, ports and network
 
