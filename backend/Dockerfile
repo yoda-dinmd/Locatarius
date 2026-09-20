@@ -22,6 +22,7 @@ COPY --from=build /app/publish .
 
 EXPOSE 8080
 ENV ASPNETCORE_HTTP_PORTS=8080
+RUN mkdir -p /home/app/.aspnet/DataProtection-Keys && chown -R "$APP_UID" /home/app/.aspnet
 USER $APP_UID
 
 # Process liveness only; this does not query PostgreSQL.

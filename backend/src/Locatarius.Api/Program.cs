@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.DataProtection;
 using System.Globalization;
 using HeaderNames = Microsoft.Net.Http.Headers.HeaderNames;
 using System.Net;
@@ -12,6 +13,12 @@ using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Compose persists these keys across backend recreation; host access controls
+// protect the local development volume. Production needs key encryption at rest.
+if (builder.Configuration["DataProtection:KeyPath"] is { Length: > 0 } keyPath)
+    builder.Services.AddDataProtection().SetApplicationName("Locatarius")
+        .PersistKeysToFileSystem(new DirectoryInfo(keyPath));
 
 builder.Services.AddOpenApi();
 builder.Services.AddHealthChecks();
@@ -162,6 +169,18 @@ if (app.Environment.IsDevelopment())
 app.UseRateLimiter();
 
 app.MapHealthChecks("/health/live");
+app.MapGet("/health/ready", async (LocatariusDbContext db, CancellationToken ct) =>
+{
+    try
+    {
+        await db.Users.AsNoTracking().Select(user => user.UserId).Take(1).ToListAsync(ct);
+        return Results.Text("Ready");
+    }
+    catch (Exception)
+    {
+        return Results.StatusCode(StatusCodes.Status503ServiceUnavailable);
+    }
+});
 app.MapControllers();
 
 app.Run();
