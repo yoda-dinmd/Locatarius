@@ -1,5 +1,5 @@
 using System.Globalization;
-using Microsoft.Net.Http.Headers;
+using HeaderNames = Microsoft.Net.Http.Headers.HeaderNames;
 using System.Net;
 using System.Text.Json;
 using Microsoft.AspNetCore.HttpOverrides;
