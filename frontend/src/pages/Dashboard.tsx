@@ -57,6 +57,9 @@ export default function Dashboard({ user }: DashboardProps) {
             <a className="dashboard-nav-link active" href="/dashboard">
               Dashboard
             </a>
+            <a className="dashboard-nav-link" href="/issues">
+              Issues
+            </a>
           </nav>
         </aside>
 
