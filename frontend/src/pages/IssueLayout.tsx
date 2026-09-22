@@ -1,9 +1,12 @@
+import type { ReactNode } from "react";
 import type { SessionUser } from "../auth/auth";
 import { signOut } from "../auth/auth";
 import "../styles/Dashboard.css";
 
-type DashboardProps = {
+type IssueLayoutProps = {
   user: SessionUser;
+  activePage: "dashboard" | "issues";
+  children: ReactNode;
 };
 
 function getInitials(name: string) {
@@ -15,7 +18,7 @@ function getInitials(name: string) {
     .toUpperCase();
 }
 
-export default function Dashboard({ user }: DashboardProps) {
+export default function IssueLayout({ user, activePage, children }: IssueLayoutProps) {
   function handleSignOut() {
     signOut();
     window.location.href = "/";
@@ -31,17 +34,11 @@ export default function Dashboard({ user }: DashboardProps) {
 
         <div className="dashboard-user">
           <span className="user-initials">{getInitials(user.name)}</span>
-
           <span className="user-details">
             <strong>{user.name}</strong>
             <small>{user.role === "admin" ? "Administrator" : "Resident"}</small>
           </span>
-
-          <button
-            className="sign-out-button"
-            type="button"
-            onClick={handleSignOut}
-          >
+          <button className="sign-out-button" type="button" onClick={handleSignOut}>
             Sign out
           </button>
         </div>
@@ -50,21 +47,15 @@ export default function Dashboard({ user }: DashboardProps) {
       <div className="dashboard-layout">
         <aside className="dashboard-sidebar">
           <nav aria-label="Main navigation">
-            <a className="dashboard-nav-link active" href="/dashboard">
+            <a className={`dashboard-nav-link ${activePage === "dashboard" ? "active" : ""}`} href="/dashboard">
               Dashboard
             </a>
-            <a className="dashboard-nav-link" href="/issues">
+            <a className={`dashboard-nav-link ${activePage === "issues" ? "active" : ""}`} href="/issues">
               Issues
             </a>
           </nav>
         </aside>
-
-        <section className="dashboard-content dashboard-home-content">
-          <h1>Welcome, {user.name}</h1>
-          <p className="dashboard-message">
-            Your Locatarius dashboard is ready.
-          </p>
-        </section>
+        <section className="dashboard-content issue-page-content">{children}</section>
       </div>
     </main>
   );

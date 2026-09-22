@@ -1,14 +1,31 @@
+import { getBuildingIdForUser } from "./auth";
+
 export type IssueStatus = "Open" | "In Progress" | "Closed";
+
+export type IssueEvidence = {
+  name: string;
+  type: string;
+  url: string;
+};
 
 export type IssueRecord = {
   id: string;
   residentId: string;
+  reporterName: string;
   buildingId: string;
   title: string;
   description: string;
   status: IssueStatus;
   evidenceName?: string;
   evidenceType?: string;
+  evidenceUrl?: string;
+  evidenceFiles?: IssueEvidence[];
+  fixDescription?: string;
+  fixEvidenceName?: string;
+  fixEvidenceType?: string;
+  fixEvidenceUrl?: string;
+  fixEvidenceFiles?: IssueEvidence[];
+  closedBy?: string;
   createdAt: string;
   updatedAt: string;
 };
@@ -21,6 +38,7 @@ const initialIssues: IssueRecord[] = [
   {
     id: "ISS-1001",
     residentId: "resident-1",
+    reporterName: "Ana Popescu",
     buildingId: "BLD-01",
     title: "Flickering hallway light",
     description:
@@ -34,6 +52,7 @@ const initialIssues: IssueRecord[] = [
   {
     id: "ISS-1002",
     residentId: "resident-1",
+    reporterName: "Ana Popescu",
     buildingId: "BLD-01",
     title: "Leaking pipe in bathroom",
     description:
@@ -47,6 +66,7 @@ const initialIssues: IssueRecord[] = [
   {
     id: "ISS-1003",
     residentId: "resident-2",
+    reporterName: "Ana Munteanu",
     buildingId: "BLD-02",
     title: "Broken gate sensor",
     description:
@@ -60,6 +80,7 @@ const initialIssues: IssueRecord[] = [
   {
     id: "ISS-1004",
     residentId: "resident-3",
+    reporterName: "Ion Munteanu",
     buildingId: "BLD-03",
     title: "Noisy elevator",
     description:
@@ -92,12 +113,19 @@ export function getFilterOptions(): IssueFilter[] {
 }
 
 export function getIssuesForResident(residentId: string): IssueRecord[] {
-  return readIssues()
-    .filter((issue) => issue.residentId === residentId)
+  const issues = readIssues();
+  const residentBuildingId = getBuildingIdForUser(residentId);
+
+  return issues
+    .filter((issue) => issue.buildingId === residentBuildingId)
     .sort(
       (left, right) =>
         new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime(),
     );
+}
+
+export function getBuildingForResident(residentId: string): string {
+  return getBuildingIdForUser(residentId) ?? "BLD-01";
 }
 
 export function getAllIssues(): IssueRecord[] {
@@ -109,23 +137,29 @@ export function getAllIssues(): IssueRecord[] {
 
 export function createIssue(input: {
   residentId: string;
+  reporterName: string;
   buildingId: string;
   title: string;
   description: string;
   evidenceName?: string;
   evidenceType?: string;
+  evidenceUrl?: string;
+  evidenceFiles?: IssueEvidence[];
 }): IssueRecord {
   const now = new Date().toISOString();
 
   const issue: IssueRecord = {
     id: `ISS-${Date.now()}`,
     residentId: input.residentId,
+    reporterName: input.reporterName,
     buildingId: input.buildingId,
     title: input.title.trim(),
     description: input.description.trim(),
     status: "Open",
     evidenceName: input.evidenceName,
     evidenceType: input.evidenceType,
+    evidenceUrl: input.evidenceUrl,
+    evidenceFiles: input.evidenceFiles,
     createdAt: now,
     updatedAt: now,
   };
@@ -135,4 +169,57 @@ export function createIssue(input: {
   writeIssues(issues);
 
   return issue;
+}
+
+export function updateIssueStatus(
+  issueId: string,
+  status: IssueStatus,
+): IssueRecord | null {
+  const issues = readIssues();
+  const issueIndex = issues.findIndex((issue) => issue.id === issueId);
+
+  if (issueIndex === -1) {
+    return null;
+  }
+
+  const updatedIssue = {
+    ...issues[issueIndex],
+    status,
+    updatedAt: new Date().toISOString(),
+  };
+  issues[issueIndex] = updatedIssue;
+  writeIssues(issues);
+  return updatedIssue;
+}
+
+export function closeIssue(input: {
+  issueId: string;
+  description: string;
+  evidenceName: string;
+  evidenceType: string;
+  evidenceUrl: string;
+  fixEvidenceFiles?: IssueEvidence[];
+  closedBy: string;
+}): IssueRecord | null {
+  const issues = readIssues();
+  const issueIndex = issues.findIndex((issue) => issue.id === input.issueId);
+
+  if (issueIndex === -1) {
+    return null;
+  }
+
+  const updatedIssue = {
+    ...issues[issueIndex],
+    status: "Closed" as IssueStatus,
+    updatedAt: new Date().toISOString(),
+    fixDescription: input.description.trim(),
+    fixEvidenceName: input.evidenceName,
+    fixEvidenceType: input.evidenceType,
+    fixEvidenceUrl: input.evidenceUrl,
+    fixEvidenceFiles: input.fixEvidenceFiles,
+    closedBy: input.closedBy,
+  };
+  issues[issueIndex] = updatedIssue;
+  writeIssues(issues);
+  return updatedIssue;
 }
