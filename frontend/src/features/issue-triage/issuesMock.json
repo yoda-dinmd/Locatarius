@@ -1,14 +1,10 @@
 [
   {
-    "issueId": "issue-101",
-    "reference": "ISS-101",
-    "buildingId": "building-12",
+    "issueId": "d3df460a-c4c6-5c19-82fe-c62f22f1fc47",
+    "buildingId": "c1ec0a43-a8a3-5487-945d-657cdfe9f7f7",
     "title": "Broken water meter",
     "description": "The protective cover of the shared water meter is broken and its mechanism is exposed. Please inspect the meter and arrange a replacement before the next reading.",
-    "reportedBy": "resident-1",
-    "reporterName": "Ana Popescu",
-    "apartment": "12",
-    "location": "Ground floor · meter cabinet",
+    "reportedBy": "a2bfdf29-d638-55a4-9529-c443fbbcf6d4",
     "status": 1,
     "priority": 3,
     "createdAt": "2026-09-21T08:15:00+03:00",
@@ -16,79 +12,105 @@
     "resolvedAt": null,
     "attachments": [
       {
-        "attachmentId": "attachment-101",
-        "fileUrl": "broken-water-meter.jpg",
+        "attachmentId": "3d6dfbdd-66ce-50c4-aa3d-da32de6627b0",
+        "fileUrl": "/issue-demo/broken-water-meter.jpg",
         "fileType": "image/jpeg",
-        "alt": "Damaged water meter with its cover open and mechanism exposed"
+        "issueId": "d3df460a-c4c6-5c19-82fe-c62f22f1fc47",
+        "uploadedBy": "a2bfdf29-d638-55a4-9529-c443fbbcf6d4",
+        "createdAt": "2026-09-21T08:15:00+03:00"
       }
-    ]
+    ],
+    "reporter": {
+      "userId": "a2bfdf29-d638-55a4-9529-c443fbbcf6d4",
+      "firstName": "Ana",
+      "lastName": "Popescu",
+      "apartment": {
+        "apartmentNumber": "12"
+      }
+    }
   },
   {
-    "issueId": "issue-102",
-    "reference": "ISS-102",
-    "buildingId": "building-12",
+    "issueId": "6dbaf5f2-f677-508d-af3d-1e61c1341590",
+    "buildingId": "c1ec0a43-a8a3-5487-945d-657cdfe9f7f7",
     "title": "Lift stops between floors",
     "description": "The lift stopped briefly between the second and third floors this morning. Nobody is trapped. It is currently out of use; please arrange a technician inspection before returning it to service.",
-    "reportedBy": "resident-2",
-    "reporterName": "Mihai Rusu",
-    "apartment": "24",
-    "location": "Entrance A · lift",
+    "reportedBy": "932e2ffd-08ab-5eea-96cf-9b52b6c30e02",
     "status": 1,
     "priority": 4,
     "createdAt": "2026-09-21T07:40:00+03:00",
     "updatedAt": null,
     "resolvedAt": null,
-    "attachments": []
+    "attachments": [],
+    "reporter": {
+      "userId": "932e2ffd-08ab-5eea-96cf-9b52b6c30e02",
+      "firstName": "Mihai",
+      "lastName": "Rusu",
+      "apartment": {
+        "apartmentNumber": "24"
+      }
+    }
   },
   {
-    "issueId": "issue-103",
-    "reference": "ISS-103",
-    "buildingId": "building-12",
+    "issueId": "21026fde-abbf-5a2b-b7fd-30315816a90a",
+    "buildingId": "c1ec0a43-a8a3-5487-945d-657cdfe9f7f7",
     "title": "Leaking pipe in the basement",
     "description": "Water is dripping from the joint on the cold-water pipe near the basement entrance. A bucket has been placed underneath. The plumber has been contacted and access to the basement is available.",
-    "reportedBy": "resident-3",
-    "reporterName": "Elena Ciobanu",
-    "apartment": "8",
-    "location": "Basement · entrance A",
+    "reportedBy": "33fa60c1-2152-5504-bec8-f94535c8e71e",
     "status": 2,
     "priority": 3,
     "createdAt": "2026-09-20T14:30:00+03:00",
     "updatedAt": "2026-09-20T15:10:00+03:00",
     "resolvedAt": null,
-    "attachments": []
+    "attachments": [],
+    "reporter": {
+      "userId": "33fa60c1-2152-5504-bec8-f94535c8e71e",
+      "firstName": "Elena",
+      "lastName": "Ciobanu",
+      "apartment": {
+        "apartmentNumber": "8"
+      }
+    }
   },
   {
-    "issueId": "issue-104",
-    "reference": "ISS-104",
-    "buildingId": "building-12",
+    "issueId": "036cb34f-f359-5b5c-9725-2c3950b5c5a0",
+    "buildingId": "c1ec0a43-a8a3-5487-945d-657cdfe9f7f7",
     "title": "Light out on the third floor",
     "description": "The light above the third-floor landing no longer turns on. The other lights are working. Please replace the bulb and check the motion sensor.",
-    "reportedBy": "resident-4",
-    "reporterName": "Ion Munteanu",
-    "apartment": "18",
-    "location": "Third floor · stairwell",
+    "reportedBy": "04f7aa38-3ea9-5747-b0d2-b8074e385bde",
     "status": 2,
     "priority": 2,
     "createdAt": "2026-09-19T18:20:00+03:00",
     "updatedAt": "2026-09-20T09:00:00+03:00",
     "resolvedAt": null,
-    "attachments": []
+    "attachments": [],
+    "reporter": {
+      "userId": "04f7aa38-3ea9-5747-b0d2-b8074e385bde",
+      "firstName": "Ion",
+      "lastName": "Munteanu",
+      "apartment": {
+        "apartmentNumber": "18"
+      }
+    }
   },
   {
-    "issueId": "issue-105",
-    "reference": "ISS-105",
-    "buildingId": "building-12",
+    "issueId": "2b8c4b0b-2552-54f4-b936-caa1bc539d41",
+    "buildingId": "c1ec0a43-a8a3-5487-945d-657cdfe9f7f7",
     "title": "Entrance door does not close",
     "description": "The main entrance door was not closing fully. The door closer has now been adjusted and the latch checked. The entrance closes securely again.",
-    "reportedBy": "resident-5",
-    "reporterName": "Maria Lungu",
-    "apartment": "3",
-    "location": "Ground floor · main entrance",
+    "reportedBy": "3870c590-c5d9-5eb1-b941-e66f995029fc",
     "status": 3,
     "priority": 1,
     "createdAt": "2026-09-18T10:00:00+03:00",
     "updatedAt": "2026-09-19T11:30:00+03:00",
     "resolvedAt": "2026-09-19T11:30:00+03:00",
-    "attachments": []
+    "attachments": [],
+    "reporter": {
+      "userId": "3870c590-c5d9-5eb1-b941-e66f995029fc",
+      "firstName": "Maria",
+      "lastName": "Lungu",
+      "apartment": {
+        "apartmentNumber": "3"
+      }
+    }
   }
 ]

@@ -1,47 +1,65 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import fixtures from './issuesMock.json' with { type: 'json' };
-import { advanceIssue, reprioritizeIssue } from './issueModel.ts';
+import { moveIssue, reprioritizeIssue } from './issueModel.ts';
 
-const now = '2026-09-21T12:00:00.000Z';
+const now = '2026-09-22T12:00:00.000Z';
+const later = '2026-09-22T13:00:00.000Z';
 
-test('demo fixtures have five unique building reports and valid backend enum values', () => {
+function isUuid(value) {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
+}
+
+test('mock issues follow implemented issue fields and relationships', () => {
   assert.equal(fixtures.length, 5);
   assert.equal(new Set(fixtures.map(issue => issue.issueId)).size, 5);
+  assert.equal(new Set(fixtures.map(issue => issue.buildingId)).size, 1);
   for (const issue of fixtures) {
-    assert.equal(issue.buildingId, 'building-12');
+    assert.ok(isUuid(issue.issueId));
+    assert.ok(isUuid(issue.reportedBy));
+    assert.ok(isUuid(issue.buildingId));
+    assert.equal(issue.reporter.userId, issue.reportedBy);
     assert.ok([1, 2, 3].includes(issue.status));
     assert.ok([1, 2, 3, 4].includes(issue.priority));
     assert.equal(issue.resolvedAt !== null, issue.status === 3);
+    assert.equal('category' in issue || 'note' in issue || 'location' in issue || 'reference' in issue, false);
+    for (const attachment of issue.attachments) {
+      assert.ok(isUuid(attachment.attachmentId));
+      assert.equal(attachment.issueId, issue.issueId);
+      assert.equal(attachment.uploadedBy, issue.reportedBy);
+      assert.ok(attachment.fileUrl.startsWith('/issue-demo/'));
+    }
   }
 });
 
-test('an issue progresses independently, with timestamps and no seed mutation', () => {
+test('moving to Closed sets resolution and reopening clears it', () => {
   const original = structuredClone(fixtures);
-  const started = advanceIssue(fixtures, 'issue-101', 1, now);
+  const id = fixtures[0].issueId;
+  const started = moveIssue(fixtures, id, 2, now);
   assert.equal(started[0].status, 2);
   assert.equal(started[0].updatedAt, now);
   assert.equal(started[0].resolvedAt, null);
-  assert.deepEqual(started.slice(1), original.slice(1));
-  const closed = advanceIssue(started, 'issue-101', 2, now);
+  const closed = moveIssue(started, id, 3, later);
   assert.equal(closed[0].status, 3);
-  assert.equal(closed[0].resolvedAt, now);
+  assert.equal(closed[0].resolvedAt, later);
+  const reopened = moveIssue(closed, id, 2, now);
+  assert.equal(reopened[0].status, 2);
+  assert.equal(reopened[0].resolvedAt, null);
+  assert.equal(reopened[0].updatedAt, now);
+  assert.deepEqual(reopened.slice(1), fixtures.slice(1));
   assert.deepEqual(fixtures, original);
 });
 
-test('stale duplicate actions cannot skip stages or reopen a closed issue', () => {
-  const started = advanceIssue(fixtures, 'issue-101', 1, now);
-  assert.deepEqual(advanceIssue(started, 'issue-101', 1, now), started);
-  assert.deepEqual(advanceIssue(fixtures, 'issue-101', 2, now), fixtures);
-  assert.deepEqual(advanceIssue(fixtures, 'issue-105', 3, now), fixtures);
-  assert.deepEqual(advanceIssue(fixtures, 'unknown', 1, now), fixtures);
+test('dropping onto the same status or an unknown issue makes no change', () => {
+  assert.deepEqual(moveIssue(fixtures, fixtures[0].issueId, 1, now), fixtures);
+  assert.deepEqual(moveIssue(fixtures, 'missing', 3, now), fixtures);
 });
 
 test('reprioritization changes only an active issue and preserves closed history', () => {
-  const changed = reprioritizeIssue(fixtures, 'issue-101', 4, now);
+  const changed = reprioritizeIssue(fixtures, fixtures[0].issueId, 4, now);
   assert.equal(changed[0].priority, 4);
   assert.equal(changed[0].updatedAt, now);
   assert.deepEqual(changed.slice(1), fixtures.slice(1));
-  assert.deepEqual(reprioritizeIssue(fixtures, 'issue-105', 4, now), fixtures);
-  assert.deepEqual(reprioritizeIssue(fixtures, 'issue-101', 3, now), fixtures);
+  assert.deepEqual(reprioritizeIssue(fixtures, fixtures[4].issueId, 4, now), fixtures);
+  assert.deepEqual(reprioritizeIssue(fixtures, fixtures[0].issueId, 3, now), fixtures);
 });
