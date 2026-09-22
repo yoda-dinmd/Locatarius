@@ -1,9 +1,11 @@
 import type { SessionUser } from "../auth/auth";
 import { signOut } from "../auth/auth";
 import "../styles/Dashboard.css";
+import IssueTriage from "../features/issue-triage/IssueTriage";
 
 type DashboardProps = {
   user: SessionUser;
+  view?: "dashboard" | "issues";
 };
 
 function getInitials(name: string) {
@@ -15,7 +17,7 @@ function getInitials(name: string) {
     .toUpperCase();
 }
 
-export default function Dashboard({ user }: DashboardProps) {
+export default function Dashboard({ user, view = "dashboard" }: DashboardProps) {
   function handleSignOut() {
     signOut();
     window.location.href = "/";
@@ -54,18 +56,29 @@ export default function Dashboard({ user }: DashboardProps) {
           </a>
 
           <nav aria-label="Main navigation">
-            <a className="dashboard-nav-link active" href="/dashboard">
+            <a className={`dashboard-nav-link${view === "dashboard" ? " active" : ""}`} href="/dashboard" aria-current={view === "dashboard" ? "page" : undefined}>
               Dashboard
             </a>
+            {user.role === "admin" && (
+              <a className={`dashboard-nav-link${view === "issues" ? " active" : ""}`} href="/admin/issues" aria-current={view === "issues" ? "page" : undefined}>
+                Issues
+              </a>
+            )}
           </nav>
         </aside>
 
         <section className="dashboard-content">
-          <p className="dashboard-eyebrow">Dashboard</p>
-          <h1>Welcome, {user.name}</h1>
-          <p className="dashboard-message">
-            Your Locatarius dashboard is ready.
-          </p>
+          {view === "issues" && user.role === "admin" ? (
+            <IssueTriage />
+          ) : (
+            <>
+              <p className="dashboard-eyebrow">Dashboard</p>
+              <h1>Welcome, {user.name}</h1>
+              <p className="dashboard-message">
+                Your Locatarius dashboard is ready.
+              </p>
+            </>
+          )}
         </section>
       </div>
     </main>

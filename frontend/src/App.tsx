@@ -16,5 +16,9 @@ export default function App() {
     return <Dashboard user={session} />;
   }
 
+  if (path === "/admin/issues" && session?.role === "admin") {
+    return <Dashboard user={session} view="issues" />;
+  }
+
   return <LoginPage />;
 }
