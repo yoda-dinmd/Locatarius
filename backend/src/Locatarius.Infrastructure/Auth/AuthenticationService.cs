@@ -71,16 +71,19 @@ public sealed class AuthenticationService(
         var credential = dbContext.Database.IsRelational()
             ? await dbContext.UserCredentials.FromSqlInterpolated($"""
                 SELECT * FROM user_credentials WHERE email = {canonicalEmail} FOR UPDATE
-                """).SingleOrDefaultAsync(cancellationToken)
-            : await dbContext.UserCredentials.SingleOrDefaultAsync(
+                """).Include(c => c.User).SingleOrDefaultAsync(cancellationToken)
+            : await dbContext.UserCredentials.Include(c => c.User).SingleOrDefaultAsync(
                 c => c.Email == canonicalEmail, cancellationToken);
         // Never make a security decision using an entity tracked before the lock.
         if (credential is not null && dbContext.Database.IsRelational())
+        {
             await dbContext.Entry(credential).ReloadAsync(cancellationToken);
+            await dbContext.Entry(credential.User).ReloadAsync(cancellationToken);
+        }
 
         var now = Clock.GetUtcNow();
 
-        if (credential is null)
+        if (credential is null || !credential.User.IsActive)
         {
             passwordHasher.VerifyPassword(DummyPasswordHash, password);
             return new LoginOutcome(LoginResultStatus.InvalidCredentials, null, null, null);

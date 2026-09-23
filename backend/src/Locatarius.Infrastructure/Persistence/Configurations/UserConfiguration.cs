@@ -28,6 +28,11 @@ public sealed class UserConfiguration : IEntityTypeConfiguration<User>
         builder.Property(user => user.DateOfBirth)
             .HasColumnName("date_of_birth");
 
+        builder.Property(user => user.IsActive)
+            .HasColumnName("is_active")
+            .HasDefaultValue(true)
+            .IsRequired();
+
         builder.Property(user => user.ApartmentId)
             .HasColumnName("apartment_id");
 

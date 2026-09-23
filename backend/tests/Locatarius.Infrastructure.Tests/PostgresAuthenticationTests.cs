@@ -81,6 +81,44 @@ public sealed class PostgresAuthenticationTests : IAsyncLifetime
     }
 
     [Fact]
+    public async Task InactiveUserReturnsInvalidCredentialsAndNoSession()
+    {
+        await using var db = CreateContext();
+        var user = await db.Users.Include(x => x.Credential)
+            .SingleAsync(x => x.Credential!.Email == "resident@example.test");
+        user.IsActive = false;
+        await db.SaveChangesAsync();
+
+        var outcome = await Service(db).LoginAsync(
+            "resident@example.test", Password, CancellationToken.None);
+
+        Assert.Equal(LoginResultStatus.InvalidCredentials, outcome.Status);
+        Assert.Null(outcome.SessionToken);
+        Assert.Empty(await db.Sessions.Where(x => x.UserId == user.UserId).ToListAsync());
+    }
+
+    [Fact]
+    public async Task LoginObservesDeactivationDespitePreviouslyTrackedActiveUser()
+    {
+        await using var db = CreateContext();
+        var trackedUser = await db.Users.Include(x => x.Credential).SingleAsync();
+        Assert.True(trackedUser.IsActive);
+
+        await using (var other = CreateContext())
+        {
+            await other.Users.Where(x => x.UserId == userId)
+                .ExecuteUpdateAsync(setters => setters.SetProperty(x => x.IsActive, false));
+        }
+
+        var outcome = await Service(db).LoginAsync(
+            "resident@example.test", Password, CancellationToken.None);
+
+        Assert.Equal(LoginResultStatus.InvalidCredentials, outcome.Status);
+        Assert.Null(outcome.SessionToken);
+        Assert.Empty(await db.Sessions.Where(x => x.UserId == userId).ToListAsync());
+    }
+
+    [Fact]
     public async Task AcceptedActivityCannotResurrectDeletedSession()
     {
         await using var db = CreateContext();

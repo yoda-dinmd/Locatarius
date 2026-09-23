@@ -76,6 +76,25 @@ public sealed class AuthenticationServiceTests
     }
 
     [Fact]
+    public async Task LoginAsync_InactiveUser_ReturnsInvalidCredentialsAndNoSession()
+    {
+        await using var context = CreateContext();
+        await SeedUserAsync(context, mustChangePassword: false);
+        var user = await context.Users.Include(x => x.Credential)
+            .SingleAsync(x => x.Credential!.Email == "resident@example.com");
+        user.IsActive = false;
+        await context.SaveChangesAsync();
+        var service = CreateService(context);
+
+        var outcome = await service.LoginAsync(
+            "resident@example.com", Password, CancellationToken.None);
+
+        Assert.Equal(LoginResultStatus.InvalidCredentials, outcome.Status);
+        Assert.Null(outcome.SessionToken);
+        Assert.Empty(await context.Sessions.Where(x => x.UserId == user.UserId).ToListAsync());
+    }
+
+    [Fact]
     public async Task LoginAsync_FifthFailedAttempt_LocksAccountForFifteenMinutes()
     {
         await using var context = CreateContext();

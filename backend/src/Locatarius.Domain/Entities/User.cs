@@ -12,6 +12,8 @@ public sealed class User
 
     public DateOnly? DateOfBirth { get; set; }
 
+    public bool IsActive { get; set; } = true;
+
     public Guid? ApartmentId { get; set; }
 
     public UserContact? Contact { get; set; }
