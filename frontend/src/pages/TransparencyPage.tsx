@@ -13,7 +13,6 @@ import {
   money,
   months,
   notices,
-  percentage,
   total,
 } from "../features/transparency/data";
 import IssueLayout from "./IssueLayout";
