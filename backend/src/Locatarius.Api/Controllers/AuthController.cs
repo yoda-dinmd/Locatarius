@@ -4,6 +4,7 @@ using Locatarius.Api.Json;
 using Locatarius.Api.Validation;
 using Locatarius.Infrastructure.Auth;
 using Locatarius.Api.Auth;
+using Locatarius.Domain.Enums;
 using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
@@ -14,9 +15,31 @@ namespace Locatarius.Api.Controllers;
 [Route("api/auth")]
 public sealed class AuthController(
     AuthenticationService authenticationService,
+    SessionAuthorizationService sessionAuthorizationService,
     IAntiforgery antiforgery) : ControllerBase
 {
     private const long MaxBodyBytes = 16 * 1024;
+
+    [HttpGet("me")]
+    public async Task<IActionResult> Me(CancellationToken cancellationToken)
+    {
+        Response.Headers.CacheControl = "no-store";
+        var authorization = await sessionAuthorizationService.AuthorizeAsync(
+            Request.Cookies[SessionCookieOptions.CookieName],
+            requiredType: null, requireAdmin: false, cancellationToken);
+        if (authorization.Status != SessionAuthorizationStatus.Authorized)
+            return ApiErrors.Unauthorized("UNAUTHENTICATED", "Authentication required.");
+
+        var user = authorization.User!;
+        return Ok(new
+        {
+            id = user.UserId,
+            name = $"{user.FirstName} {user.LastName}",
+            email = user.Credential!.Email,
+            role = user.Role!.Role == UserRoleType.Admin ? "admin" : "resident",
+            mustChangePassword = user.Credential.MustChangePassword
+        });
+    }
 
     [HttpGet("csrf")]
     public async Task<IActionResult> GetCsrfToken(CancellationToken cancellationToken)

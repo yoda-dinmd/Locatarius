@@ -41,6 +41,7 @@ builder.Services.AddOptions<ForwardedHeadersOptions>()
     });
 
 builder.Services.AddScoped<AuthenticationService>();
+builder.Services.AddScoped<SessionAuthorizationService>();
 
 builder.Services.AddAntiforgery(options =>
 {

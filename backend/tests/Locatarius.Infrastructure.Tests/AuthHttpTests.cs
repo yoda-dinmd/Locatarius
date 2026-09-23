@@ -51,6 +51,12 @@ public sealed class AuthHttpTests : IAsyncLifetime
         client.DefaultRequestHeaders.Remove("Cookie");
         client.DefaultRequestHeaders.Add("Cookie", csrfCookie.Split(';')[0] + "; " + sessionCookie.Split(';')[0]);
         client.DefaultRequestHeaders.Remove("X-CSRF-TOKEN");
+        var me = await client.GetAsync("/api/auth/me");
+        Assert.Equal(HttpStatusCode.OK, me.StatusCode);
+        var identity = await me.Content.ReadFromJsonAsync<JsonElement>();
+        Assert.Equal("Test Admin", identity.GetProperty("name").GetString());
+        Assert.Equal("admin", identity.GetProperty("role").GetString());
+        Assert.True(identity.GetProperty("mustChangePassword").GetBoolean());
         var logoutDenied = await client.PostAsJsonAsync("/api/auth/logout", new { });
         Assert.Equal(HttpStatusCode.Forbidden, logoutDenied.StatusCode);
         client.DefaultRequestHeaders.Add("X-CSRF-TOKEN", token);
