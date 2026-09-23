@@ -1,9 +1,7 @@
 # Resident transparency dashboard
 
-The selected Clear & Calm design is now the only implementation. Open
-`/transparency`; the original `/transparency/version-1` review URL remains an alias.
-Versions 2 and 3, the design switcher, category/notice filters and their unused
-styles and data fields have been removed.
+Open `/transparency`. `/transparency/version-1` remains a compatibility alias
+for previously shared review links; it uses the same implementation.
 
 The page presents the monthly total, a previous-month comparison, expense category
 shares, announcements, monthly spending history, average spending and an itemized
@@ -48,7 +46,7 @@ First-time full-stack setup is documented in `docs/local-https.md`.
 ## Implementation and validation
 
 Reuses React/TypeScript, the dashboard shell styling, teal/mint palette, existing
-fonts and brand mark. No new dependencies. CSS charts respect reduced motion;
+fonts and brand mark. No additional runtime dependencies. CSS charts respect reduced motion;
 native details/summary elements provide keyboard-accessible announcement expansion.
 
 `src/features/transparency/data.ts` is the single source for totals, shares, comparisons,
@@ -57,11 +55,10 @@ July: 44,500 MDL. August changes: −4,500 repairs + 200 cleaning + 0 elevator +
 1,650 utilities = −2,650 MDL, or 6% lower after rounding. Historical averages
 include March through the selected month and are rounded to whole MDL.
 
-Run `npm run build` and `npm run lint` from frontend. Browser review covers
-360, 390, 768, 1024 and 1440px, expense-month changes, chart focus, notice expansion,
-reduced motion, accessibility scans and browser errors. Automated accessibility
-scans do not replace manual screen-reader testing.
+Run `npm run build`, `npm run lint` and `npm run test:navigation` from frontend.
+The browser suite verifies sidebar consistency, navigation, month totals,
+comparison values, chart focus, notice expansion and reduced motion. See
+[frontend setup](../../../README.md) for browser installation and container testing.
 
-The final implementation passed build/lint, arithmetic checks and the above browser
-checks against the production Docker container. Desktop/mobile accessibility scans
-reported no violations; no browser console errors or horizontal overflow were found.
+Automated browser checks do not replace manual screen-reader testing. Historical
+visual/accessibility checks are not evidence of live API authorization or data accuracy.

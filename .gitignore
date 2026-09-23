@@ -33,3 +33,7 @@ pgdata/
 ## Local HTTPS material
 /.local/
 /nginx/certs/
+
+## Frontend browser tests
+/frontend/test-results/
+/frontend/playwright-report/

@@ -1,13 +1,22 @@
+import Icon from "../components/Icon";
+import type { UserRole } from "../auth/auth";
+import AppSidebar from "../components/AppSidebar";
 import { useState } from "react";
 import {
   Breakdown,
   Comparison,
   Count,
-  Icon,
   NoticeList,
   Trend,
 } from "../features/transparency/components";
-import { categories, money, months, notices, percentage, total } from "../features/transparency/data";
+import {
+  categories,
+  money,
+  months,
+  notices,
+  percentage,
+  total,
+} from "../features/transparency/data";
 import "../styles/Dashboard.css";
 import "../styles/TransparencyPage.css";
 
@@ -173,7 +182,7 @@ function MonthlyOverview({ index }: { index: number }) {
   );
 }
 
-export default function TransparencyPage() {
+export default function TransparencyPage({ role }: { role?: UserRole }) {
   const queryMonth = new URLSearchParams(window.location.search).get("month");
   const [index, setIndex] = useState(queryMonth === "july" ? 4 : 5);
   function changeMonth(value: number) {
@@ -200,41 +209,7 @@ export default function TransparencyPage() {
         </div>
       </header>
       <div className="dashboard-layout">
-        <aside className="dashboard-sidebar tp-sidebar">
-          <p className="tp-sidebar-label">Your association</p>
-          <div className="tp-building">
-            <span className="tp-building-icon">
-              <Icon name="home" size={24} />
-            </span>
-            <div>
-              <strong>Teilor Residence</strong>
-              <small>12 Teilor Street · Demo</small>
-            </div>
-          </div>
-          <nav aria-label="Main navigation">
-            <a className="dashboard-nav-link" href="/dashboard">
-              <Icon name="home" />
-              Dashboard
-            </a>
-            <a
-              className="dashboard-nav-link active"
-              href="/transparency"
-              aria-current="page"
-            >
-              <Icon name="board" />
-              Transparency
-            </a>
-            <a className="dashboard-nav-link" href="/issues">
-              <Icon name="issue" />
-              Issues
-            </a>
-          </nav>
-          <div className="tp-sidebar-bottom">
-            <span className="tp-eyebrow">A shared home.</span>
-            <p>A clearer picture.</p>
-            <small>Your building’s finances and updates, in one place.</small>
-          </div>
-        </aside>
+        <AppSidebar activePage="transparency" role={role} />
         <main className="tp-main" id="transparency-main">
           <div className="tp-page-heading">
             <div>
