@@ -163,9 +163,6 @@ export function Trend({ index }: { index: number }) {
           ))}
         </div>
       </div>
-      <p className="tp-footnote">
-        Hover, tap or focus a month to inspect its expenses.
-      </p>
     </div>
   );
 }

@@ -12,7 +12,7 @@
   text-align: left;
 }
 .tp-page h1 {
-  font-size: clamp(29px, 3vw, 40px);
+  font-size: clamp(2.1rem, 4vw, 3rem);
   line-height: 1.12;
 }
 .tp-page h2 {
@@ -117,19 +117,94 @@
   flex-shrink: 0;
 }
 .tp-month-control label {
-  margin: 0 0 5px;
-  font-size: 10px;
-  font-weight: 400;
-  color: var(--tp-muted);
+  display: block;
+  margin: 0 0 0.45rem;
+  color: #164950;
+  font-size: 0.82rem;
+  font-weight: 700;
 }
-.tp-month-control > div {
+.tp-month-picker {
+  position: relative;
   display: flex;
   align-items: center;
-  gap: 7px;
-  border: 1px solid #cbded6;
+  gap: 0.55rem;
+  min-width: 190px;
+  border: 1px solid #cfe1e4;
+  border-radius: 999px;
+  padding: 0.35rem 0.45rem 0.35rem 0.75rem;
+  color: #087d6b;
+  background: #e4f2ed;
+}
+
+.tp-month-picker svg {
+  flex-shrink: 0;
+}
+
+.tp-month-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  min-height: 34px;
+  border: 0;
+  border-radius: 999px;
+  padding: 0.45rem 0.65rem;
+  color: #087d6b;
+  background: transparent;
+  cursor: pointer;
+  font: 700 0.82rem "Trebuchet MS", "Segoe UI", sans-serif;
+  text-align: left;
+}
+
+.tp-month-trigger:hover,
+.tp-month-trigger:focus-visible {
+  color: #ffffff;
+  background: #087d6b;
+  outline: none;
+}
+
+.tp-month-arrow {
+  margin-left: 0.75rem;
+  font-size: 0.75rem;
+}
+
+.tp-month-menu {
+  position: absolute;
+  z-index: 5;
+  top: calc(100% + 0.35rem);
+  right: 0;
+  display: grid;
+  gap: 0.25rem;
+  width: 100%;
+  border: 1px solid #cfe1e4;
+  border-radius: 12px;
+  padding: 0.35rem;
+  background: #ffffff;
+  box-shadow: 0 8px 18px rgba(13, 43, 44, 0.12);
+}
+
+.tp-month-menu[hidden] {
+  display: none;
+}
+
+.tp-month-menu button {
+  width: 100%;
+  border: 0;
   border-radius: 8px;
-  padding-left: 12px;
-  background: white;
+  padding: 0.55rem 0.65rem;
+  color: #087d6b;
+  background: #e4f2ed;
+  cursor: pointer;
+  font: 700 0.82rem "Trebuchet MS", "Segoe UI", sans-serif;
+  text-align: left;
+}
+
+.tp-month-menu button:hover,
+.tp-month-menu button:focus-visible,
+.tp-month-menu button[aria-selected="true"] {
+  color: #ffffff;
+  background: #087d6b;
+  outline: none;
 }
 .tp-month-control select {
   min-height: 44px;

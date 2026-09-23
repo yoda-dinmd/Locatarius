@@ -1,7 +1,11 @@
 .dashboard-sidebar.app-sidebar {
-  position: sticky;
-  top: 0;
+  position: fixed;
+  top: 66px;
+  left: 0;
+  bottom: 0;
+  z-index: 10;
   align-self: start;
+  width: 220px;
   height: calc(100dvh - 66px);
   overflow-y: auto;
   display: flex;
@@ -83,8 +87,14 @@
   color: #4a676a;
   line-height: 1.7;
 }
+@media (max-width: 1150px) and (min-width: 1001px) {
+  .dashboard-sidebar.app-sidebar {
+    width: 190px;
+  }
+}
 @media (max-width: 1000px) and (min-width: 721px) {
   .dashboard-sidebar.app-sidebar {
+    width: 165px;
     padding-left: 10px;
     padding-right: 10px;
   }
@@ -95,6 +105,7 @@
 @media (max-width: 720px) {
   .dashboard-sidebar.app-sidebar {
     position: static;
+    width: auto;
     height: auto;
     overflow: visible;
     padding: 14px 16px 8px;

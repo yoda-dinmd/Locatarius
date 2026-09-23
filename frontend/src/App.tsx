@@ -13,9 +13,8 @@ import CloseIssuePage from "./pages/CloseIssuePage";
 export default function App() {
   const path = window.location.pathname;
   const session = getSession();
-  // Public synthetic demo; the selected direction also retains its original review URL.
-  if (/^\/transparency(?:\/version-1)?\/?$/.test(path)) {
-    return <TransparencyPage role={session?.role} />;
+  if (/^\/transparency(?:\/version-1)?\/?$/.test(path) && session) {
+    return <TransparencyPage user={session} />;
   }
   const pendingUser = getPendingUser();
 

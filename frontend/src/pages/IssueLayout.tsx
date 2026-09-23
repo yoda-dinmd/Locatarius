@@ -1,23 +1,14 @@
-import AppSidebar from "../components/AppSidebar";
 import type { ReactNode } from "react";
 import type { SessionUser } from "../auth/auth";
 import { signOut } from "../auth/auth";
+import AppSidebar from "../components/AppSidebar";
 import "../styles/Dashboard.css";
 
 type IssueLayoutProps = {
   user: SessionUser;
-  activePage: "dashboard" | "issues";
+  activePage: "dashboard" | "transparency" | "issues";
   children: ReactNode;
 };
-
-function getInitials(name: string) {
-  return name
-    .split(" ")
-    .map((part) => part[0])
-    .join("")
-    .slice(0, 2)
-    .toUpperCase();
-}
 
 export default function IssueLayout({ user, activePage, children }: IssueLayoutProps) {
   function handleSignOut() {
@@ -32,9 +23,10 @@ export default function IssueLayout({ user, activePage, children }: IssueLayoutP
           <span className="brand-mark">L</span>
           <span>Locatarius</span>
         </a>
-
         <div className="dashboard-user">
-          <span className="user-initials">{getInitials(user.name)}</span>
+          <span className="user-initials">
+            {user.name.split(" ").map((part) => part[0]).join("").slice(0, 2).toUpperCase()}
+          </span>
           <span className="user-details">
             <strong>{user.name}</strong>
             <small>{user.role === "admin" ? "Administrator" : "Resident"}</small>
@@ -44,10 +36,15 @@ export default function IssueLayout({ user, activePage, children }: IssueLayoutP
           </button>
         </div>
       </header>
-
       <div className="dashboard-layout">
         <AppSidebar activePage={activePage} role={user.role} />
-        <section className="dashboard-content issue-page-content">{children}</section>
+        {activePage === "issues" ? (
+          <section className="dashboard-content issue-page-content">
+            {children}
+          </section>
+        ) : (
+          children
+        )}
       </div>
     </main>
   );

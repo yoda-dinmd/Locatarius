@@ -253,7 +253,6 @@ export default function IssueTriage() {
     <div className="issue-triage">
       <div className="triage-heading">
         <div>
-          <p className="triage-eyebrow">Building management</p>
           <h1>Issues</h1>
         </div>
       </div>
