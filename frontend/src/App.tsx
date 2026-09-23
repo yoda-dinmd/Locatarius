@@ -4,12 +4,19 @@ import ChangePassword from "./pages/ChangePassword";
 import Dashboard from "./pages/Dashboard";
 import IssuesPage from "./pages/IssuesPage";
 import LoginPage from "./pages/LoginPage";
+
+import TransparencyPage from "./transparency/TransparencyPage";
 import IssueDetailsPage from "./pages/IssueDetailsPage";
 import ReportIssuePage from "./pages/ReportIssuePage";
 import CloseIssuePage from "./pages/CloseIssuePage";
 
+
 export default function App() {
   const path = window.location.pathname;
+  // Public synthetic demo; the selected direction also retains its original review URL.
+  if (/^\/transparency(?:\/version-1)?\/?$/.test(path)) {
+    return <TransparencyPage />;
+  }
   const session = getSession();
   const pendingUser = getPendingUser();
 
