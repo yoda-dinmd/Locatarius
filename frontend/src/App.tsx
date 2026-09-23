@@ -1,4 +1,5 @@
 import { getPendingUser, getSession } from "./auth/auth";
+import AdminIssuesPage from "./pages/AdminIssuesPage";
 import ChangePassword from "./pages/ChangePassword";
 import Dashboard from "./pages/Dashboard";
 import IssuesPage from "./pages/IssuesPage";
@@ -18,6 +19,10 @@ export default function App() {
 
   if (path === "/dashboard" && session) {
     return <Dashboard user={session} />;
+  }
+
+  if (path === "/admin/issues" && session?.role === "admin") {
+    return <AdminIssuesPage user={session} />;
   }
 
   if (path === "/issues" && session) {

@@ -50,10 +50,10 @@ export default function Dashboard({ user }: DashboardProps) {
       <div className="dashboard-layout">
         <aside className="dashboard-sidebar">
           <nav aria-label="Main navigation">
-            <a className="dashboard-nav-link active" href="/dashboard">
+            <a className="dashboard-nav-link active" href="/dashboard" aria-current="page">
               Dashboard
             </a>
-            <a className="dashboard-nav-link" href="/issues">
+            <a className="dashboard-nav-link" href={user.role === "admin" ? "/admin/issues" : "/issues"}>
               Issues
             </a>
           </nav>

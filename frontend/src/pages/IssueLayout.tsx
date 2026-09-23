@@ -19,6 +19,8 @@ function getInitials(name: string) {
 }
 
 export default function IssueLayout({ user, activePage, children }: IssueLayoutProps) {
+  const issuesHref = user.role === "admin" ? "/admin/issues" : "/issues";
+
   function handleSignOut() {
     signOut();
     window.location.href = "/";
@@ -50,7 +52,11 @@ export default function IssueLayout({ user, activePage, children }: IssueLayoutP
             <a className={`dashboard-nav-link ${activePage === "dashboard" ? "active" : ""}`} href="/dashboard">
               Dashboard
             </a>
-            <a className={`dashboard-nav-link ${activePage === "issues" ? "active" : ""}`} href="/issues">
+            <a
+              className={`dashboard-nav-link ${activePage === "issues" ? "active" : ""}`}
+              href={issuesHref}
+              aria-current={activePage === "issues" ? "page" : undefined}
+            >
               Issues
             </a>
           </nav>
