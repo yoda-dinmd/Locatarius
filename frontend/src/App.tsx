@@ -5,7 +5,7 @@ import Dashboard from "./pages/Dashboard";
 import IssuesPage from "./pages/IssuesPage";
 import LoginPage from "./pages/LoginPage";
 
-import TransparencyPage from "./transparency/TransparencyPage";
+import TransparencyPage from "./pages/TransparencyPage";
 import IssueDetailsPage from "./pages/IssueDetailsPage";
 import ReportIssuePage from "./pages/ReportIssuePage";
 import CloseIssuePage from "./pages/CloseIssuePage";
