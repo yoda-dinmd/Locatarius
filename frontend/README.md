@@ -1,75 +1,62 @@
-# React + TypeScript + Vite
+# Frontend structure and navigation
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+- `src/pages/`: route-level page components and the existing Issues layout.
+- `src/styles/`: page styles.
+- `src/components/`: UI shared across pages. `MainNavigation.tsx` owns the main
+  links, active-page styling and role-specific Issues destination.
+- `src/features/`: domain-specific components, fixtures and helpers.
+- `src/App.tsx`: route selection and existing session/role checks. Links use normal
+  browser navigation; no extra router library is needed for this change.
 
-Currently, two official plugins are available:
+Dashboard and Transparency use `AppSidebar`; all Issues screens use it through
+`IssueLayout`, including detail, creation, closing and not-found states.
+`AppSidebar` owns the shared demo association identity and sidebar
+footer, styled by `styles/AppSidebar.css`. It renders `MainNavigation` for the links.
+The desktop sidebar fits the viewport and stays visible on long pages; on mobile,
+association details and links remain visible and the decorative footer is hidden.
+Sidebar sizing is shared, not overridden by individual pages.
+Add future main-navigation entries in `MainNavigation`, not in individual pages.
+Navigation visibility is not authorization: access checks remain in the route/API.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Navigation regression checks
 
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-
+```sh
+cd frontend
+npm ci
+npx playwright install chromium
+npm run test:navigation
 ```
 
-You can also install [eslint-plugin-react-x](https://npmx.dev/package/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://npmx.dev/package/eslint-plugin-react-dom) for React-specific lint rules:
+The test command starts its own Vite server on port 4173. Tests cover resident and
+admin navigation at desktop/tablet/mobile widths, returning from Issues subpages,
+active links, keyboard activation, reload and browser back. They also verify footer
+visibility while scrolling, consistent sidebar sizing, month totals and reduced motion. They use isolated mock sessions.
+Playwright is a development-only dependency; it adds no browser application code.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+To test the built preview container instead:
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-
+```sh
+NAVIGATION_BASE_URL=http://localhost:8081 npm run test:navigation
 ```
+
+If using an already-installed Chrome instead of Playwright Chromium, add
+`PLAYWRIGHT_CHANNEL=chrome` to the test command.
+
+## Container updates
+
+The Docker frontend serves a build copied into its image. Editing source or running
+`npm run build` locally does not update a running container. For the standalone
+port-8081 preview, rebuild and recreate it using the instructions in
+[src/features/transparency/README.md](src/features/transparency/README.md).
+For the configured Compose frontend use `docker compose up -d --build frontend`
+from the repository root. Use the URL/port of that deployment when reviewing it.
+
+## Release scope
+
+This is a mock frontend implementation, not a live financial service. Existing
+login/session behavior uses browser-local mock state; the association label,
+expenses and announcements are synthetic. Before live deployment, integrate
+server-authenticated association context and authorized financial/notice APIs.
+The public `/transparency` route intentionally exposes only demo data. It must be
+protected before real association data is introduced. This change does not modify
+the existing authentication model or claim to deliver those backend integrations.

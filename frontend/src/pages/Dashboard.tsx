@@ -1,3 +1,4 @@
+import AppSidebar from "../components/AppSidebar";
 import type { SessionUser } from "../auth/auth";
 import { signOut } from "../auth/auth";
 import "../styles/Dashboard.css";
@@ -48,16 +49,7 @@ export default function Dashboard({ user }: DashboardProps) {
       </header>
 
       <div className="dashboard-layout">
-        <aside className="dashboard-sidebar">
-          <nav aria-label="Main navigation">
-            <a className="dashboard-nav-link active" href="/dashboard" aria-current="page">
-              Dashboard
-            </a>
-            <a className="dashboard-nav-link" href={user.role === "admin" ? "/admin/issues" : "/issues"}>
-              Issues
-            </a>
-          </nav>
-        </aside>
+        <AppSidebar activePage="dashboard" role={user.role} />
 
         <section className="dashboard-content dashboard-home-content">
           <h1>Welcome, {user.name}</h1>

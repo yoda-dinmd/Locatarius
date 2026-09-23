@@ -78,7 +78,7 @@
 
 .dashboard-layout {
   display: grid;
-  grid-template-columns: 220px 1fr;
+  grid-template-columns: 220px minmax(0, 1fr);
   min-height: calc(100vh - 66px);
 }
 
@@ -92,16 +92,6 @@
   display: flex;
   flex-direction: column;
   gap: 0.35rem;
-}
-
-.dashboard-logo-text {
-  display: block;
-  margin: 0 0 2rem 0.8rem;
-  color: #073d43;
-  font-family: Georgia, "Times New Roman", serif;
-  font-size: 1.25rem;
-  font-weight: 700;
-  text-decoration: none;
 }
 
 .dashboard-nav-link {
@@ -138,15 +128,6 @@
     linear-gradient(160deg, #f2faf6 0%, #d5eee2 42%, #a6d5c0 72%, #78b99f 100%);
 }
 
-.dashboard-eyebrow {
-  margin: 0 0 0.6rem;
-  color: #087d6b;
-  font-size: 0.7rem;
-  font-weight: 800;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-}
-
 .dashboard-home-content h1 {
   margin: 0;
   font-size: clamp(2.4rem, 5vw, 3.6rem);
@@ -156,6 +137,18 @@
   margin: 1rem 0 0;
   color: #5a7c80;
   font-size: 0.95rem;
+}
+
+@media (max-width: 1150px) {
+  .dashboard-layout {
+    grid-template-columns: 190px minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 1000px) and (min-width: 721px) {
+  .dashboard-layout {
+    grid-template-columns: 165px minmax(0, 1fr);
+  }
 }
 
 @media (max-width: 720px) {
@@ -176,10 +169,6 @@
     border-right: 0;
     border-bottom: 1px solid #dce9e5;
     padding: 1rem;
-  }
-
-  .dashboard-logo-text {
-    margin: 0 0 0.75rem;
   }
 
   .dashboard-content {

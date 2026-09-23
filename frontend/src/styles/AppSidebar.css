@@ -1,0 +1,141 @@
+.dashboard-sidebar.app-sidebar {
+  position: sticky;
+  top: 0;
+  align-self: start;
+  height: calc(100dvh - 66px);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  padding-top: 30px;
+  color: #164950;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.app-association-label {
+  margin: 0;
+  padding: 0 12px;
+  color: #4a676a;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+.app-association-details {
+  display: flex;
+  gap: 9px;
+  align-items: center;
+  padding: 16px 8px 30px;
+}
+.app-association-details strong,
+.app-association-details small {
+  display: block;
+}
+.app-association-details strong {
+  font-size: 12px;
+}
+.app-association-details small {
+  margin-top: 4px;
+  font-size: 10px;
+  color: #4a676a;
+}
+.app-association-icon {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 36px;
+  height: 40px;
+  border-radius: 9px;
+  background: #edf5f1;
+}
+.app-sidebar .dashboard-nav-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 46px;
+  margin-bottom: 6px;
+}
+.app-sidebar .dashboard-nav-link.active {
+  color: #076959;
+}
+.app-sidebar .dashboard-nav-link:focus-visible {
+  outline: 3px solid #b78b32;
+  outline-offset: 3px;
+}
+.app-sidebar svg {
+  flex-shrink: 0;
+}
+.app-sidebar-footer {
+  margin-top: auto;
+  padding: 24px 12px 12px;
+}
+.app-sidebar-footer > span {
+  color: #076959;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.13em;
+}
+.app-sidebar .app-sidebar-footer p {
+  font-family: Georgia, serif;
+  font-size: 23px;
+  margin: 5px 0 10px;
+}
+.app-sidebar-footer small {
+  color: #4a676a;
+  line-height: 1.7;
+}
+@media (max-width: 1000px) and (min-width: 721px) {
+  .dashboard-sidebar.app-sidebar {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+  .app-association-icon {
+    display: none;
+  }
+}
+@media (max-width: 720px) {
+  .dashboard-sidebar.app-sidebar {
+    position: static;
+    height: auto;
+    overflow: visible;
+    padding: 14px 16px 8px;
+  }
+  .app-association {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 0 4px 12px;
+  }
+  .app-association-label {
+    padding: 0;
+    font-size: 9px;
+  }
+  .app-association-details {
+    padding: 0;
+  }
+  .app-association-details > div {
+    text-align: right;
+  }
+  .app-association-details small {
+    margin-top: 2px;
+  }
+  .app-association-icon,
+  .app-sidebar-footer {
+    display: none;
+  }
+  .dashboard-sidebar.app-sidebar nav {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 7px;
+  }
+  .app-sidebar .dashboard-nav-link {
+    margin: 0;
+    padding: 9px 12px;
+    min-height: 42px;
+    font-size: 11px;
+    gap: 7px;
+  }
+  .app-sidebar .dashboard-nav-link svg {
+    width: 17px;
+  }
+}

@@ -1,3 +1,4 @@
+import AppSidebar from "../components/AppSidebar";
 import type { ReactNode } from "react";
 import type { SessionUser } from "../auth/auth";
 import { signOut } from "../auth/auth";
@@ -19,8 +20,6 @@ function getInitials(name: string) {
 }
 
 export default function IssueLayout({ user, activePage, children }: IssueLayoutProps) {
-  const issuesHref = user.role === "admin" ? "/admin/issues" : "/issues";
-
   function handleSignOut() {
     signOut();
     window.location.href = "/";
@@ -47,20 +46,7 @@ export default function IssueLayout({ user, activePage, children }: IssueLayoutP
       </header>
 
       <div className="dashboard-layout">
-        <aside className="dashboard-sidebar">
-          <nav aria-label="Main navigation">
-            <a className={`dashboard-nav-link ${activePage === "dashboard" ? "active" : ""}`} href="/dashboard">
-              Dashboard
-            </a>
-            <a
-              className={`dashboard-nav-link ${activePage === "issues" ? "active" : ""}`}
-              href={issuesHref}
-              aria-current={activePage === "issues" ? "page" : undefined}
-            >
-              Issues
-            </a>
-          </nav>
-        </aside>
+        <AppSidebar activePage={activePage} role={user.role} />
         <section className="dashboard-content issue-page-content">{children}</section>
       </div>
     </main>

@@ -10,14 +10,13 @@ import IssueDetailsPage from "./pages/IssueDetailsPage";
 import ReportIssuePage from "./pages/ReportIssuePage";
 import CloseIssuePage from "./pages/CloseIssuePage";
 
-
 export default function App() {
   const path = window.location.pathname;
+  const session = getSession();
   // Public synthetic demo; the selected direction also retains its original review URL.
   if (/^\/transparency(?:\/version-1)?\/?$/.test(path)) {
-    return <TransparencyPage />;
+    return <TransparencyPage role={session?.role} />;
   }
-  const session = getSession();
   const pendingUser = getPendingUser();
 
   if (path === "/change-password" && pendingUser) {
