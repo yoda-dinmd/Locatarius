@@ -6,10 +6,10 @@ import {
   Icon,
   NoticeList,
   Trend,
-} from "./components";
-import { categories, money, months, notices, percentage, total } from "./data";
+} from "../features/transparency/components";
+import { categories, money, months, notices, percentage, total } from "../features/transparency/data";
 import "../styles/Dashboard.css";
-import "./transparency.css";
+import "../styles/TransparencyPage.css";
 
 function MonthlyOverview({ index }: { index: number }) {
   const current = months[index];

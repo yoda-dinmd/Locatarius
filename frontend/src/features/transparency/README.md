@@ -51,7 +51,7 @@ Reuses React/TypeScript, the dashboard shell styling, teal/mint palette, existin
 fonts and brand mark. No new dependencies. CSS charts respect reduced motion;
 native details/summary elements provide keyboard-accessible announcement expansion.
 
-`src/transparency/data.ts` is the single source for totals, shares, comparisons,
+`src/features/transparency/data.ts` is the single source for totals, shares, comparisons,
 monthly trend and average. August: 16,500 + 8,400 + 7,500 + 9,450 = 41,850 MDL.
 July: 44,500 MDL. August changes: −4,500 repairs + 200 cleaning + 0 elevator +
 1,650 utilities = −2,650 MDL, or 6% lower after rounding. Historical averages
