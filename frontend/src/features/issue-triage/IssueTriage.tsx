@@ -23,6 +23,61 @@ const formatDate = (value: string) => dateFormat.format(new Date(value));
 const priorityOptions: IssuePriority[] = [1, 2, 3, 4];
 const dragType = "application/x-locatarius-issue";
 
+type SelectOption = { value: string; label: string };
+
+function TriageSelect({
+  id,
+  value,
+  options,
+  onChange,
+  disabled = false,
+}: {
+  id: string;
+  value: string;
+  options: SelectOption[];
+  onChange: (value: string) => void;
+  disabled?: boolean;
+}) {
+  const [open, setOpen] = useState(false);
+  const selected = options.find((option) => option.value === value) ?? options[0];
+
+  return (
+    <span className={`triage-select${disabled ? " triage-select-disabled" : ""}`}>
+      <button
+        id={id}
+        className="triage-select-trigger"
+        type="button"
+        disabled={disabled}
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        onClick={() => setOpen((current) => !current)}
+      >
+        <span>{selected.label}</span>
+        <span aria-hidden="true">⮟</span>
+      </button>
+      {open && !disabled && (
+        <span className="triage-select-menu" role="listbox" aria-labelledby={id}>
+          {options.map((option) => (
+            <button
+              className="triage-select-option"
+              type="button"
+              role="option"
+              aria-selected={option.value === value}
+              key={option.value}
+              onClick={() => {
+                onChange(option.value);
+                setOpen(false);
+              }}
+            >
+              {option.label}
+            </button>
+          ))}
+        </span>
+      )}
+    </span>
+  );
+}
+
 type IssueDetailsProps = {
   issue: Issue;
   onClose: () => void;
@@ -91,39 +146,33 @@ function IssueDetails({
         </div>
         <h2 id="issue-detail-title">{issue.title}</h2>
         <p className="triage-description">{issue.description}</p>
-        <dl className="triage-facts">
-          <div><dt>Reported by</dt><dd>{reporterName(issue)}</dd></div>
-          <div><dt>Apartment</dt><dd>{issue.reporter.apartment?.apartmentNumber ?? "Not assigned"}</dd></div>
-          <div><dt>Reported on</dt><dd>{formatDate(issue.createdAt)}</dd></div>
-          {issue.updatedAt && <div><dt>Last updated</dt><dd>{formatDate(issue.updatedAt)}</dd></div>}
-          {issue.resolvedAt && <div><dt>Closed on</dt><dd>{formatDate(issue.resolvedAt)}</dd></div>}
-        </dl>
+        <div className="triage-detail-overview">
+          <dl className="triage-facts">
+            <div><dt>Reported by</dt><dd>{reporterName(issue)}</dd></div>
+            <div><dt>Apartment</dt><dd>{issue.reporter.apartment?.apartmentNumber ?? "Not assigned"}</dd></div>
+            <div><dt>Reported on</dt><dd>{formatDate(issue.createdAt)}</dd></div>
+            {issue.updatedAt && <div><dt>Last updated</dt><dd>{formatDate(issue.updatedAt)}</dd></div>}
+            {issue.resolvedAt && <div><dt>Closed on</dt><dd>{formatDate(issue.resolvedAt)}</dd></div>}
+          </dl>
 
-        <section className="triage-detail-section" aria-labelledby="triage-action-heading">
-          <h3 id="triage-action-heading">Triage</h3>
-          <p className="triage-section-copy">Update status or set the priority of an active issue.</p>
-          <label htmlFor="triage-detail-status">Status</label>
-          <select
-            id="triage-detail-status"
-            value={issue.status}
-            onChange={(event) => onStatusChange(Number(event.target.value) as IssueStatus)}
-          >
-            {statuses.map((value) => (
-              <option value={value} key={value}>{statusLabels[value]}</option>
-            ))}
-          </select>
-          <label htmlFor="triage-detail-priority">Priority</label>
-          <select
-            id="triage-detail-priority"
-            value={issue.priority}
-            disabled={issue.status === 3}
-            onChange={(event) => onPriorityChange(Number(event.target.value) as IssuePriority)}
-          >
-            {priorityOptions.map((value) => (
-              <option value={value} key={value}>{priorityLabels[value]}</option>
-            ))}
-          </select>
-        </section>
+          <section className="triage-detail-section" aria-labelledby="triage-action-heading">
+            <label htmlFor="triage-detail-status">Status</label>
+            <TriageSelect
+              id="triage-detail-status"
+              value={String(issue.status)}
+              onChange={(value) => onStatusChange(Number(value) as IssueStatus)}
+              options={statuses.map((value) => ({ value: String(value), label: statusLabels[value] }))}
+            />
+            <label htmlFor="triage-detail-priority">Priority</label>
+            <TriageSelect
+              id="triage-detail-priority"
+              value={String(issue.priority)}
+              disabled={issue.status === 3}
+              onChange={(value) => onPriorityChange(Number(value) as IssuePriority)}
+              options={priorityOptions.map((value) => ({ value: String(value), label: priorityLabels[value] }))}
+            />
+          </section>
+        </div>
 
         <h3>Attached photo <span className="triage-muted">({issue.attachments.length})</span></h3>
         {issue.attachments.length ? issue.attachments.map((attachment) => (
@@ -131,22 +180,9 @@ function IssueDetails({
             <a href={attachment.fileUrl} target="_blank" rel="noreferrer" aria-label="Open full water meter photo in a new tab">
               <img src={attachment.fileUrl} alt={`Photo attached to ${issue.title}`} />
             </a>
-            <figcaption>
-              Sample photo · <a href="https://commons.wikimedia.org/wiki/File:Broken_water_meter_shows_measurement_in_residential_area.jpg" target="_blank" rel="noreferrer">Shixart1985 / Wikimedia Commons</a> · <a href="https://creativecommons.org/licenses/by/2.0/" target="_blank" rel="noreferrer">CC BY 2.0</a>
-            </figcaption>
           </figure>
         )) : <p className="triage-no-photo">No photo was attached to this report.</p>}
       </div>
-
-      <footer className="triage-detail-footer">
-        <div aria-live="polite">
-          <strong>{statusLabels[issue.status]}</strong>
-          <p>{issue.status === 3 ? "Reopen in progress if more work is needed." : "Move this issue to the next stage when ready."}</p>
-        </div>
-        <button className="triage-primary" type="button" onClick={() => onStatusChange(issue.status === 1 ? 2 : issue.status === 2 ? 3 : 2)}>
-          {issue.status === 1 ? "Start work" : issue.status === 2 ? "Close issue" : "Reopen in progress"}<span aria-hidden="true"> →</span>
-        </button>
-      </footer>
     </dialog>
   );
 }
@@ -217,18 +253,26 @@ export default function IssueTriage() {
     <div className="issue-triage">
       <div className="triage-heading">
         <div>
-          <p className="triage-eyebrow">Building management · Teilor 12</p>
+          <p className="triage-eyebrow">Building management</p>
           <h1>Issues</h1>
-          <p className="triage-intro">Review reports from your building and keep repairs moving.</p>
         </div>
-        <span className="triage-demo">Presentation demo</span>
       </div>
 
       <div className="triage-summary" aria-label="Issue overview">
-        <div className="triage-summary-stat"><strong>{issues.filter((issue) => issue.status === 1).length}</strong><span>Open</span></div>
-        <div className="triage-summary-stat"><strong>{issues.filter((issue) => issue.status === 2).length}</strong><span>In progress</span></div>
-        <div className="triage-summary-stat"><strong>{issues.filter((issue) => issue.status === 3).length}</strong><span>Closed</span></div>
-        <p className="triage-demo-note">{issues.length} sample reports · changes reset on refresh</p>
+        <div className="triage-summary-stat">
+          <strong>{issues.filter((issue) => issue.status === 1).length}</strong>
+          <span>Open</span>
+        </div>
+
+        <div className="triage-summary-stat">
+          <strong>{issues.filter((issue) => issue.status === 2).length}</strong>
+          <span>In progress</span>
+        </div>
+
+        <div className="triage-summary-stat">
+          <strong>{issues.filter((issue) => issue.status === 3).length}</strong>
+          <span>Closed</span>
+        </div>
       </div>
 
       <div className="triage-toolbar">
@@ -238,18 +282,11 @@ export default function IssueTriage() {
         </div>
         <div className="triage-filter">
           <label htmlFor="triage-priority">Priority</label>
-          <select id="triage-priority" value={priority} onChange={(event) => setPriority(event.target.value)}>
-            <option value="all">All priorities</option>
-            {[4, 3, 2, 1].map((value) => <option key={value} value={value}>{priorityLabels[value as IssuePriority]}</option>)}
-          </select>
+          <TriageSelect id="triage-priority" value={priority} onChange={setPriority} options={[{ value: "all", label: "All priorities" }, ...[4, 3, 2, 1].map((value) => ({ value: String(value), label: priorityLabels[value as IssuePriority] }))]} />
         </div>
         <div className="triage-filter">
           <label htmlFor="triage-sort">Sort cards</label>
-          <select id="triage-sort" value={sort} onChange={(event) => setSort(event.target.value)}>
-            <option value="priority">Highest priority</option>
-            <option value="newest">Newest first</option>
-            <option value="oldest">Oldest first</option>
-          </select>
+          <TriageSelect id="triage-sort" value={sort} onChange={setSort} options={[{ value: "priority", label: "Highest priority" }, { value: "newest", label: "Newest first" }, { value: "oldest", label: "Oldest first" }]} />
         </div>
       </div>
       <div className="triage-toolbar-meta">
@@ -277,7 +314,7 @@ export default function IssueTriage() {
                 <h2 id={`triage-column-${status}`}><span className={`triage-dot triage-dot-${status}`} />{statusLabels[status]}</h2>
                 <span className="triage-count">{column.length}</span>
               </header>
-              <p className="triage-column-caption">{status === 1 ? "Ready for review" : status === 2 ? "Repairs under way" : "Resolved and completed"}</p>
+              <p className="triage-column-caption">{status === 1 ? "" : status === 2 ? "" : ""}</p>
               <div className="triage-cards">
                 {column.map((issue) => (
                   <button
@@ -313,7 +350,6 @@ export default function IssueTriage() {
           );
         })}
       </div>
-      <p id="triage-board-help" className="triage-board-help">Drag a card to a status column, or open it to change status with the keyboard or on a touch screen.</p>
       {selected && (
         <IssueDetails
           key={selected.issueId}

@@ -41,37 +41,36 @@
 
 .triage-summary {
   display: grid;
-  grid-template-columns: repeat(3, minmax(95px, 1fr)) 1.7fr;
-  align-items: center;
-  gap: .7rem 1.25rem;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
   margin: 1.8rem 0 1.4rem;
-  padding: 1rem 1.15rem;
-  border: 1px solid #d5e5df;
-  border-radius: 10px;
-  background: #e8f2ed;
-  font-size: .8rem;
-}
-
-.triage-summary strong {
-  color: #066454;
+  padding: 0;
+  background: transparent;
+  border: 0;
 }
 
 .triage-summary-stat {
   display: flex;
   flex-direction: column;
-  gap: .2rem;
-  padding-left: 1rem;
-  border-left: 2px solid #b5d9ce;
+  justify-content: center;
+  min-height: 88px;
+  padding: 1rem 1.15rem;
+  border: 1px solid #d5e5df;
+  border-radius: 10px;
+  background: #e8f2ed;
 }
 
 .triage-summary-stat strong {
+  color: #066454;
   font-family: Georgia, "Times New Roman", serif;
   font-size: 1.6rem;
   line-height: 1;
 }
 
-.triage-summary span {
+.triage-summary-stat span {
+  margin-top: 0.35rem;
   color: #526e68;
+  font-size: 0.8rem;
 }
 
 .triage-demo-note {
@@ -82,7 +81,7 @@
 
 .triage-toolbar {
   display: grid;
-  grid-template-columns: minmax(220px, 2fr) repeat(2, minmax(130px, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   align-items: end;
   gap: 1rem;
 }
@@ -93,23 +92,102 @@
 
 .triage-search {
   min-width: 0;
+  grid-column: 1;
 }
 
-.triage-toolbar select {
+.triage-select {
+  position: relative;
+  display: block;
   width: 100%;
-  height: 44px;
+}
+
+.triage-select-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  height: 52px;
   border: 1px solid #cfe1e4;
-  border-radius: 9px;
-  padding: 0 .75rem;
-  background: white;
-  color: #164950;
-  font: inherit;
-  font-size: .85rem;
+  border-radius: 999px;
+  padding: 0 1rem;
+  color: #087d6b;
+  background: #e4f2ed;
+  cursor: pointer;
+  font: 700 .92rem "Trebuchet MS", "Segoe UI", sans-serif;
+  text-align: left;
+}
+
+.triage-select-trigger:hover,
+.triage-select-trigger:focus-visible {
+  border-color: #087d6b;
+  color: #fff;
+  background: #087d6b;
+  outline: none;
+}
+
+.triage-select-menu {
+  position: absolute;
+  z-index: 5;
+  top: calc(100% + .35rem);
+  right: 0;
+  display: grid;
+  gap: .25rem;
+  width: 100%;
+  border: 1px solid #cfe1e4;
+  border-radius: 12px;
+  padding: .35rem;
+  background: #fff;
+  box-shadow: 0 8px 18px rgba(13, 43, 44, .12);
+}
+
+.triage-select-option {
+  width: 100%;
+  border: 0;
+  border-radius: 8px;
+  padding: .55rem .65rem;
+  color: #087d6b;
+  background: #e4f2ed;
+  cursor: pointer;
+  font: .82rem "Trebuchet MS", "Segoe UI", sans-serif;
+  font-weight: 700;
+  text-align: left;
+}
+
+.triage-select-option:hover,
+.triage-select-option:focus-visible,
+.triage-select-option[aria-selected="true"] {
+  color: #fff;
+  background: #087d6b;
+  outline: none;
+}
+
+.triage-select-disabled .triage-select-trigger {
+  cursor: not-allowed;
+  color: #526e73;
+  background: #f2f6f4;
 }
 
 .triage-toolbar input {
-  font-size: .85rem;
-  background: white;
+  width: 100%;
+  height: 52px;
+  border: 1px solid #cfe1e4;
+  border-radius: 999px;
+  padding: 0 1rem;
+  color: #164950;
+  background: #ffffff;
+  font: .92rem "Trebuchet MS", "Segoe UI", sans-serif;
+}
+
+.triage-toolbar input:focus {
+  border-color: #087d6b;
+  outline: 3px solid #16827233;
+}
+
+.triage-toolbar label {
+  margin-bottom: .45rem;
+  color: #164950;
+  font-size: .95rem;
+  font-weight: 700;
 }
 
 .triage-results {
@@ -425,7 +503,16 @@
   font-size: .9rem;
 }
 
+.triage-detail-overview {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(190px, .75fr);
+  align-items: stretch;
+  gap: 1rem;
+  margin-top: 1.35rem;
+}
+
 .triage-facts {
+  margin: 0;
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 1.2rem;
@@ -435,8 +522,9 @@
 }
 
 .triage-facts dt {
-  font-size: .7rem;
-  color: #617773;
+  color: #164950;
+  font-size: .82rem;
+  font-weight: 700;
 }
 
 .triage-facts dd {
@@ -451,27 +539,41 @@
 }
 
 .triage-detail-section {
-  margin-top: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  margin-top: 0;
   padding: 1.1rem;
   border: 1px solid #dbe6e1;
   border-radius: 9px;
   background: #fff;
 }
 
-.triage-detail-section h3 { margin: 0; }
-.triage-section-copy { margin: .45rem 0 1rem; color: #617773; font-size: .75rem; line-height: 1.5; }
-.triage-detail-section label { margin: .9rem 0 .35rem; }
-.triage-detail-section select {
-  display: block;
-  width: 100%;
-  border: 1px solid #cfe1e4;
-  border-radius: 8px;
-  padding: .7rem;
+.triage-detail-section label {
+  margin: .9rem 0 .35rem;
   color: #164950;
-  background: #fff;
-  font: .82rem "Trebuchet MS", "Segoe UI", sans-serif;
+  font-size: .82rem;
+  font-weight: 700;
 }
-.triage-detail-section select:disabled { background: #f2f6f4; color: #526e73; }
+
+.triage-detail-section label:first-of-type {
+  margin-top: 0;
+}
+
+.triage-detail-section .triage-select {
+  display: block;
+  width: 11rem;
+  margin-inline: 0;
+}
+
+@media (max-width: 620px) {
+  .triage-detail-overview {
+    grid-template-columns: 1fr;
+  }
+
+  .triage-detail-section {
+    margin-top: 0;
+  }
+}
 
 .triage-muted {
   color: #617773;
@@ -563,7 +665,7 @@
 }
 
 @media (max-width: 1150px) {
-  .triage-toolbar { grid-template-columns: repeat(2, minmax(130px, 1fr)); }
+  .triage-toolbar { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .triage-search { grid-column: 1 / -1; }
   .triage-board {
     gap: .65rem;
@@ -595,8 +697,13 @@
 }
 
 @media (max-width: 520px) {
-  .triage-toolbar { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .triage-search { grid-column: 1 / -1; }
+    .triage-toolbar {
+    grid-template-columns: 1fr;
+  }
+
+  .triage-search {
+    grid-column: auto;
+  }
   .triage-summary { gap: .6rem; }
   .triage-summary-stat { padding-left: .5rem; }
   .triage-summary-stat strong { font-size: 1.3rem; }
@@ -618,5 +725,11 @@
   }
   .triage-photo img {
     height: 230px;
+  }
+  .triage-toolbar {
+    grid-template-columns: 1fr;
+  }
+  .triage-search {
+    grid-column: auto;
   }
 }
