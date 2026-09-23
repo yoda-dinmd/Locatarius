@@ -5,6 +5,7 @@ export type MockUser = {
   name: string;
   email: string;
   role: UserRole;
+  buildingId: string;
   password: string;
   mustChangePassword: boolean;
 };
@@ -47,6 +48,7 @@ const initialUsers: MockUser[] = [
     name: "Victor Munteanu",
     email: "admin@locatarius.test",
     role: "admin",
+    buildingId: "BLD-01",
     password: "AdminPassword123!",
     mustChangePassword: false,
   },
@@ -55,6 +57,7 @@ const initialUsers: MockUser[] = [
     name: "Ana Popescu",
     email: "ana@locatarius.test",
     role: "resident",
+    buildingId: "BLD-01",
     password: "ResidentTemp123!",
     mustChangePassword: true,
   },
@@ -64,6 +67,7 @@ const initialUsers: MockUser[] = [
     name: "Ana Munteanu",
     email: "anam@locatarius.test",
     role: "resident",
+    buildingId: "BLD-02",
     password: "ResidentTemp123!",
     mustChangePassword: true,
   },
@@ -73,6 +77,7 @@ const initialUsers: MockUser[] = [
     name: "Ion Munteanu",
     email: "ion@locatarius.test",
     role: "resident",
+    buildingId: "BLD-03",
     password: "ResidentTemp123!",
     mustChangePassword: true,
   },
@@ -99,6 +104,7 @@ function toSessionUser(user: MockUser): SessionUser {
     name: user.name,
     email: user.email,
     role: user.role,
+    buildingId: user.buildingId,
   };
 }
 
@@ -228,6 +234,10 @@ export function getSession(): SessionUser | null {
   }
 
   return JSON.parse(storedSession) as SessionUser;
+}
+
+export function getBuildingIdForUser(userId: string): string | null {
+  return readUsers().find((user) => user.id === userId)?.buildingId ?? null;
 }
 
 export function signOut() {

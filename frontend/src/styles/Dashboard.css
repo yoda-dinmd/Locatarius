@@ -62,15 +62,18 @@
 }
 
 .sign-out-button {
-  border: 0;
+  border: 1px solid #d4e8e2;
+  border-radius: 7px;
+  padding: 0.55rem 0.75rem;
   color: #087d6b;
-  background: transparent;
+  background: #e4f2ed;
   font-size: 0.72rem;
   font-weight: 700;
 }
 
 .sign-out-button:hover {
-  text-decoration: underline;
+  color: #ffffff;
+  background: #087d6b;
 }
 
 .dashboard-layout {
@@ -85,6 +88,12 @@
   background: #ffffff;
 }
 
+.dashboard-sidebar nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
 .dashboard-logo-text {
   display: block;
   margin: 0 0 2rem 0.8rem;
@@ -97,6 +106,7 @@
 
 .dashboard-nav-link {
   display: block;
+  min-height: 42px;
   padding: 0.75rem 0.8rem;
   border-radius: 7px;
   color: #4d7075;
@@ -115,6 +125,19 @@
   padding: 3rem;
 }
 
+.dashboard-home-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(100vh - 66px);
+  padding: 3rem 3rem 8%;
+  text-align: center;
+  background:
+    radial-gradient(circle at 50% 22%, #dff4e9 0, transparent 28%),
+    linear-gradient(160deg, #f2faf6 0%, #d5eee2 42%, #a6d5c0 72%, #78b99f 100%);
+}
+
 .dashboard-eyebrow {
   margin: 0 0 0.6rem;
   color: #087d6b;
@@ -124,12 +147,13 @@
   text-transform: uppercase;
 }
 
-.dashboard-content h1 {
-  font-size: clamp(2rem, 4vw, 3rem);
+.dashboard-home-content h1 {
+  margin: 0;
+  font-size: clamp(2.4rem, 5vw, 3.6rem);
 }
 
 .dashboard-message {
-  margin-top: 1rem;
+  margin: 1rem 0 0;
   color: #5a7c80;
   font-size: 0.95rem;
 }
@@ -160,5 +184,10 @@
 
   .dashboard-content {
     padding: 2rem 1rem;
+  }
+
+  .dashboard-home-content {
+    min-height: calc(100vh - 66px);
+    padding: 2rem 1rem 5%;
   }
 }
