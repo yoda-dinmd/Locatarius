@@ -1,6 +1,5 @@
 import Icon from "../components/Icon";
-import type { UserRole } from "../auth/auth";
-import AppSidebar from "../components/AppSidebar";
+import type { SessionUser } from "../auth/auth";
 import { useState } from "react";
 import {
   Breakdown,
@@ -17,6 +16,7 @@ import {
   percentage,
   total,
 } from "../features/transparency/data";
+import IssueLayout from "./IssueLayout";
 import "../styles/Dashboard.css";
 import "../styles/TransparencyPage.css";
 
@@ -49,12 +49,8 @@ function MonthlyOverview({ index }: { index: number }) {
             <Count value={sum} /> <span>MDL</span>
           </div>
           <Comparison index={index} />
-          <p className="tp-footnote">
-            For the whole association, not your individual bill.
-          </p>
         </div>
         <div className="tp-month-comparison">
-          <p className="tp-eyebrow">Two months, side by side</p>
           {[previous, current].map((month) => (
             <div className="tp-month-row" key={month.name}>
               <div>
@@ -72,9 +68,6 @@ function MonthlyOverview({ index }: { index: number }) {
               </div>
             </div>
           ))}
-          <p className="tp-footnote">
-            Same four expense categories in both months.
-          </p>
         </div>
       </section>
       <div className="tp-calm-grid">
@@ -91,20 +84,12 @@ function MonthlyOverview({ index }: { index: number }) {
             <strong>Total expenses</strong>
             <strong>{money(sum)}</strong>
           </div>
-          <div className="tp-soft-note">
-            <Icon name="repair" />
-            <span>
-              Repair fund spending:{" "}
-              <strong>{percentage((current.amounts[0] / sum) * 100)}%</strong>{" "}
-              of this month’s expenses. Already included in the total.
-            </span>
-          </div>
         </section>
         <section className="tp-calm-notices" aria-labelledby="notices-heading">
           <div className="tp-section-heading">
             <div>
               <p className="tp-eyebrow">
-                From your administrator · September 2026
+                September 2026
               </p>
               <h2 id="notices-heading">Good to know</h2>
             </div>
@@ -116,7 +101,6 @@ function MonthlyOverview({ index }: { index: number }) {
             </span>
           </div>
           <NoticeList />
-          <p className="tp-footnote">Select a notice to read the details.</p>
         </section>
       </div>
       <section
@@ -172,17 +156,13 @@ function MonthlyOverview({ index }: { index: number }) {
               {money(Math.abs(sum - previousTotal))}
             </strong>
           </div>
-          <p className="tp-footnote">
-            Changes show spending differences, not a change to your apartment
-            bill.
-          </p>
         </div>
       </section>
     </div>
   );
 }
 
-export default function TransparencyPage({ role }: { role?: UserRole }) {
+export default function TransparencyPage({ user }: { user: SessionUser }) {
   const queryMonth = new URLSearchParams(window.location.search).get("month");
   const [index, setIndex] = useState(queryMonth === "july" ? 4 : 5);
   function changeMonth(value: number) {
@@ -191,61 +171,67 @@ export default function TransparencyPage({ role }: { role?: UserRole }) {
     url.searchParams.set("month", value === 4 ? "july" : "august");
     window.history.replaceState(null, "", url);
   }
+  function selectMonth(value: number) {
+  changeMonth(value);
+
+  const menu = document.getElementById("expense-month-menu");
+  menu?.setAttribute("hidden", "");
+}
   return (
-    <div className="dashboard-page tp-page">
+    <IssueLayout user={user} activePage="transparency">
       <a className="tp-skip" href="#transparency-main">
         Skip to content
       </a>
-      <header className="dashboard-header">
-        <a className="dashboard-brand" href="/dashboard">
-          <span className="brand-mark">L</span>
-          <span>Locatarius</span>
-        </a>
-        <div className="tp-header-context">
-          <span className="tp-demo-dot" />
-          <span>Demo data</span>
-          <span className="tp-header-divider">/</span>
-          <span>Resident view</span>
-        </div>
-      </header>
-      <div className="dashboard-layout">
-        <AppSidebar activePage="transparency" role={role} />
-        <main className="tp-main" id="transparency-main">
+      <main className="tp-main tp-page" id="transparency-main">
           <div className="tp-page-heading">
             <div>
-              <p className="tp-eyebrow">
-                Teilor Residence · Resident perspective
-              </p>
               <h1>Transparency, at a glance.</h1>
-              <p>Your association’s spending and the updates that matter.</p>
             </div>
             <div className="tp-month-control">
-              <label htmlFor="expense-month">Expense month</label>
-              <div>
-                <Icon name="calendar" size={18} />
-                <select
-                  id="expense-month"
-                  value={index}
-                  onChange={(event) => changeMonth(Number(event.target.value))}
-                >
-                  <option value={5}>August 2026</option>
-                  <option value={4}>July 2026</option>
-                </select>
+  <label htmlFor="expense-month-button">Expense month</label>
+
+  <div className="tp-month-picker">
+    <Icon name="calendar" size={18} />
+
+    <button
+      id="expense-month-button"
+      className="tp-month-trigger"
+      type="button"
+      onClick={() => {
+        const menu = document.getElementById("expense-month-menu");
+        menu?.toggleAttribute("hidden");
+      }}
+      aria-haspopup="listbox"
+      aria-expanded="false"
+    >
+      <span>{index === 5 ? "August 2026" : "July 2026"}</span>
+      <span className="tp-month-arrow" aria-hidden="true">⮟</span>
+    </button>
+
+          <div id="expense-month-menu" className="tp-month-menu" role="listbox" hidden>
+              <button
+                type="button"
+                role="option"
+                aria-selected={index === 5}
+                onClick={() => selectMonth(5)}
+              >
+                August 2026
+              </button>
+
+              <button
+                type="button"
+                role="option"
+                aria-selected={index === 4}
+                onClick={() => selectMonth(4)}
+              >
+                July 2026
+              </button>
               </div>
             </div>
           </div>
+          </div>
           <MonthlyOverview key={index} index={index} />
-          <footer className="tp-footer">
-            <span>
-              <Icon name="check" size={15} /> Illustrative data · All amounts in
-              MDL
-            </span>
-            <span>
-              Expenses: {months[index].name} 2026 · Notices: September 2026
-            </span>
-          </footer>
-        </main>
-      </div>
-    </div>
+      </main>
+    </IssueLayout>
   );
 }
