@@ -259,9 +259,20 @@ export default function IssueTriage() {
       </div>
 
       <div className="triage-summary" aria-label="Issue overview">
-        <div className="triage-summary-stat"><strong>{issues.filter((issue) => issue.status === 1).length}</strong><span>Open</span></div>
-        <div className="triage-summary-stat"><strong>{issues.filter((issue) => issue.status === 2).length}</strong><span>In progress</span></div>
-        <div className="triage-summary-stat"><strong>{issues.filter((issue) => issue.status === 3).length}</strong><span>Closed</span></div>
+        <div className="triage-summary-stat">
+          <strong>{issues.filter((issue) => issue.status === 1).length}</strong>
+          <span>Open</span>
+        </div>
+
+        <div className="triage-summary-stat">
+          <strong>{issues.filter((issue) => issue.status === 2).length}</strong>
+          <span>In progress</span>
+        </div>
+
+        <div className="triage-summary-stat">
+          <strong>{issues.filter((issue) => issue.status === 3).length}</strong>
+          <span>Closed</span>
+        </div>
       </div>
 
       <div className="triage-toolbar">
