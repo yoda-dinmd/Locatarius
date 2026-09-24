@@ -8,7 +8,10 @@ public static class ChangePasswordRequestValidator
         // Reuse login's Unicode/control-character and maximum-length policy.
         var passwordValidation = LoginRequestValidator.Validate("validation@example.test", newPassword);
         if (passwordValidation.Fields?.TryGetValue("password", out var errors) == true)
-            fields["newPassword"] = errors;
+            fields["newPassword"] = errors.Select(error =>
+                error == "Use between 1 and 128 characters."
+                    ? "Use between 15 and 128 characters."
+                    : error).ToList();
         else if (newPassword!.EnumerateRunes().Count() < 15)
             fields["newPassword"] = ["Use between 15 and 128 characters."];
 

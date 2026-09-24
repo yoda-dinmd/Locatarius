@@ -16,6 +16,16 @@ public sealed class ChangePasswordRequestValidatorTests
     }
 
     [Theory]
+    [InlineData(14)]
+    [InlineData(129)]
+    public void LengthErrorsDescribeTheNewPasswordPolicy(int length)
+    {
+        var password = new string('a', length);
+        Assert.Equal(["Use between 15 and 128 characters."],
+            ChangePasswordRequestValidator.Validate(password, password)["newPassword"]);
+    }
+
+    [Theory]
     [InlineData(null, null, "newPassword")]
     [InlineData("", "", "newPassword")]
     [InlineData("PrivatePassword123!", "PrivatePassword123! ", "confirmPassword")]
