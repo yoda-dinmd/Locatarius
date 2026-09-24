@@ -149,6 +149,68 @@ public sealed class AuthenticationService(
         return new LoginOutcome(LoginResultStatus.Success, nextStep, rawToken, sessionType);
     }
 
+    public async Task<LoginOutcome> ChangePasswordAsync(
+        Session session, string newPassword, CancellationToken cancellationToken)
+    {
+        await using var transaction = dbContext.Database.IsRelational()
+            ? await dbContext.Database.BeginTransactionAsync(cancellationToken)
+            : null;
+
+        // Serialize with login and account deactivation: user, credential, sessions.
+        var user = dbContext.Database.IsRelational()
+            ? await dbContext.Users.FromSqlInterpolated($"SELECT * FROM users WHERE user_id = {session.UserId} FOR UPDATE")
+                .SingleOrDefaultAsync(cancellationToken)
+            : await dbContext.Users.SingleOrDefaultAsync(u => u.UserId == session.UserId, cancellationToken);
+        if (user is not null && dbContext.Database.IsRelational())
+            await dbContext.Entry(user).ReloadAsync(cancellationToken);
+        if (user is null || !user.IsActive) return InvalidPasswordChange();
+
+        var credential = dbContext.Database.IsRelational()
+            ? await dbContext.UserCredentials.FromSqlInterpolated($"SELECT * FROM user_credentials WHERE user_id = {session.UserId} FOR UPDATE")
+                .SingleOrDefaultAsync(cancellationToken)
+            : await dbContext.UserCredentials.SingleOrDefaultAsync(c => c.UserId == session.UserId, cancellationToken);
+        if (credential is not null && dbContext.Database.IsRelational())
+            await dbContext.Entry(credential).ReloadAsync(cancellationToken);
+        if (credential is null || !credential.MustChangePassword) return InvalidPasswordChange();
+
+        var currentSession = dbContext.Database.IsRelational()
+            ? await dbContext.Sessions.FromSqlInterpolated($"SELECT * FROM sessions WHERE session_id = {session.SessionId} FOR UPDATE")
+                .AsNoTracking().SingleOrDefaultAsync(cancellationToken)
+            : await dbContext.Sessions.AsNoTracking().SingleOrDefaultAsync(s => s.SessionId == session.SessionId, cancellationToken);
+        var now = Clock.GetUtcNow();
+        if (currentSession is null || currentSession.UserId != user.UserId
+            || currentSession.TokenHash != session.TokenHash
+            || currentSession.SessionType != SessionType.PasswordChange
+            || currentSession.RevokedAt is not null || currentSession.ExpiresAt <= now)
+            return InvalidPasswordChange();
+
+        credential.PasswordHash = passwordHasher.HashPassword(newPassword);
+        credential.MustChangePassword = false;
+        credential.PasswordChangedAt = now;
+        credential.FailedLoginAttempts = 0;
+        credential.LockedUntil = null;
+
+        var existingSessions = dbContext.Sessions.Where(s => s.UserId == user.UserId);
+        if (dbContext.Database.IsRelational())
+            await existingSessions.ExecuteDeleteAsync(cancellationToken);
+        else
+            dbContext.Sessions.RemoveRange(await existingSessions.ToListAsync(cancellationToken));
+
+        var rawToken = SessionTokenGenerator.GenerateToken();
+        dbContext.Sessions.Add(new Session
+        {
+            SessionId = Guid.NewGuid(), UserId = user.UserId,
+            TokenHash = SessionTokenGenerator.HashToken(rawToken), SessionType = SessionType.Full,
+            CreatedAt = now, LastSeenAt = now, ExpiresAt = now.Add(FullSessionAbsoluteTimeout)
+        });
+        await dbContext.SaveChangesAsync(cancellationToken);
+        if (transaction is not null) await transaction.CommitAsync(cancellationToken);
+        return new LoginOutcome(LoginResultStatus.Success, "app", rawToken, SessionType.Full);
+    }
+
+    private static LoginOutcome InvalidPasswordChange()
+        => new(LoginResultStatus.InvalidCredentials, null, null, null);
+
     public async Task<SessionLookup> ResolveSessionAsync(
         string? rawToken, CancellationToken cancellationToken)
     {

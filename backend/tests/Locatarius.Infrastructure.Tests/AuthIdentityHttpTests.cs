@@ -87,6 +87,78 @@ public sealed class AuthIdentityHttpTests
         Assert.Equal("UNAUTHENTICATED", error.GetProperty("code").GetString());
     }
 
+    [Fact]
+    public async Task ChangePasswordRequiresCsrfAndRestrictedSessionAndReplacesCookie()
+    {
+        await using var factory = new IdentityFactory();
+        using var client = factory.CreateClient(new() { BaseAddress = new Uri("https://localhost") });
+        await SeedUser(factory, UserRoleType.Resident, true);
+        var csrf = await client.GetFromJsonAsync<JsonElement>("/api/auth/csrf");
+        var token = csrf.GetProperty("token").GetString();
+        client.DefaultRequestHeaders.Add("X-CSRF-TOKEN", token);
+        var login = await client.PostAsJsonAsync("/api/auth/login", new { email = "identity@example.test", password = Password });
+        var oldCookie = login.Headers.GetValues("Set-Cookie").Single().Split(';')[0];
+        var body = new { newPassword = "ResidentPrivatePassword456!", confirmPassword = "ResidentPrivatePassword456!" };
+        client.DefaultRequestHeaders.Remove("X-CSRF-TOKEN");
+        Assert.Equal(HttpStatusCode.Forbidden, (await client.PostAsJsonAsync("/api/auth/change-password", body)).StatusCode);
+        client.DefaultRequestHeaders.Add("X-CSRF-TOKEN", token);
+        var mismatch = await client.PostAsJsonAsync("/api/auth/change-password", new { newPassword = body.newPassword, confirmPassword = "different" });
+        Assert.Equal(HttpStatusCode.BadRequest, mismatch.StatusCode);
+        Assert.Contains("confirmPassword", await mismatch.Content.ReadAsStringAsync());
+
+        var response = await client.PostAsJsonAsync("/api/auth/change-password", body);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal("{\"next\":\"app\"}", await response.Content.ReadAsStringAsync());
+        var newCookie = response.Headers.GetValues("Set-Cookie").Single();
+        Assert.NotEqual(oldCookie, newCookie.Split(';')[0]);
+        Assert.Contains("secure", newCookie.ToLowerInvariant());
+        Assert.Contains("httponly", newCookie.ToLowerInvariant());
+        Assert.Contains("samesite=lax", newCookie.ToLowerInvariant());
+        var me = await client.GetFromJsonAsync<JsonElement>("/api/auth/me");
+        Assert.False(me.GetProperty("mustChangePassword").GetBoolean());
+        Assert.Equal(HttpStatusCode.Forbidden, (await client.PostAsJsonAsync("/api/auth/change-password", body)).StatusCode);
+        using var replayClient = factory.CreateClient(new() { BaseAddress = new Uri("https://localhost"), HandleCookies = false });
+        replayClient.DefaultRequestHeaders.Add("Cookie", oldCookie);
+        Assert.Equal(HttpStatusCode.Unauthorized, (await replayClient.GetAsync("/api/auth/me")).StatusCode);
+    }
+
+    [Theory]
+    [InlineData("{\"newPassword\":\"ResidentPrivatePassword456!\",\"confirmPassword\":\"ResidentPrivatePassword456!\",\"role\":\"Admin\"}")]
+    [InlineData("{\"newPassword\":null,\"newPassword\":null}")]
+    [InlineData("{\"newPassword\":42}")]
+    [InlineData("[]")]
+    [InlineData("invalid")]
+    public async Task ChangePasswordRejectsMalformedOrExtraProperties(string body)
+    {
+        await using var factory = new IdentityFactory();
+        using var client = factory.CreateClient(new() { BaseAddress = new Uri("https://localhost") });
+        await SeedUser(factory, UserRoleType.Resident, true);
+        var csrf = await client.GetFromJsonAsync<JsonElement>("/api/auth/csrf");
+        client.DefaultRequestHeaders.Add("X-CSRF-TOKEN", csrf.GetProperty("token").GetString());
+        await client.PostAsJsonAsync("/api/auth/login", new { email = "identity@example.test", password = Password });
+
+        var response = await client.PostAsync("/api/auth/change-password", new StringContent(body, System.Text.Encoding.UTF8, "application/json"));
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.Contains("INVALID_REQUEST", await response.Content.ReadAsStringAsync());
+    }
+
+    [Fact]
+    public async Task ChangePasswordEnforcesContentTypeSizeAndAuthentication()
+    {
+        await using var factory = new IdentityFactory();
+        using var client = factory.CreateClient(new() { BaseAddress = new Uri("https://localhost") });
+        Assert.Equal(HttpStatusCode.UnsupportedMediaType,
+            (await client.PostAsync("/api/auth/change-password", new StringContent("{}"))).StatusCode);
+        Assert.Equal(HttpStatusCode.RequestEntityTooLarge,
+            (await client.PostAsJsonAsync("/api/auth/change-password", new { newPassword = new string('a', 17000) })).StatusCode);
+        var csrf = await client.GetFromJsonAsync<JsonElement>("/api/auth/csrf");
+        client.DefaultRequestHeaders.Add("X-CSRF-TOKEN", csrf.GetProperty("token").GetString());
+        Assert.Equal(HttpStatusCode.Unauthorized,
+            (await client.PostAsJsonAsync("/api/auth/change-password", new { newPassword = "PrivatePassword123!", confirmPassword = "PrivatePassword123!" })).StatusCode);
+    }
+
     private static async Task<Guid> SeedUser(IdentityFactory factory, UserRoleType role, bool mustChangePassword)
     {
         await using var scope = factory.Services.CreateAsyncScope();
