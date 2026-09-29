@@ -9,6 +9,7 @@ import TransparencyPage from "./pages/TransparencyPage";
 import IssueDetailsPage from "./pages/IssueDetailsPage";
 import ReportIssuePage from "./pages/ReportIssuePage";
 import CloseIssuePage from "./pages/CloseIssuePage";
+import Residents from "./pages/Residents";
 
 export default function App() {
   const path = window.location.pathname;
@@ -48,5 +49,12 @@ export default function App() {
     return <IssueDetailsPage user={session} issueId={issueMatch[1]} />;
   }
 
+  if (path === "/residents" && session) {
+  return session.role === "admin" ? (
+    <Residents user={session} />
+  ) : (
+    <Dashboard user={session} />
+  );
+ }
   return <LoginPage />;
 }

@@ -11,7 +11,9 @@ export default function Dashboard({ user }: DashboardProps) {
     <IssueLayout user={user} activePage="dashboard">
       <section className="dashboard-content dashboard-home-content">
         <h1>Welcome, {user.name}</h1>
-        <p className="dashboard-message">Your Locatarius dashboard is ready.</p>
+        <p className="dashboard-message">
+          Your Locatarius dashboard is ready.
+        </p>
       </section>
     </IssueLayout>
   );
