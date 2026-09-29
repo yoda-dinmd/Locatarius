@@ -62,6 +62,9 @@ public sealed class ResidentsController(
         }
         catch (JsonException) { return ApiErrors.InvalidRequest(); }
         catch (DecoderFallbackException) { return ApiErrors.InvalidRequest(); }
+        // JSON accepts escaped surrogate code units, but accessing an unpaired
+        // surrogate in a property name or string value fails during decoding.
+        catch (InvalidOperationException) { return ApiErrors.InvalidRequest(); }
 
         var validation = ResidentRequestValidator.ValidateCreate(values);
         if (validation.Fields.Count != 0) return ApiErrors.ValidationFailed(validation.Fields);

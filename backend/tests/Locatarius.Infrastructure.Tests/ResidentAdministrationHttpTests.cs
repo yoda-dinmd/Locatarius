@@ -113,6 +113,21 @@ public sealed class ResidentAdministrationHttpTests
         Assert.Equal(status, (await client.PostAsync("/api/residents", new StringContent(body, System.Text.Encoding.UTF8, contentType))).StatusCode);
     }
 
+    [Theory]
+    [InlineData("{\"firstName\":\"\\uD800\"}")]
+    [InlineData("{\"\\uD800\":\"Ana\"}")]
+    public async Task CreateRejectsInvalidUnicodeEscapesWithSafeError(string body)
+    {
+        await using var factory = new DirectoryFactory();
+        using var client = factory.CreateClient(new() { BaseAddress = new Uri("https://localhost") });
+        await SeedSession(factory, client, "admin");
+        await AddCsrf(client);
+        var response = await client.PostAsync("/api/residents", new StringContent(body, System.Text.Encoding.UTF8, "application/json"));
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        var error = (await response.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("error");
+        Assert.Equal("INVALID_REQUEST", error.GetProperty("code").GetString());
+    }
+
     [Fact]
     public async Task CreateRejectsOversizedBody()
     {
