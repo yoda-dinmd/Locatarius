@@ -18,6 +18,131 @@ namespace Locatarius.Infrastructure.Tests;
 
 public sealed class ResidentAdministrationHttpTests
 {
+    private const string TemporaryPassword = "Start password 123!";
+
+    [Fact]
+    public async Task CreatePersistsActiveResidentWithPrivateHashedTemporaryCredentials()
+    {
+        await using var factory = new DirectoryFactory();
+        using var client = factory.CreateClient(new() { BaseAddress = new Uri("https://localhost") });
+        await SeedDirectory(factory, client);
+        await AddCsrf(client);
+        var body = await NewCreateBody(factory);
+        var response = await client.PostAsJsonAsync("/api/residents", body);
+        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+        Assert.True(response.Headers.CacheControl?.NoStore);
+        var dto = await response.Content.ReadFromJsonAsync<JsonElement>();
+        Assert.Equal("Ana", dto.GetProperty("firstName").GetString());
+        Assert.Equal("Resident", dto.GetProperty("role").GetString());
+        Assert.Equal(new[] { "apartment", "apartmentId", "email", "firstName", "id", "isActive", "lastName", "role" },
+            dto.EnumerateObject().Select(p => p.Name).Order().ToArray());
+        await using var scope = factory.Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<LocatariusDbContext>();
+        var user = await db.Users.Include(u => u.Credential).Include(u => u.Role)
+            .SingleAsync(u => u.Credential!.Email == "new.resident@example.test");
+        Assert.Equal(dto.GetProperty("id").GetGuid(), user.UserId);
+        Assert.Equal(UserRoleType.Resident, user.Role!.Role);
+        Assert.True(user.IsActive);
+        Assert.True(user.Credential!.MustChangePassword);
+        Assert.Null(user.Credential.PasswordChangedAt);
+        Assert.NotEqual(TemporaryPassword, user.Credential.PasswordHash);
+        Assert.True(new PasswordHasher().VerifyPassword(user.Credential.PasswordHash, TemporaryPassword));
+    }
+
+    [Theory]
+    [InlineData("email", " ANA@A.EXAMPLE.TEST ", HttpStatusCode.Conflict)]
+    [InlineData("apartmentId", "foreign", HttpStatusCode.NotFound)]
+    [InlineData("apartmentId", "00000000-0000-0000-0000-000000000001", HttpStatusCode.NotFound)]
+    [InlineData("apartmentId", "00000000-0000-0000-0000-000000000000", HttpStatusCode.BadRequest)]
+    [InlineData("apartmentId", "invalid", HttpStatusCode.BadRequest)]
+    [InlineData("firstName", " ", HttpStatusCode.BadRequest)]
+    [InlineData("lastName", "", HttpStatusCode.BadRequest)]
+    [InlineData("email", "invalid", HttpStatusCode.BadRequest)]
+    [InlineData("temporaryPassword", "short", HttpStatusCode.BadRequest)]
+    [InlineData("temporaryPassword", "               ", HttpStatusCode.BadRequest)]
+    [InlineData("confirmPassword", "different password", HttpStatusCode.BadRequest)]
+    [InlineData("role", "Admin", HttpStatusCode.BadRequest)]
+    [InlineData("isActive", "true", HttpStatusCode.BadRequest)]
+    public async Task RejectedCreateDoesNotPersistAnyAccount(string field, string value, HttpStatusCode status)
+    {
+        await using var factory = new DirectoryFactory();
+        using var client = factory.CreateClient(new() { BaseAddress = new Uri("https://localhost") });
+        await SeedDirectory(factory, client);
+        await AddCsrf(client);
+        var body = await NewCreateBody(factory);
+        await using var scope = factory.Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<LocatariusDbContext>();
+        if (value == "foreign") value = (await db.Apartments.SingleAsync(a => a.Building.BuildingNumber == "Building B")).ApartmentId.ToString();
+        body[field] = value;
+        var count = await db.Users.CountAsync();
+        var response = await client.PostAsJsonAsync("/api/residents", body);
+        Assert.Equal(status, response.StatusCode);
+        Assert.Equal(count, await db.Users.CountAsync());
+        Assert.Equal(count, await db.UserCredentials.CountAsync());
+        Assert.Equal(count, await db.UserRoles.CountAsync());
+        Assert.DoesNotContain(TemporaryPassword, await response.Content.ReadAsStringAsync());
+    }
+
+    [Theory]
+    [InlineData("missing", true, HttpStatusCode.Unauthorized)]
+    [InlineData("resident", true, HttpStatusCode.Forbidden)]
+    [InlineData("restricted", true, HttpStatusCode.Forbidden)]
+    [InlineData("inactive", true, HttpStatusCode.Unauthorized)]
+    [InlineData("admin", false, HttpStatusCode.Forbidden)]
+    public async Task CreateRequiresFullActiveAdminAndCsrf(string condition, bool csrf, HttpStatusCode status)
+    {
+        await using var factory = new DirectoryFactory();
+        using var client = factory.CreateClient(new() { BaseAddress = new Uri("https://localhost") });
+        await SeedSession(factory, client, condition);
+        if (csrf) await AddCsrf(client);
+        Assert.Equal(status, (await client.PostAsJsonAsync("/api/residents", new { })).StatusCode);
+    }
+
+    [Theory]
+    [InlineData("{\"firstName\":\"Ana\",\"firstName\":\"Other\"}", "application/json", HttpStatusCode.BadRequest)]
+    [InlineData("{\"firstName\":42}", "application/json", HttpStatusCode.BadRequest)]
+    [InlineData("[]", "application/json", HttpStatusCode.BadRequest)]
+    [InlineData("{", "application/json", HttpStatusCode.BadRequest)]
+    [InlineData("{}", "text/plain", HttpStatusCode.UnsupportedMediaType)]
+    public async Task CreateRejectsInvalidRequestShapes(string body, string contentType, HttpStatusCode status)
+    {
+        await using var factory = new DirectoryFactory();
+        using var client = factory.CreateClient(new() { BaseAddress = new Uri("https://localhost") });
+        await SeedSession(factory, client, "admin");
+        await AddCsrf(client);
+        Assert.Equal(status, (await client.PostAsync("/api/residents", new StringContent(body, System.Text.Encoding.UTF8, contentType))).StatusCode);
+    }
+
+    [Fact]
+    public async Task CreateRejectsOversizedBody()
+    {
+        await using var factory = new DirectoryFactory();
+        using var client = factory.CreateClient(new() { BaseAddress = new Uri("https://localhost") });
+        await SeedSession(factory, client, "admin");
+        await AddCsrf(client);
+        var response = await client.PostAsync("/api/residents", new StringContent(new string(' ', 16385), System.Text.Encoding.UTF8, "application/json"));
+        Assert.Equal(HttpStatusCode.RequestEntityTooLarge, response.StatusCode);
+    }
+
+    private static async Task AddCsrf(HttpClient client)
+    {
+        var csrf = await client.GetFromJsonAsync<JsonElement>("/api/auth/csrf");
+        client.DefaultRequestHeaders.Add("X-CSRF-TOKEN", csrf.GetProperty("token").GetString());
+    }
+
+    private static async Task<Dictionary<string, string>> NewCreateBody(DirectoryFactory factory)
+    {
+        await using var scope = factory.Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<LocatariusDbContext>();
+        var apartment = await db.Apartments.SingleAsync(a => a.ApartmentNumber == "12");
+        return new()
+        {
+            ["firstName"] = " Ana ", ["lastName"] = " Ionescu ", ["email"] = " NEW.RESIDENT@EXAMPLE.TEST ",
+            ["apartmentId"] = apartment.ApartmentId.ToString(), ["temporaryPassword"] = TemporaryPassword,
+            ["confirmPassword"] = TemporaryPassword
+        };
+    }
+
     [Fact]
     public async Task DirectoryReturnsOnlyOwnedResidentsIncludingInactiveWithSafeOrderedFields()
     {
