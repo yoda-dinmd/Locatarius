@@ -76,6 +76,25 @@ public sealed class AuthenticationServiceTests
     }
 
     [Fact]
+    public async Task LoginAsync_InactiveUser_ReturnsInvalidCredentialsAndNoSession()
+    {
+        await using var context = CreateContext();
+        await SeedUserAsync(context, mustChangePassword: false);
+        var user = await context.Users.Include(x => x.Credential)
+            .SingleAsync(x => x.Credential!.Email == "resident@example.com");
+        user.IsActive = false;
+        await context.SaveChangesAsync();
+        var service = CreateService(context);
+
+        var outcome = await service.LoginAsync(
+            "resident@example.com", Password, CancellationToken.None);
+
+        Assert.Equal(LoginResultStatus.InvalidCredentials, outcome.Status);
+        Assert.Null(outcome.SessionToken);
+        Assert.Empty(await context.Sessions.Where(x => x.UserId == user.UserId).ToListAsync());
+    }
+
+    [Fact]
     public async Task LoginAsync_FifthFailedAttempt_LocksAccountForFifteenMinutes()
     {
         await using var context = CreateContext();
@@ -213,6 +232,71 @@ public sealed class AuthenticationServiceTests
         var replay = await service.ResolveSessionAsync(rawToken, default);
         Assert.False(replay.IsValid);
         Assert.Empty(context.Sessions);
+    }
+
+    [Fact]
+    public async Task ChangePasswordAsync_ReplacesHashAndAllSessions_AndRejectsReplay()
+    {
+        await using var context = CreateContext();
+        var userId = await SeedUserAsync(context, mustChangePassword: true);
+        var service = CreateService(context);
+        var login = await service.LoginAsync("resident@example.com", Password, default);
+        var lookup = await service.ResolveSessionAsync(login.SessionToken, default);
+        await service.LoginAsync("resident@example.com", Password, default);
+        var credential = await context.UserCredentials.SingleAsync();
+
+        var outcome = await service.ChangePasswordAsync(lookup.Session!, "ResidentPrivatePassword456!", default);
+
+        Assert.Equal(LoginResultStatus.Success, outcome.Status);
+        Assert.Equal(SessionType.Full, outcome.SessionType);
+        Assert.Equal("app", outcome.NextStep);
+        Assert.False(credential.MustChangePassword);
+        Assert.NotNull(credential.PasswordChangedAt);
+        Assert.True(new PasswordHasher().VerifyPassword(credential.PasswordHash, "ResidentPrivatePassword456!"));
+        Assert.False(new PasswordHasher().VerifyPassword(credential.PasswordHash, Password));
+        var fullSession = await context.Sessions.SingleAsync();
+        Assert.Equal(userId, fullSession.UserId);
+        Assert.Equal(SessionType.Full, fullSession.SessionType);
+        Assert.Equal(SessionTokenGenerator.HashToken(outcome.SessionToken!), fullSession.TokenHash);
+        Assert.NotNull(fullSession.LastSeenAt);
+        Assert.False((await service.ResolveSessionAsync(login.SessionToken, default)).IsValid);
+        Assert.Equal(LoginResultStatus.InvalidCredentials,
+            (await service.ChangePasswordAsync(lookup.Session!, "AnotherPrivatePassword789!", default)).Status);
+    }
+
+    [Theory]
+    [InlineData("full")]
+    [InlineData("expired")]
+    [InlineData("revoked")]
+    [InlineData("inactive")]
+    [InlineData("already_changed")]
+    [InlineData("missing")]
+    public async Task ChangePasswordAsync_InvalidState_DoesNotChangePassword(string state)
+    {
+        await using var context = CreateContext();
+        await SeedUserAsync(context, mustChangePassword: true);
+        var service = CreateService(context);
+        var login = await service.LoginAsync("resident@example.com", Password, default);
+        var session = (await service.ResolveSessionAsync(login.SessionToken, default)).Session!;
+        var credential = await context.UserCredentials.SingleAsync();
+        var originalHash = credential.PasswordHash;
+        switch (state)
+        {
+            case "full": session.SessionType = SessionType.Full; break;
+            case "expired": session.ExpiresAt = DateTimeOffset.UtcNow.AddSeconds(-1); break;
+            case "revoked": session.RevokedAt = DateTimeOffset.UtcNow; break;
+            case "inactive": (await context.Users.SingleAsync()).IsActive = false; break;
+            case "already_changed": credential.MustChangePassword = false; break;
+            case "missing": context.Sessions.Remove(session); break;
+        }
+        await context.SaveChangesAsync();
+
+        var outcome = await service.ChangePasswordAsync(session, "ResidentPrivatePassword456!", default);
+
+        Assert.Equal(LoginResultStatus.InvalidCredentials, outcome.Status);
+        Assert.Null(outcome.SessionToken);
+        Assert.Equal(originalHash, credential.PasswordHash);
+        Assert.Null(credential.PasswordChangedAt);
     }
 
     private static LocatariusDbContext CreateContext()

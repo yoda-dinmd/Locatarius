@@ -1,0 +1,58 @@
+[
+  {
+    "id": 1,
+    "name": "Ana Popescu",
+    "apartment": "3A",
+    "role": "Proprietar",
+    "status": "Activ"
+  },
+  {
+    "id": 2,
+    "name": "Mihai Ionescu",
+    "apartment": "12",
+    "role": "Chiriaș",
+    "status": "Activ"
+  },
+  {
+    "id": 3,
+    "name": "Elena Rusu",
+    "apartment": "B-204",
+    "role": "Proprietar",
+    "status": "Activ"
+  },
+  {
+    "id": 4,
+    "name": "Andrei Munteanu",
+    "apartment": "7",
+    "role": "Chiriaș",
+    "status": "Inactiv"
+  },
+  {
+    "id": 5,
+    "name": "Ioana Dumitrescu",
+    "apartment": "18B",
+    "role": "Proprietar",
+    "status": "Activ"
+  },
+  {
+    "id": 6,
+    "name": "Sorin Cojocaru",
+    "apartment": "A-105",
+    "role": "Chiriaș",
+    "status": "Activ"
+  },
+  {
+    "id": 7,
+    "name": "Cristina Stoica",
+    "apartment": "24",
+    "role": "Proprietar",
+    "status": "Inactiv"
+  },
+  {
+    "id": 8,
+    "name": "Vlad Bălan",
+    "apartment": "9C",
+    "role": "Chiriaș",
+    "status": "Activ"
+  }
+]

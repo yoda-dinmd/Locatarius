@@ -8,6 +8,7 @@ using System.Threading.RateLimiting;
 using Locatarius.Infrastructure;
 using Locatarius.Infrastructure.Auth;
 using Locatarius.Infrastructure.Persistence;
+using Locatarius.Infrastructure.Residents;
 using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
@@ -41,6 +42,8 @@ builder.Services.AddOptions<ForwardedHeadersOptions>()
     });
 
 builder.Services.AddScoped<AuthenticationService>();
+builder.Services.AddScoped<SessionAuthorizationService>();
+builder.Services.AddScoped<ResidentAdministrationService>();
 
 builder.Services.AddAntiforgery(options =>
 {

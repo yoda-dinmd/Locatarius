@@ -1,0 +1,242 @@
+.residents-content {
+  min-width: 0;
+}
+
+.residents-heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+
+.residents-heading h1 {
+  font-size: clamp(2rem, 4vw, 3rem);
+}
+
+.residents-intro {
+  margin: 0.75rem 0 0;
+  color: #5a7c80;
+  font-size: 0.88rem;
+  line-height: 1.55;
+}
+
+.resident-add-button {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 42px;
+  border: 0;
+  border-radius: 9px;
+  padding: 0.65rem 1rem;
+  color: #ffffff;
+  background: #087d6b;
+  font-size: 0.78rem;
+  font-weight: 700;
+  transition: background 160ms ease, transform 160ms ease;
+}
+
+.resident-add-button span {
+  font-size: 1.2rem;
+  font-weight: 400;
+  line-height: 1;
+}
+
+.resident-add-button:hover {
+  background: #056b5c;
+  transform: translateY(-1px);
+}
+
+.resident-add-button:active {
+  transform: translateY(0);
+}
+
+.resident-add-button:focus-visible,
+.resident-action-button:focus-visible {
+  outline: 3px solid #1682721f;
+  outline-offset: 2px;
+}
+
+.residents-card {
+  overflow: hidden;
+  border: 1px solid #dce9e5;
+  border-radius: 12px;
+  background: #ffffff;
+  box-shadow: 0 18px 45px #377d7030;
+}
+
+.residents-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.35rem 1.5rem;
+  border-bottom: 1px solid #dce9e5;
+}
+
+.residents-card-header h2,
+.residents-empty h3 {
+  margin: 0;
+  color: #164950;
+  font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+  font-size: 0.92rem;
+  letter-spacing: 0;
+}
+
+.residents-card-header p,
+.residents-empty p {
+  margin: 0.35rem 0 0;
+  color: #718b8e;
+  font-size: 0.72rem;
+}
+
+.residents-table-scroll {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.residents-table {
+  width: 100%;
+  min-width: 720px;
+  border-collapse: collapse;
+  color: #4d7075;
+  font-size: 0.78rem;
+  text-align: left;
+}
+
+.residents-table th {
+  padding: 0.8rem 1.5rem;
+  color: #718b8e;
+  background: #f3f8f6;
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+.residents-table td {
+  padding: 1rem 1.5rem;
+  border-top: 1px solid #dce9e5;
+  vertical-align: middle;
+}
+
+.residents-table tbody tr {
+  transition: background 150ms ease;
+}
+
+.residents-table tbody tr:hover {
+  background: #f0faf7;
+}
+
+.resident-name {
+  color: #164950;
+  font-weight: 700;
+}
+
+.resident-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.42rem;
+  border-radius: 999px;
+  padding: 0.34rem 0.65rem;
+  font-size: 0.68rem;
+  font-weight: 700;
+}
+
+.resident-status > span {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.resident-status--activ {
+  color: #087d6b;
+  background: #dcefe9;
+}
+
+.resident-status--inactiv {
+  border: 1px solid #dce9e5;
+  color: #718b8e;
+  background: #ffffff;
+}
+
+.residents-actions-heading {
+  text-align: right;
+}
+
+.resident-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.4rem;
+}
+
+.resident-action-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.32rem;
+  min-height: 34px;
+  border: 1px solid #cfe1e4;
+  border-radius: 7px;
+  padding: 0.42rem 0.62rem;
+  color: #087d6b;
+  background: #ffffff;
+  font-size: 0.68rem;
+  font-weight: 700;
+  transition: background 150ms ease, border-color 150ms ease;
+}
+
+.resident-action-button svg {
+  width: 14px;
+  height: 14px;
+  fill: currentColor;
+}
+
+.resident-action-button:hover {
+  border-color: #168272;
+  background: #e4f2ed;
+}
+
+.resident-action-button--danger {
+  color: #b43e43;
+}
+
+.resident-action-button--danger:hover {
+  border-color: #b43e43;
+  background: #ffffff;
+}
+
+.residents-empty {
+  padding: 4rem 1.5rem;
+  text-align: center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .resident-add-button,
+  .resident-action-button,
+  .residents-table tbody tr {
+    transition: none;
+  }
+}
+
+@media (max-width: 720px) {
+  .residents-heading {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+
+  .resident-add-button {
+    align-self: flex-start;
+  }
+
+  .residents-card-header {
+    padding: 1.15rem 1rem;
+  }
+
+  .residents-table th,
+  .residents-table td {
+    padding-right: 1rem;
+    padding-left: 1rem;
+  }
+}

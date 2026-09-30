@@ -16,6 +16,12 @@ public static class ApiErrors
     public static IActionResult Forbidden(string code, string message)
         => Envelope(403, code, message, new());
 
+    public static IActionResult NotFound(string code, string message)
+        => Envelope(404, code, message, new());
+
+    public static IActionResult Conflict(string code, string message)
+        => Envelope(409, code, message, new());
+
     public static IActionResult UnsupportedMediaType()
         => Envelope(415, "UNSUPPORTED_MEDIA_TYPE", "Use application/json.", new());
 

@@ -4,6 +4,7 @@ using Locatarius.Api.Json;
 using Locatarius.Api.Validation;
 using Locatarius.Infrastructure.Auth;
 using Locatarius.Api.Auth;
+using Locatarius.Domain.Enums;
 using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
@@ -14,9 +15,31 @@ namespace Locatarius.Api.Controllers;
 [Route("api/auth")]
 public sealed class AuthController(
     AuthenticationService authenticationService,
+    SessionAuthorizationService sessionAuthorizationService,
     IAntiforgery antiforgery) : ControllerBase
 {
     private const long MaxBodyBytes = 16 * 1024;
+
+    [HttpGet("me")]
+    public async Task<IActionResult> Me(CancellationToken cancellationToken)
+    {
+        Response.Headers.CacheControl = "no-store";
+        var authorization = await sessionAuthorizationService.AuthorizeAsync(
+            Request.Cookies[SessionCookieOptions.CookieName],
+            requiredType: null, requireAdmin: false, cancellationToken);
+        if (authorization.Status != SessionAuthorizationStatus.Authorized)
+            return ApiErrors.Unauthorized("UNAUTHENTICATED", "Authentication required.");
+
+        var user = authorization.User!;
+        return Ok(new
+        {
+            id = user.UserId,
+            name = $"{user.FirstName} {user.LastName}",
+            email = user.Credential!.Email,
+            role = user.Role!.Role == UserRoleType.Admin ? "admin" : "resident",
+            mustChangePassword = user.Credential.MustChangePassword
+        });
+    }
 
     [HttpGet("csrf")]
     public async Task<IActionResult> GetCsrfToken(CancellationToken cancellationToken)
@@ -82,6 +105,46 @@ public sealed class AuthController(
             SessionCookieOptions.Build(expires));
 
         return Ok(new { next = outcome.NextStep });
+    }
+
+    [HttpPost("change-password")]
+    public async Task<IActionResult> ChangePassword(CancellationToken cancellationToken)
+    {
+        Response.Headers.CacheControl = "no-store";
+        var contentTypeError = CheckContentType();
+        if (contentTypeError is not null) return contentTypeError;
+        var (body, sizeError) = await ReadBodyAsync(cancellationToken);
+        if (sizeError is not null) return sizeError;
+        try
+        {
+            await antiforgery.ValidateRequestAsync(HttpContext);
+        }
+        catch (AntiforgeryValidationException)
+        {
+            return ApiErrors.Forbidden("CSRF_INVALID", "Refresh the page and try again.");
+        }
+
+        var authorization = await sessionAuthorizationService.AuthorizeAsync(
+            Request.Cookies[SessionCookieOptions.CookieName], SessionType.PasswordChange,
+            requireAdmin: false, cancellationToken);
+        if (authorization.Status == SessionAuthorizationStatus.WrongSessionType)
+            return ApiErrors.Forbidden("FORBIDDEN", "Password change session required.");
+        if (authorization.Status != SessionAuthorizationStatus.Authorized)
+            return ApiErrors.Unauthorized("UNAUTHENTICATED", "Authentication required.");
+
+        if (!TryParseStringPairBody(body!, "newPassword", "confirmPassword",
+                out var newPassword, out var confirmPassword, out var parseError))
+            return parseError!;
+        var fields = ChangePasswordRequestValidator.Validate(newPassword, confirmPassword);
+        if (fields.Count != 0) return ApiErrors.ValidationFailed(fields);
+
+        var outcome = await authenticationService.ChangePasswordAsync(
+            authorization.Session!, newPassword!, cancellationToken);
+        if (outcome.Status != LoginResultStatus.Success)
+            return ApiErrors.Unauthorized("UNAUTHENTICATED", "Authentication required.");
+        Response.Cookies.Append(SessionCookieOptions.CookieName, outcome.SessionToken!,
+            SessionCookieOptions.Build(DateTimeOffset.UtcNow.AddHours(8)));
+        return Ok(new { next = "app" });
     }
 
     [HttpPost("logout")]
@@ -162,9 +225,14 @@ public sealed class AuthController(
 
     private static bool TryParseLoginBody(
         string body, out string? email, out string? password, out IActionResult? error)
+        => TryParseStringPairBody(body, "email", "password", out email, out password, out error);
+
+    private static bool TryParseStringPairBody(
+        string body, string firstProperty, string secondProperty,
+        out string? firstValue, out string? secondValue, out IActionResult? error)
     {
-        email = null;
-        password = null;
+        firstValue = null;
+        secondValue = null;
         error = null;
 
         JsonDocument document;
@@ -187,7 +255,7 @@ public sealed class AuthController(
             }
 
             var seen = new HashSet<string>();
-            var allowed = new HashSet<string> { "email", "password" };
+            var allowed = new HashSet<string> { firstProperty, secondProperty };
 
             foreach (var property in document.RootElement.EnumerateObject())
             {
@@ -198,24 +266,24 @@ public sealed class AuthController(
                 }
             }
 
-            if (document.RootElement.TryGetProperty("email", out var emailElement))
+            if (document.RootElement.TryGetProperty(firstProperty, out var firstElement))
             {
-                if (emailElement.ValueKind is not (JsonValueKind.String or JsonValueKind.Null))
+                if (firstElement.ValueKind is not (JsonValueKind.String or JsonValueKind.Null))
                 {
                     error = ApiErrors.InvalidRequest();
                     return false;
                 }
-                email = emailElement.GetString();
+                firstValue = firstElement.GetString();
             }
 
-            if (document.RootElement.TryGetProperty("password", out var passwordElement))
+            if (document.RootElement.TryGetProperty(secondProperty, out var secondElement))
             {
-                if (passwordElement.ValueKind is not (JsonValueKind.String or JsonValueKind.Null))
+                if (secondElement.ValueKind is not (JsonValueKind.String or JsonValueKind.Null))
                 {
                     error = ApiErrors.InvalidRequest();
                     return false;
                 }
-                password = passwordElement.GetString();
+                secondValue = secondElement.GetString();
             }
         }
 

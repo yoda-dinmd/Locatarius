@@ -51,6 +51,12 @@ public sealed class AuthHttpTests : IAsyncLifetime
         client.DefaultRequestHeaders.Remove("Cookie");
         client.DefaultRequestHeaders.Add("Cookie", csrfCookie.Split(';')[0] + "; " + sessionCookie.Split(';')[0]);
         client.DefaultRequestHeaders.Remove("X-CSRF-TOKEN");
+        var me = await client.GetAsync("/api/auth/me");
+        Assert.Equal(HttpStatusCode.OK, me.StatusCode);
+        var identity = await me.Content.ReadFromJsonAsync<JsonElement>();
+        Assert.Equal("Test Admin", identity.GetProperty("name").GetString());
+        Assert.Equal("admin", identity.GetProperty("role").GetString());
+        Assert.True(identity.GetProperty("mustChangePassword").GetBoolean());
         var logoutDenied = await client.PostAsJsonAsync("/api/auth/logout", new { });
         Assert.Equal(HttpStatusCode.Forbidden, logoutDenied.StatusCode);
         client.DefaultRequestHeaders.Add("X-CSRF-TOKEN", token);
@@ -66,6 +72,38 @@ public sealed class AuthHttpTests : IAsyncLifetime
         var limited = await client.PostAsJsonAsync("/api/auth/login", new { });
         Assert.Equal(HttpStatusCode.TooManyRequests, limited.StatusCode);
         Assert.NotNull(limited.Headers.RetryAfter);
+    }
+
+    [Fact]
+    public async Task ChangePasswordPersistsHashAndRotatesRestrictedSessionInPostgres()
+    {
+        await using var factory = new ApiFactory(database.GetConnectionString());
+        using var client = factory.CreateClient(new() { BaseAddress = new Uri("https://localhost") });
+        var csrf = await client.GetFromJsonAsync<JsonElement>("/api/auth/csrf");
+        client.DefaultRequestHeaders.Add("X-CSRF-TOKEN", csrf.GetProperty("token").GetString());
+        var login = await client.PostAsJsonAsync("/api/auth/login", new { email = "admin@example.test", password = Password });
+        Assert.Equal(HttpStatusCode.OK, login.StatusCode);
+        var oldCookie = login.Headers.GetValues("Set-Cookie").Single().Split(';')[0];
+        var response = await client.PostAsJsonAsync("/api/auth/change-password",
+            new { newPassword = "ResidentPrivatePassword456!", confirmPassword = "ResidentPrivatePassword456!" });
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var newCookie = response.Headers.GetValues("Set-Cookie").Single();
+        AssertCookieFlags(newCookie, "__Host-locatarius=");
+        Assert.NotEqual(oldCookie, newCookie.Split(';')[0]);
+        var identity = await client.GetFromJsonAsync<JsonElement>("/api/auth/me");
+        Assert.False(identity.GetProperty("mustChangePassword").GetBoolean());
+
+        await using var scope = factory.Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<LocatariusDbContext>();
+        var credential = await db.UserCredentials.SingleAsync();
+        Assert.False(credential.MustChangePassword);
+        Assert.NotNull(credential.PasswordChangedAt);
+        Assert.True(new PasswordHasher()
+            .VerifyPassword(credential.PasswordHash, "ResidentPrivatePassword456!"));
+        Assert.Equal(Locatarius.Domain.Enums.SessionType.Full, (await db.Sessions.SingleAsync()).SessionType);
+        using var replay = factory.CreateClient(new() { BaseAddress = new Uri("https://localhost"), HandleCookies = false });
+        replay.DefaultRequestHeaders.Add("Cookie", oldCookie);
+        Assert.Equal(HttpStatusCode.Unauthorized, (await replay.GetAsync("/api/auth/me")).StatusCode);
     }
 
     [Fact]

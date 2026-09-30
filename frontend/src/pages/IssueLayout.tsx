@@ -2,11 +2,12 @@ import type { ReactNode } from "react";
 import type { SessionUser } from "../auth/auth";
 import { signOut } from "../auth/auth";
 import AppSidebar from "../components/AppSidebar";
+import type { MainNavigationProps } from "../components/MainNavigation";
 import "../styles/Dashboard.css";
 
 type IssueLayoutProps = {
   user: SessionUser;
-  activePage: "dashboard" | "transparency" | "issues";
+  activePage: MainNavigationProps["activePage"];
   children: ReactNode;
 };
 
