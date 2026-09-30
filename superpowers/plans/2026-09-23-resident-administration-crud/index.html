@@ -1,0 +1,2237 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="TUM secure application: scope, implementation contracts and assessment evidence">
+      
+      
+        <meta name="author" content="Locatarius Team">
+      
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Resident Administration CRUD Implementation Plan - Locatarius Documentation</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#resident-administration-crud-implementation-plan" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../.." title="Locatarius Documentation" class="md-header__button md-logo" aria-label="Locatarius Documentation" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Locatarius Documentation
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Resident Administration CRUD Implementation Plan
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/yoda-dinmd/Locatarius" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    yoda-dinmd/Locatarius
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../.." title="Locatarius Documentation" class="md-nav__button md-logo" aria-label="Locatarius Documentation" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Locatarius Documentation
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/yoda-dinmd/Locatarius" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    yoda-dinmd/Locatarius
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Start here
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Scope and delivery
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Scope and delivery
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../solution-design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Product and screens
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../mvp-roadmap/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Two-phase roadmap
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../internship-backlog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Internship backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../deferred-backlog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deferred backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../openproject/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    OpenProject snapshots
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../use-case-catalog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Stories and use cases
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../decisions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Decisions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Implementation
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Implementation
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../local-https/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Local HTTPS and containers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reviews/2026-09-20-consistency/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Container and CI review
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../backend-auth-integration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backend auth integration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../frontend-mockups/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Screen mockups
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../sprint-1/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Internship acceptance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../data-model/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Database
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api-catalog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API contract
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../shared-patterns/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Shared rules
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Detailed use cases
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Detailed use cases
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../use-cases/UC-01/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    UC-01 — Sign in and out
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../use-cases/UC-02/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    UC-02 — Manage residents
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../use-cases/UC-03/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    UC-03 — Own profile and password
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../use-cases/UC-04/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    UC-04 — Building and unit register
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../use-cases/UC-05/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    UC-05 — Report and read tickets
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../use-cases/UC-06/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    UC-06 — Comments and resolution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../use-cases/UC-07/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    UC-07 — MFA and provider login
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security and assessment
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Security and assessment
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../operations-and-testing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Controls, tests and runbooks
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../traceability/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Requirement traceability
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../sources/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Sources
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../validation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Documentation validation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#global-constraints" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Global Constraints
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Global Constraints">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#task-1-preserve-the-verified-resident-directory-prototype" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Task 1: Preserve the Verified Resident Directory Prototype
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#task-2-persist-active-account-state-and-reject-inactive-login" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Task 2: Persist Active Account State and Reject Inactive Login
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#task-3-add-server-derived-identity-and-reusable-authorization" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Task 3: Add Server-Derived Identity and Reusable Authorization
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#task-4-complete-mandatory-first-login-password-change" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Task 4: Complete Mandatory First-Login Password Change
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#task-5-list-administrator-scoped-residents-and-apartments" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Task 5: List Administrator-Scoped Residents and Apartments
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#task-6-create-resident-accounts-with-temporary-credentials" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Task 6: Create Resident Accounts with Temporary Credentials
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#task-7-edit-deactivate-and-reactivate-residents" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Task 7: Edit, Deactivate, and Reactivate Residents
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#task-8-replace-frontend-mock-authentication-with-the-backend-session" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Task 8: Replace Frontend Mock Authentication with the Backend Session
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#task-9-connect-the-resident-table-and-action-dialogs-to-the-api" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Task 9: Connect the Resident Table and Action Dialogs to the API
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#task-10-full-verification-browser-review-and-delivery-evidence" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Task 10: Full Verification, Browser Review, and Delivery Evidence
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="resident-administration-crud-implementation-plan">Resident Administration CRUD Implementation Plan</h1>
+<blockquote>
+<p><strong>For agentic workers:</strong> REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (<code>- [ ]</code>) syntax for tracking.</p>
+</blockquote>
+<p><strong>Goal:</strong> Replace the resident-directory prototype and mock authentication with a secure, PostgreSQL-backed administrator CRUD flow and mandatory resident first-login password change.</p>
+<p><strong>Architecture:</strong> ASP.NET Core controllers use the existing cookie/CSRF session model and delegate persistence to focused infrastructure services. Every resident query is scoped through <code>User -&gt; Apartment -&gt; Building.AdminId</code>, while the React frontend uses one same-origin API client and server-derived identity instead of <code>localStorage</code> sessions.</p>
+<p><strong>Tech Stack:</strong> .NET 10, ASP.NET Core controllers, EF Core 10, PostgreSQL 18, xUnit, Testcontainers, React 19, TypeScript 6, Vite 8, Vitest, Testing Library, vanilla CSS.</p>
+<p><strong>Spec:</strong> <code>docs/superpowers/specs/2026-09-23-resident-administration-crud-design.md</code></p>
+<h2 id="global-constraints">Global Constraints</h2>
+<ul>
+<li>OpenProject work package: <code>#94</code> — Administrator Resident Directory &amp; Directory Management.</li>
+<li>Authorization roles remain exactly <code>Admin</code> and <code>Resident</code>; never add <code>Proprietar</code> or <code>Chiriaș</code>.</li>
+<li><code>DELETE</code> means logical deactivation; never hard-delete a resident.</li>
+<li>The backend, not the frontend route guard, is the security boundary.</li>
+<li>Resident and apartment access must be filtered by the authenticated administrator's buildings in the database query.</li>
+<li>Passwords must never be logged, returned, placed in URLs, or persisted in frontend storage.</li>
+<li>Use the existing safe error envelope, 16 KiB request limit, secure cookie settings, and CSRF contract.</li>
+<li>All commits follow Conventional Commits and end with <code>#94</code>.</li>
+<li>Preserve unrelated user changes and do not broaden the feature into building or apartment administration.</li>
+</ul>
+<hr />
+<h3 id="task-1-preserve-the-verified-resident-directory-prototype">Task 1: Preserve the Verified Resident Directory Prototype</h3>
+<p><strong>Files:</strong>
+- Modify: <code>frontend/src/App.tsx</code>
+- Modify: <code>frontend/src/pages/Dashboard.tsx</code>
+- Create: <code>frontend/src/pages/Residents.tsx</code>
+- Create: <code>frontend/src/styles/Residents.css</code>
+- Create: <code>frontend/src/data/residentsMock.json</code>
+- Create: <code>frontend/src/pages/Residents.test.mjs</code></p>
+<p><strong>Interfaces:</strong>
+- Consumes: existing <code>SessionUser</code>, dashboard shell classes, and project CSS palette.
+- Produces: the verified <code>/residents</code> prototype that later frontend tasks replace with API data without redesigning the page.</p>
+<ul>
+<li>[ ] <strong>Step 1: Confirm the working tree contains only the approved prototype and documentation changes</strong></li>
+</ul>
+<p>Run:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>git<span class="w"> </span>status<span class="w"> </span>--short
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>git<span class="w"> </span>diff<span class="w"> </span>--<span class="w"> </span>frontend/src/App.tsx<span class="w"> </span>frontend/src/pages/Dashboard.tsx
+</code></pre></div>
+<p>Expected: only the two minimal routing/navigation edits are tracked modifications; the resident page, CSS, mock JSON, and test are untracked; no unrelated source changes appear.</p>
+<ul>
+<li>[ ] <strong>Step 2: Run the existing resident rendering tests</strong></li>
+</ul>
+<p>Run:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="nb">cd</span><span class="w"> </span>frontend
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>node<span class="w"> </span>--test<span class="w"> </span>src/pages/Residents.test.mjs
+</code></pre></div>
+<p>Expected: 5 tests pass, covering mock data, populated state, empty state, role-aware routing, responsive styling, and palette reuse.</p>
+<ul>
+<li>[ ] <strong>Step 3: Verify the prototype builds and lints</strong></li>
+</ul>
+<p>Run:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="nb">cd</span><span class="w"> </span>frontend
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>npm<span class="w"> </span>run<span class="w"> </span>lint
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>npm<span class="w"> </span>run<span class="w"> </span>build
+</code></pre></div>
+<p>Expected: both commands exit 0.</p>
+<ul>
+<li>[ ] <strong>Step 4: Commit only the prototype</strong></li>
+</ul>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>git<span class="w"> </span>add<span class="w"> </span>frontend/src/App.tsx<span class="w"> </span>frontend/src/pages/Dashboard.tsx<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="w">  </span>frontend/src/pages/Residents.tsx<span class="w"> </span>frontend/src/styles/Residents.css<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="w">  </span>frontend/src/data/residentsMock.json<span class="w"> </span>frontend/src/pages/Residents.test.mjs
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>git<span class="w"> </span>commit<span class="w"> </span>-m<span class="w"> </span><span class="s2">"feat(residents): add administrator directory prototype #94"</span>
+</code></pre></div>
+<h3 id="task-2-persist-active-account-state-and-reject-inactive-login">Task 2: Persist Active Account State and Reject Inactive Login</h3>
+<p><strong>Files:</strong>
+- Modify: <code>backend/src/Locatarius.Domain/Entities/User.cs</code>
+- Modify: <code>backend/src/Locatarius.Infrastructure/Persistence/Configurations/UserConfiguration.cs</code>
+- Modify: <code>backend/src/Locatarius.Infrastructure/Auth/AuthenticationService.cs</code>
+- Create (generated by Step 4): <code>backend/src/Locatarius.Infrastructure/Persistence/Migrations/*_AddUserActiveState.cs</code>
+- Create (generated by Step 4): <code>backend/src/Locatarius.Infrastructure/Persistence/Migrations/*_AddUserActiveState.Designer.cs</code>
+- Modify: <code>backend/src/Locatarius.Infrastructure/Persistence/Migrations/LocatariusDbContextModelSnapshot.cs</code>
+- Modify: <code>backend/tests/Locatarius.Infrastructure.Tests/AuthenticationServiceTests.cs</code>
+- Modify: <code>backend/tests/Locatarius.Infrastructure.Tests/PostgresAuthenticationTests.cs</code></p>
+<p><strong>Interfaces:</strong>
+- Consumes: <code>AuthenticationService.LoginAsync(string canonicalEmail, string password, CancellationToken)</code>.
+- Produces: <code>User.IsActive: bool</code>, mapped to <code>users.is_active</code>, and generic invalid-credential handling for inactive users.</p>
+<ul>
+<li>[ ] <strong>Step 1: Write failing authentication tests for inactive users</strong></li>
+</ul>
+<p>Add an in-memory assertion to <code>AuthenticationServiceTests</code> and a PostgreSQL assertion to <code>PostgresAuthenticationTests</code> following their existing fixture helpers:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="kt">var</span><span class="w"> </span><span class="n">user</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="n">db</span><span class="p">.</span><span class="n">Users</span><span class="p">.</span><span class="n">Include</span><span class="p">(</span><span class="n">x</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">x</span><span class="p">.</span><span class="n">Credential</span><span class="p">)</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="w">    </span><span class="p">.</span><span class="n">SingleAsync</span><span class="p">(</span><span class="n">x</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">x</span><span class="p">.</span><span class="n">Credential</span><span class="o">!</span><span class="p">.</span><span class="n">Email</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s">"resident@example.test"</span><span class="p">);</span>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="n">user</span><span class="p">.</span><span class="n">IsActive</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">false</span><span class="p">;</span>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="k">await</span><span class="w"> </span><span class="n">db</span><span class="p">.</span><span class="n">SaveChangesAsync</span><span class="p">();</span>
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>
+<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="kt">var</span><span class="w"> </span><span class="n">outcome</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="n">service</span><span class="p">.</span><span class="n">LoginAsync</span><span class="p">(</span>
+<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="w">    </span><span class="s">"resident@example.test"</span><span class="p">,</span><span class="w"> </span><span class="n">ValidPassword</span><span class="p">,</span><span class="w"> </span><span class="n">CancellationToken</span><span class="p">.</span><span class="n">None</span><span class="p">);</span>
+<a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a>
+<a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a><span class="n">Assert</span><span class="p">.</span><span class="n">Equal</span><span class="p">(</span><span class="n">LoginResultStatus</span><span class="p">.</span><span class="n">InvalidCredentials</span><span class="p">,</span><span class="w"> </span><span class="n">outcome</span><span class="p">.</span><span class="n">Status</span><span class="p">);</span>
+<a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a><span class="n">Assert</span><span class="p">.</span><span class="n">Null</span><span class="p">(</span><span class="n">outcome</span><span class="p">.</span><span class="n">SessionToken</span><span class="p">);</span>
+<a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a><span class="n">Assert</span><span class="p">.</span><span class="n">Empty</span><span class="p">(</span><span class="k">await</span><span class="w"> </span><span class="n">db</span><span class="p">.</span><span class="n">Sessions</span><span class="p">.</span><span class="n">Where</span><span class="p">(</span><span class="n">x</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">x</span><span class="p">.</span><span class="n">UserId</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">user</span><span class="p">.</span><span class="n">UserId</span><span class="p">).</span><span class="n">ToListAsync</span><span class="p">());</span>
+</code></pre></div>
+<ul>
+<li>[ ] <strong>Step 2: Run the focused tests and verify the expected failure</strong></li>
+</ul>
+<p>Run:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>dotnet<span class="w"> </span><span class="nb">test</span><span class="w"> </span>backend/tests/Locatarius.Infrastructure.Tests/Locatarius.Infrastructure.Tests.csproj<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="w">  </span>--filter<span class="w"> </span><span class="s2">"FullyQualifiedName~AuthenticationServiceTests|FullyQualifiedName~PostgresAuthenticationTests"</span>
+</code></pre></div>
+<p>Expected: compilation fails because <code>User.IsActive</code> does not exist.</p>
+<ul>
+<li>[ ] <strong>Step 3: Add the active property and EF mapping</strong></li>
+</ul>
+<p>Add to <code>User</code>:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="k">public</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="n">IsActive</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="k">set</span><span class="p">;</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">true</span><span class="p">;</span>
+</code></pre></div>
+<p>Add to <code>UserConfiguration</code>:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="n">builder</span><span class="p">.</span><span class="n">Property</span><span class="p">(</span><span class="n">user</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">user</span><span class="p">.</span><span class="n">IsActive</span><span class="p">)</span>
+<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="w">    </span><span class="p">.</span><span class="n">HasColumnName</span><span class="p">(</span><span class="s">"is_active"</span><span class="p">)</span>
+<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="w">    </span><span class="p">.</span><span class="n">HasDefaultValue</span><span class="p">(</span><span class="k">true</span><span class="p">)</span>
+<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="w">    </span><span class="p">.</span><span class="n">IsRequired</span><span class="p">();</span>
+</code></pre></div>
+<p>In <code>LoginAsync</code>, load the credential's user under the existing lock and include <code>!credential.User.IsActive</code> in the generic invalid-credentials path. Perform the dummy hash verification before returning so inactive and unknown accounts keep comparable work.</p>
+<ul>
+<li>[ ] <strong>Step 4: Generate and inspect the migration</strong></li>
+</ul>
+<p>Run:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>dotnet<span class="w"> </span>ef<span class="w"> </span>migrations<span class="w"> </span>add<span class="w"> </span>AddUserActiveState<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="w">  </span>--project<span class="w"> </span>backend/src/Locatarius.Infrastructure/Locatarius.Infrastructure.csproj<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="w">  </span>--startup-project<span class="w"> </span>backend/src/Locatarius.Api/Locatarius.Api.csproj<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="w">  </span>--output-dir<span class="w"> </span>Persistence/Migrations
+</code></pre></div>
+<p>Expected migration body:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="n">migrationBuilder</span><span class="p">.</span><span class="n">AddColumn</span><span class="o">&lt;</span><span class="kt">bool</span><span class="o">&gt;</span><span class="p">(</span>
+<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="w">    </span><span class="n">name</span><span class="p">:</span><span class="w"> </span><span class="s">"is_active"</span><span class="p">,</span>
+<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="w">    </span><span class="n">table</span><span class="p">:</span><span class="w"> </span><span class="s">"users"</span><span class="p">,</span>
+<a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="w">    </span><span class="n">type</span><span class="p">:</span><span class="w"> </span><span class="s">"boolean"</span><span class="p">,</span>
+<a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a><span class="w">    </span><span class="n">nullable</span><span class="p">:</span><span class="w"> </span><span class="k">false</span><span class="p">,</span>
+<a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a><span class="w">    </span><span class="n">defaultValue</span><span class="p">:</span><span class="w"> </span><span class="k">true</span><span class="p">);</span>
+</code></pre></div>
+<ul>
+<li>[ ] <strong>Step 5: Run focused and migration tests</strong></li>
+</ul>
+<p>Run:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>dotnet<span class="w"> </span><span class="nb">test</span><span class="w"> </span>backend/tests/Locatarius.Infrastructure.Tests/Locatarius.Infrastructure.Tests.csproj<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="w">  </span>--filter<span class="w"> </span><span class="s2">"FullyQualifiedName~AuthenticationServiceTests|FullyQualifiedName~PostgresAuthenticationTests|FullyQualifiedName~PostgresDatabaseSeederTests"</span>
+</code></pre></div>
+<p>Expected: all selected tests pass.</p>
+<ul>
+<li>[ ] <strong>Step 6: Commit</strong></li>
+</ul>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>git<span class="w"> </span>add<span class="w"> </span>backend/src/Locatarius.Domain/Entities/User.cs<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="w">  </span>backend/src/Locatarius.Infrastructure/Persistence/Configurations/UserConfiguration.cs<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="w">  </span>backend/src/Locatarius.Infrastructure/Auth/AuthenticationService.cs<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="w">  </span>backend/src/Locatarius.Infrastructure/Persistence/Migrations<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a><span class="w">  </span>backend/tests/Locatarius.Infrastructure.Tests/AuthenticationServiceTests.cs<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a><span class="w">  </span>backend/tests/Locatarius.Infrastructure.Tests/PostgresAuthenticationTests.cs
+<a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a>git<span class="w"> </span>commit<span class="w"> </span>-m<span class="w"> </span><span class="s2">"feat(auth): enforce active user accounts #94"</span>
+</code></pre></div>
+<h3 id="task-3-add-server-derived-identity-and-reusable-authorization">Task 3: Add Server-Derived Identity and Reusable Authorization</h3>
+<p><strong>Files:</strong>
+- Create: <code>backend/src/Locatarius.Infrastructure/Auth/SessionAuthorizationService.cs</code>
+- Modify: <code>backend/src/Locatarius.Api/Controllers/AuthController.cs</code>
+- Modify: <code>backend/src/Locatarius.Api/Program.cs</code>
+- Modify: <code>backend/tests/Locatarius.Infrastructure.Tests/AuthHttpTests.cs</code></p>
+<p><strong>Interfaces:</strong>
+- Produces: <code>AuthorizeAsync(string? token, SessionType? requiredType, bool requireAdmin, CancellationToken)</code> returning <code>SessionAuthorizationResult</code> with <code>Status</code>, <code>Session</code>, and <code>User</code>; <code>null</code> accepts either valid session type.
+- Produces: <code>GET /api/auth/me</code> response <code>{ id, name, email, role, mustChangePassword }</code>.
+- Consumes later: all resident and apartment controller actions.</p>
+<ul>
+<li>[ ] <strong>Step 1: Write failing HTTP tests for identity and role-derived access</strong></li>
+</ul>
+<p>Extend <code>AuthHttpTests</code> to log in using the existing CSRF flow, then call <code>/api/auth/me</code> with the returned session cookie:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="kt">var</span><span class="w"> </span><span class="n">me</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="n">client</span><span class="p">.</span><span class="n">GetAsync</span><span class="p">(</span><span class="s">"/api/auth/me"</span><span class="p">);</span>
+<a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span class="n">Assert</span><span class="p">.</span><span class="n">Equal</span><span class="p">(</span><span class="n">HttpStatusCode</span><span class="p">.</span><span class="n">OK</span><span class="p">,</span><span class="w"> </span><span class="n">me</span><span class="p">.</span><span class="n">StatusCode</span><span class="p">);</span>
+<a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a><span class="kt">var</span><span class="w"> </span><span class="n">identity</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="n">me</span><span class="p">.</span><span class="n">Content</span><span class="p">.</span><span class="n">ReadFromJsonAsync</span><span class="o">&lt;</span><span class="n">JsonElement</span><span class="o">&gt;</span><span class="p">();</span>
+<a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a><span class="n">Assert</span><span class="p">.</span><span class="n">Equal</span><span class="p">(</span><span class="s">"Test Admin"</span><span class="p">,</span><span class="w"> </span><span class="n">identity</span><span class="p">.</span><span class="n">GetProperty</span><span class="p">(</span><span class="s">"name"</span><span class="p">).</span><span class="n">GetString</span><span class="p">());</span>
+<a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a><span class="n">Assert</span><span class="p">.</span><span class="n">Equal</span><span class="p">(</span><span class="s">"admin"</span><span class="p">,</span><span class="w"> </span><span class="n">identity</span><span class="p">.</span><span class="n">GetProperty</span><span class="p">(</span><span class="s">"role"</span><span class="p">).</span><span class="n">GetString</span><span class="p">());</span>
+<a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a><span class="n">Assert</span><span class="p">.</span><span class="n">True</span><span class="p">(</span><span class="n">identity</span><span class="p">.</span><span class="n">GetProperty</span><span class="p">(</span><span class="s">"mustChangePassword"</span><span class="p">).</span><span class="n">GetBoolean</span><span class="p">());</span>
+</code></pre></div>
+<p>Also assert a missing, expired, or revoked cookie returns <code>401</code> with <code>UNAUTHENTICATED</code>.</p>
+<ul>
+<li>[ ] <strong>Step 2: Run the HTTP tests and verify <code>404</code> for the missing endpoint</strong></li>
+</ul>
+<p>Run:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>dotnet<span class="w"> </span><span class="nb">test</span><span class="w"> </span>backend/tests/Locatarius.Infrastructure.Tests/Locatarius.Infrastructure.Tests.csproj<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a><span class="w">  </span>--filter<span class="w"> </span>FullyQualifiedName~AuthHttpTests
+</code></pre></div>
+<p>Expected: the new identity assertions fail because <code>/api/auth/me</code> is unmapped.</p>
+<ul>
+<li>[ ] <strong>Step 3: Implement the reusable authorization result</strong></li>
+</ul>
+<p>Create these public contracts in <code>SessionAuthorizationService.cs</code>:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="k">public</span><span class="w"> </span><span class="k">enum</span><span class="w"> </span><span class="n">SessionAuthorizationStatus</span>
+<a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a><span class="p">{</span>
+<a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a><span class="w">    </span><span class="n">Authorized</span><span class="p">,</span>
+<a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a><span class="w">    </span><span class="n">Unauthenticated</span><span class="p">,</span>
+<a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a><span class="w">    </span><span class="n">WrongSessionType</span><span class="p">,</span>
+<a id="__codelineno-14-6" name="__codelineno-14-6" href="#__codelineno-14-6"></a><span class="w">    </span><span class="n">Forbidden</span>
+<a id="__codelineno-14-7" name="__codelineno-14-7" href="#__codelineno-14-7"></a><span class="p">}</span>
+<a id="__codelineno-14-8" name="__codelineno-14-8" href="#__codelineno-14-8"></a>
+<a id="__codelineno-14-9" name="__codelineno-14-9" href="#__codelineno-14-9"></a><span class="k">public</span><span class="w"> </span><span class="k">sealed</span><span class="w"> </span><span class="k">record</span><span class="w"> </span><span class="nf">SessionAuthorizationResult</span><span class="p">(</span>
+<a id="__codelineno-14-10" name="__codelineno-14-10" href="#__codelineno-14-10"></a><span class="w">    </span><span class="n">SessionAuthorizationStatus</span><span class="w"> </span><span class="n">Status</span><span class="p">,</span>
+<a id="__codelineno-14-11" name="__codelineno-14-11" href="#__codelineno-14-11"></a><span class="w">    </span><span class="n">Session</span><span class="o">?</span><span class="w"> </span><span class="n">Session</span><span class="p">,</span>
+<a id="__codelineno-14-12" name="__codelineno-14-12" href="#__codelineno-14-12"></a><span class="w">    </span><span class="n">User</span><span class="o">?</span><span class="w"> </span><span class="n">User</span><span class="p">);</span>
+<a id="__codelineno-14-13" name="__codelineno-14-13" href="#__codelineno-14-13"></a>
+<a id="__codelineno-14-14" name="__codelineno-14-14" href="#__codelineno-14-14"></a><span class="k">public</span><span class="w"> </span><span class="n">Task</span><span class="o">&lt;</span><span class="n">SessionAuthorizationResult</span><span class="o">&gt;</span><span class="w"> </span><span class="n">AuthorizeAsync</span><span class="p">(</span>
+<a id="__codelineno-14-15" name="__codelineno-14-15" href="#__codelineno-14-15"></a><span class="w">    </span><span class="kt">string?</span><span class="w"> </span><span class="n">rawToken</span><span class="p">,</span>
+<a id="__codelineno-14-16" name="__codelineno-14-16" href="#__codelineno-14-16"></a><span class="w">    </span><span class="n">SessionType</span><span class="o">?</span><span class="w"> </span><span class="n">requiredType</span><span class="p">,</span>
+<a id="__codelineno-14-17" name="__codelineno-14-17" href="#__codelineno-14-17"></a><span class="w">    </span><span class="kt">bool</span><span class="w"> </span><span class="n">requireAdmin</span><span class="p">,</span>
+<a id="__codelineno-14-18" name="__codelineno-14-18" href="#__codelineno-14-18"></a><span class="w">    </span><span class="n">CancellationToken</span><span class="w"> </span><span class="n">cancellationToken</span><span class="p">);</span>
+</code></pre></div>
+<p>Resolve the token through <code>AuthenticationService</code>, load <code>User</code> with
+<code>Credential</code> and <code>Role</code>, reject inactive users, require the requested session
+type, and require <code>UserRoleType.Admin</code> when requested. Call
+<code>RecordAcceptedActivityAsync</code> only after full authorization succeeds.</p>
+<ul>
+<li>[ ] <strong>Step 4: Register the service and add <code>GET /api/auth/me</code></strong></li>
+</ul>
+<p>Register it as scoped in <code>Program.cs</code>. The controller action calls the service
+with <code>requiredType: null</code> and <code>requireAdmin: false</code>, so both full and
+password-change sessions can read only their own identity. Return lowercase
+API roles:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="k">return</span><span class="w"> </span><span class="nf">Ok</span><span class="p">(</span><span class="k">new</span>
+<a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a><span class="p">{</span>
+<a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a><span class="w">    </span><span class="n">id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">user</span><span class="p">.</span><span class="n">UserId</span><span class="p">,</span>
+<a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a><span class="w">    </span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">$"{user.FirstName} {user.LastName}"</span><span class="p">,</span>
+<a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a><span class="w">    </span><span class="n">email</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">user</span><span class="p">.</span><span class="n">Credential</span><span class="o">!</span><span class="p">.</span><span class="n">Email</span><span class="p">,</span>
+<a id="__codelineno-15-6" name="__codelineno-15-6" href="#__codelineno-15-6"></a><span class="w">    </span><span class="n">role</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">user</span><span class="p">.</span><span class="n">Role</span><span class="o">!</span><span class="p">.</span><span class="n">Role</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">UserRoleType</span><span class="p">.</span><span class="n">Admin</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="s">"admin"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s">"resident"</span><span class="p">,</span>
+<a id="__codelineno-15-7" name="__codelineno-15-7" href="#__codelineno-15-7"></a><span class="w">    </span><span class="n">mustChangePassword</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">user</span><span class="p">.</span><span class="n">Credential</span><span class="p">.</span><span class="n">MustChangePassword</span>
+<a id="__codelineno-15-8" name="__codelineno-15-8" href="#__codelineno-15-8"></a><span class="p">});</span>
+</code></pre></div>
+<ul>
+<li>[ ] <strong>Step 5: Run tests and commit</strong></li>
+</ul>
+<p>Run:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a>dotnet<span class="w"> </span><span class="nb">test</span><span class="w"> </span>backend/tests/Locatarius.Infrastructure.Tests/Locatarius.Infrastructure.Tests.csproj<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a><span class="w">  </span>--filter<span class="w"> </span>FullyQualifiedName~AuthHttpTests
+</code></pre></div>
+<p>Expected: all identity tests pass.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a>git<span class="w"> </span>add<span class="w"> </span>backend/src/Locatarius.Infrastructure/Auth/SessionAuthorizationService.cs<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a><span class="w">  </span>backend/src/Locatarius.Api/Controllers/AuthController.cs<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a><span class="w">  </span>backend/src/Locatarius.Api/Program.cs<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-17-4" name="__codelineno-17-4" href="#__codelineno-17-4"></a><span class="w">  </span>backend/tests/Locatarius.Infrastructure.Tests/AuthHttpTests.cs
+<a id="__codelineno-17-5" name="__codelineno-17-5" href="#__codelineno-17-5"></a>git<span class="w"> </span>commit<span class="w"> </span>-m<span class="w"> </span><span class="s2">"feat(auth): expose authenticated identity #94"</span>
+</code></pre></div>
+<h3 id="task-4-complete-mandatory-first-login-password-change">Task 4: Complete Mandatory First-Login Password Change</h3>
+<p><strong>Files:</strong>
+- Modify: <code>backend/src/Locatarius.Infrastructure/Auth/AuthenticationService.cs</code>
+- Create: <code>backend/src/Locatarius.Api/Validation/ChangePasswordRequestValidator.cs</code>
+- Modify: <code>backend/src/Locatarius.Api/Controllers/AuthController.cs</code>
+- Modify: <code>backend/tests/Locatarius.Infrastructure.Tests/AuthenticationServiceTests.cs</code>
+- Modify: <code>backend/tests/Locatarius.Infrastructure.Tests/AuthHttpTests.cs</code></p>
+<p><strong>Interfaces:</strong>
+- Produces: <code>AuthenticationService.ChangePasswordAsync(Session session, string newPassword, CancellationToken)</code> returning a successful full-session <code>LoginOutcome</code> or a failure status.
+- Produces: <code>POST /api/auth/change-password</code> accepting <code>{ newPassword, confirmPassword }</code>.</p>
+<ul>
+<li>[ ] <strong>Step 1: Write failing service and HTTP tests</strong></li>
+</ul>
+<p>The service test must assert all of these in one transaction boundary:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a><span class="kt">var</span><span class="w"> </span><span class="n">outcome</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="n">service</span><span class="p">.</span><span class="n">ChangePasswordAsync</span><span class="p">(</span>
+<a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a><span class="w">    </span><span class="n">restrictedSession</span><span class="p">,</span><span class="w"> </span><span class="s">"ResidentPrivatePassword456!"</span><span class="p">,</span><span class="w"> </span><span class="n">CancellationToken</span><span class="p">.</span><span class="n">None</span><span class="p">);</span>
+<a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a>
+<a id="__codelineno-18-4" name="__codelineno-18-4" href="#__codelineno-18-4"></a><span class="n">Assert</span><span class="p">.</span><span class="n">Equal</span><span class="p">(</span><span class="n">LoginResultStatus</span><span class="p">.</span><span class="n">Success</span><span class="p">,</span><span class="w"> </span><span class="n">outcome</span><span class="p">.</span><span class="n">Status</span><span class="p">);</span>
+<a id="__codelineno-18-5" name="__codelineno-18-5" href="#__codelineno-18-5"></a><span class="n">Assert</span><span class="p">.</span><span class="n">Equal</span><span class="p">(</span><span class="n">SessionType</span><span class="p">.</span><span class="n">Full</span><span class="p">,</span><span class="w"> </span><span class="n">outcome</span><span class="p">.</span><span class="n">SessionType</span><span class="p">);</span>
+<a id="__codelineno-18-6" name="__codelineno-18-6" href="#__codelineno-18-6"></a><span class="n">Assert</span><span class="p">.</span><span class="n">False</span><span class="p">(</span><span class="n">credential</span><span class="p">.</span><span class="n">MustChangePassword</span><span class="p">);</span>
+<a id="__codelineno-18-7" name="__codelineno-18-7" href="#__codelineno-18-7"></a><span class="n">Assert</span><span class="p">.</span><span class="n">NotNull</span><span class="p">(</span><span class="n">credential</span><span class="p">.</span><span class="n">PasswordChangedAt</span><span class="p">);</span>
+<a id="__codelineno-18-8" name="__codelineno-18-8" href="#__codelineno-18-8"></a><span class="n">Assert</span><span class="p">.</span><span class="n">DoesNotContain</span><span class="p">(</span><span class="k">await</span><span class="w"> </span><span class="n">db</span><span class="p">.</span><span class="n">Sessions</span><span class="p">.</span><span class="n">ToListAsync</span><span class="p">(),</span>
+<a id="__codelineno-18-9" name="__codelineno-18-9" href="#__codelineno-18-9"></a><span class="w">    </span><span class="n">x</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">x</span><span class="p">.</span><span class="n">SessionId</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">restrictedSession</span><span class="p">.</span><span class="n">SessionId</span><span class="p">);</span>
+<a id="__codelineno-18-10" name="__codelineno-18-10" href="#__codelineno-18-10"></a><span class="n">Assert</span><span class="p">.</span><span class="n">True</span><span class="p">(</span><span class="n">passwordHasher</span><span class="p">.</span><span class="n">VerifyPassword</span><span class="p">(</span>
+<a id="__codelineno-18-11" name="__codelineno-18-11" href="#__codelineno-18-11"></a><span class="w">    </span><span class="n">credential</span><span class="p">.</span><span class="n">PasswordHash</span><span class="p">,</span><span class="w"> </span><span class="s">"ResidentPrivatePassword456!"</span><span class="p">));</span>
+</code></pre></div>
+<p>HTTP tests must assert mismatch validation, wrong session type rejection, CSRF
+rejection, successful cookie replacement, and that business identity reports
+<code>mustChangePassword: false</code> after success.</p>
+<ul>
+<li>[ ] <strong>Step 2: Run focused tests and verify failure</strong></li>
+</ul>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a>dotnet<span class="w"> </span><span class="nb">test</span><span class="w"> </span>backend/tests/Locatarius.Infrastructure.Tests/Locatarius.Infrastructure.Tests.csproj<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a><span class="w">  </span>--filter<span class="w"> </span><span class="s2">"FullyQualifiedName~AuthenticationServiceTests|FullyQualifiedName~AuthHttpTests"</span>
+</code></pre></div>
+<p>Expected: compile or HTTP failures because the method and endpoint do not exist.</p>
+<ul>
+<li>[ ] <strong>Step 3: Implement validation and atomic session transition</strong></li>
+</ul>
+<p><code>ChangePasswordRequestValidator.Validate</code> returns the existing validation-field
+dictionary and enforces the documented 15–128 character rule plus exact
+confirmation match. <code>ChangePasswordAsync</code> locks the user then credential,
+verifies the supplied session is still an active password-change session,
+updates the password hash and timestamps, removes all existing sessions for the
+user, creates one full session, saves, and commits before returning its raw
+token.</p>
+<ul>
+<li>[ ] <strong>Step 4: Implement the controller endpoint</strong></li>
+</ul>
+<p>Use the same content-type, 16 KiB body, strict-property, and CSRF sequence as
+login. Only <code>newPassword</code> and <code>confirmPassword</code> are accepted. On success replace
+the cookie using <code>SessionCookieOptions.Build</code> and return:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a><span class="k">return</span><span class="w"> </span><span class="nf">Ok</span><span class="p">(</span><span class="k">new</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">next</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"app"</span><span class="w"> </span><span class="p">});</span>
+</code></pre></div>
+<ul>
+<li>[ ] <strong>Step 5: Run tests and commit</strong></li>
+</ul>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a>dotnet<span class="w"> </span><span class="nb">test</span><span class="w"> </span>backend/tests/Locatarius.Infrastructure.Tests/Locatarius.Infrastructure.Tests.csproj<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-21-2" name="__codelineno-21-2" href="#__codelineno-21-2"></a><span class="w">  </span>--filter<span class="w"> </span><span class="s2">"FullyQualifiedName~AuthenticationServiceTests|FullyQualifiedName~AuthHttpTests"</span>
+<a id="__codelineno-21-3" name="__codelineno-21-3" href="#__codelineno-21-3"></a>git<span class="w"> </span>add<span class="w"> </span>backend/src/Locatarius.Infrastructure/Auth/AuthenticationService.cs<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-21-4" name="__codelineno-21-4" href="#__codelineno-21-4"></a><span class="w">  </span>backend/src/Locatarius.Api/Validation/ChangePasswordRequestValidator.cs<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-21-5" name="__codelineno-21-5" href="#__codelineno-21-5"></a><span class="w">  </span>backend/src/Locatarius.Api/Controllers/AuthController.cs<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-21-6" name="__codelineno-21-6" href="#__codelineno-21-6"></a><span class="w">  </span>backend/tests/Locatarius.Infrastructure.Tests/AuthenticationServiceTests.cs<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-21-7" name="__codelineno-21-7" href="#__codelineno-21-7"></a><span class="w">  </span>backend/tests/Locatarius.Infrastructure.Tests/AuthHttpTests.cs
+<a id="__codelineno-21-8" name="__codelineno-21-8" href="#__codelineno-21-8"></a>git<span class="w"> </span>commit<span class="w"> </span>-m<span class="w"> </span><span class="s2">"feat(auth): complete first-login password change #94"</span>
+</code></pre></div>
+<p>Expected: selected tests pass and the commit contains no raw password output.</p>
+<h3 id="task-5-list-administrator-scoped-residents-and-apartments">Task 5: List Administrator-Scoped Residents and Apartments</h3>
+<p><strong>Files:</strong>
+- Create: <code>backend/src/Locatarius.Infrastructure/Residents/ResidentAdministrationService.cs</code>
+- Create: <code>backend/src/Locatarius.Api/Controllers/ResidentsController.cs</code>
+- Create: <code>backend/src/Locatarius.Api/Controllers/ApartmentsController.cs</code>
+- Modify: <code>backend/src/Locatarius.Api/Program.cs</code>
+- Create: <code>backend/tests/Locatarius.Infrastructure.Tests/ResidentAdministrationHttpTests.cs</code></p>
+<p><strong>Interfaces:</strong>
+- Produces: <code>ResidentDto(Guid Id, string FirstName, string LastName, string Email, Guid ApartmentId, string Apartment, string Role, bool IsActive)</code>.
+- Produces: <code>ApartmentOptionDto(Guid Id, string Apartment, string Building)</code>.
+- Produces: <code>ListResidentsAsync(Guid adminId, CancellationToken)</code> and <code>ListApartmentsAsync(Guid adminId, CancellationToken)</code>.
+- Produces: <code>GET /api/residents</code> and <code>GET /api/apartments</code>.</p>
+<ul>
+<li>[ ] <strong>Step 1: Write failing cross-building HTTP tests</strong></li>
+</ul>
+<p>Seed two administrators, one building per administrator, apartments in both,
+and residents in both. Authenticate as admin A and assert:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a><span class="kt">var</span><span class="w"> </span><span class="n">residents</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="n">client</span><span class="p">.</span><span class="n">GetFromJsonAsync</span><span class="o">&lt;</span><span class="n">ResidentDto</span><span class="p">[]</span><span class="o">&gt;</span><span class="p">(</span><span class="s">"/api/residents"</span><span class="p">);</span>
+<a id="__codelineno-22-2" name="__codelineno-22-2" href="#__codelineno-22-2"></a><span class="n">Assert</span><span class="p">.</span><span class="n">All</span><span class="p">(</span><span class="n">residents</span><span class="o">!</span><span class="p">,</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">Assert</span><span class="p">.</span><span class="n">DoesNotContain</span><span class="p">(</span><span class="s">"AdminB"</span><span class="p">,</span><span class="w"> </span><span class="n">x</span><span class="p">.</span><span class="n">Email</span><span class="p">));</span>
+<a id="__codelineno-22-3" name="__codelineno-22-3" href="#__codelineno-22-3"></a><span class="n">Assert</span><span class="p">.</span><span class="n">Contains</span><span class="p">(</span><span class="n">residents</span><span class="o">!</span><span class="p">,</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">x</span><span class="p">.</span><span class="n">Role</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s">"Resident"</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">x</span><span class="p">.</span><span class="n">Apartment</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s">"3A"</span><span class="p">);</span>
+<a id="__codelineno-22-4" name="__codelineno-22-4" href="#__codelineno-22-4"></a>
+<a id="__codelineno-22-5" name="__codelineno-22-5" href="#__codelineno-22-5"></a><span class="kt">var</span><span class="w"> </span><span class="n">apartments</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="n">client</span><span class="p">.</span><span class="n">GetFromJsonAsync</span><span class="o">&lt;</span><span class="n">ApartmentOptionDto</span><span class="p">[]</span><span class="o">&gt;</span><span class="p">(</span><span class="s">"/api/apartments"</span><span class="p">);</span>
+<a id="__codelineno-22-6" name="__codelineno-22-6" href="#__codelineno-22-6"></a><span class="n">Assert</span><span class="p">.</span><span class="n">All</span><span class="p">(</span><span class="n">apartments</span><span class="o">!</span><span class="p">,</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">Assert</span><span class="p">.</span><span class="n">StartsWith</span><span class="p">(</span><span class="s">"Building A"</span><span class="p">,</span><span class="w"> </span><span class="n">x</span><span class="p">.</span><span class="n">Building</span><span class="p">));</span>
+</code></pre></div>
+<p>Also assert missing session returns <code>401</code> and an authenticated resident returns
+<code>403</code>.</p>
+<ul>
+<li>[ ] <strong>Step 2: Run the new test class and verify endpoint failures</strong></li>
+</ul>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-23-1" name="__codelineno-23-1" href="#__codelineno-23-1"></a>dotnet<span class="w"> </span><span class="nb">test</span><span class="w"> </span>backend/tests/Locatarius.Infrastructure.Tests/Locatarius.Infrastructure.Tests.csproj<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-23-2" name="__codelineno-23-2" href="#__codelineno-23-2"></a><span class="w">  </span>--filter<span class="w"> </span>FullyQualifiedName~ResidentAdministrationHttpTests
+</code></pre></div>
+<p>Expected: <code>404</code> responses because the controllers do not exist.</p>
+<ul>
+<li>[ ] <strong>Step 3: Implement scoped projection queries</strong></li>
+</ul>
+<p>Use <code>AsNoTracking()</code> projections whose predicate includes:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-24-1" name="__codelineno-24-1" href="#__codelineno-24-1"></a><span class="n">user</span><span class="p">.</span><span class="n">Role</span><span class="o">!</span><span class="p">.</span><span class="n">Role</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">UserRoleType</span><span class="p">.</span><span class="n">Resident</span>
+<a id="__codelineno-24-2" name="__codelineno-24-2" href="#__codelineno-24-2"></a><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">user</span><span class="p">.</span><span class="n">Apartment</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="k">null</span>
+<a id="__codelineno-24-3" name="__codelineno-24-3" href="#__codelineno-24-3"></a><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">user</span><span class="p">.</span><span class="n">Apartment</span><span class="p">.</span><span class="n">Building</span><span class="p">.</span><span class="n">AdminId</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">adminId</span>
+</code></pre></div>
+<p>Apartment options use <code>apartment.Building.AdminId == adminId</code>. Order residents
+by last name then first name and apartments by building number then apartment
+number. Never load or serialize password hashes.</p>
+<ul>
+<li>[ ] <strong>Step 4: Add protected GET controllers</strong></li>
+</ul>
+<p>Both actions authorize a full admin session through
+<code>SessionAuthorizationService</code> with <code>requiredType: SessionType.Full</code>. Map
+<code>Unauthenticated</code> to <code>401</code>, <code>Forbidden</code> or wrong session type to <code>403</code>, and
+successful authorization to the service query.
+Set <code>Cache-Control: no-store</code>.</p>
+<ul>
+<li>[ ] <strong>Step 5: Run tests and commit</strong></li>
+</ul>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-25-1" name="__codelineno-25-1" href="#__codelineno-25-1"></a>dotnet<span class="w"> </span><span class="nb">test</span><span class="w"> </span>backend/tests/Locatarius.Infrastructure.Tests/Locatarius.Infrastructure.Tests.csproj<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-25-2" name="__codelineno-25-2" href="#__codelineno-25-2"></a><span class="w">  </span>--filter<span class="w"> </span>FullyQualifiedName~ResidentAdministrationHttpTests
+<a id="__codelineno-25-3" name="__codelineno-25-3" href="#__codelineno-25-3"></a>git<span class="w"> </span>add<span class="w"> </span>backend/src/Locatarius.Infrastructure/Residents<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-25-4" name="__codelineno-25-4" href="#__codelineno-25-4"></a><span class="w">  </span>backend/src/Locatarius.Api/Controllers/ResidentsController.cs<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-25-5" name="__codelineno-25-5" href="#__codelineno-25-5"></a><span class="w">  </span>backend/src/Locatarius.Api/Controllers/ApartmentsController.cs<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-25-6" name="__codelineno-25-6" href="#__codelineno-25-6"></a><span class="w">  </span>backend/src/Locatarius.Api/Program.cs<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-25-7" name="__codelineno-25-7" href="#__codelineno-25-7"></a><span class="w">  </span>backend/tests/Locatarius.Infrastructure.Tests/ResidentAdministrationHttpTests.cs
+<a id="__codelineno-25-8" name="__codelineno-25-8" href="#__codelineno-25-8"></a>git<span class="w"> </span>commit<span class="w"> </span>-m<span class="w"> </span><span class="s2">"feat(residents): list administrator-scoped directory #94"</span>
+</code></pre></div>
+<h3 id="task-6-create-resident-accounts-with-temporary-credentials">Task 6: Create Resident Accounts with Temporary Credentials</h3>
+<p><strong>Files:</strong>
+- Create: <code>backend/src/Locatarius.Api/Validation/ResidentRequestValidator.cs</code>
+- Modify: <code>backend/src/Locatarius.Infrastructure/Residents/ResidentAdministrationService.cs</code>
+- Modify: <code>backend/src/Locatarius.Api/Controllers/ResidentsController.cs</code>
+- Modify: <code>backend/src/Locatarius.Api/json/ApiErrors.cs</code>
+- Modify: <code>backend/tests/Locatarius.Infrastructure.Tests/ResidentAdministrationHttpTests.cs</code></p>
+<p><strong>Interfaces:</strong>
+- Produces: <code>CreateResidentCommand(string FirstName, string LastName, string CanonicalEmail, Guid ApartmentId, string TemporaryPassword)</code>.
+- Produces: <code>CreateResidentAsync(Guid adminId, CreateResidentCommand command, CancellationToken)</code> returning <code>Created</code>, <code>DuplicateEmail</code>, or <code>ApartmentNotFound</code> plus an optional safe DTO.
+- Produces: <code>POST /api/residents</code>.</p>
+<ul>
+<li>[ ] <strong>Step 1: Write failing creation contract tests</strong></li>
+</ul>
+<p>Cover successful <code>201</code>, role derivation, hashed password, <code>MustChangePassword</code>,
+duplicate email <code>409</code>, foreign apartment <code>404</code>, resident caller <code>403</code>, missing
+CSRF <code>403</code>, unknown JSON property <code>400</code>, invalid fields <code>400</code>, and transaction
+rollback. The success database assertion includes:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-26-1" name="__codelineno-26-1" href="#__codelineno-26-1"></a><span class="kt">var</span><span class="w"> </span><span class="n">created</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="n">db</span><span class="p">.</span><span class="n">Users</span>
+<a id="__codelineno-26-2" name="__codelineno-26-2" href="#__codelineno-26-2"></a><span class="w">    </span><span class="p">.</span><span class="n">Include</span><span class="p">(</span><span class="n">x</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">x</span><span class="p">.</span><span class="n">Credential</span><span class="p">)</span>
+<a id="__codelineno-26-3" name="__codelineno-26-3" href="#__codelineno-26-3"></a><span class="w">    </span><span class="p">.</span><span class="n">Include</span><span class="p">(</span><span class="n">x</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">x</span><span class="p">.</span><span class="n">Role</span><span class="p">)</span>
+<a id="__codelineno-26-4" name="__codelineno-26-4" href="#__codelineno-26-4"></a><span class="w">    </span><span class="p">.</span><span class="n">SingleAsync</span><span class="p">(</span><span class="n">x</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">x</span><span class="p">.</span><span class="n">Credential</span><span class="o">!</span><span class="p">.</span><span class="n">Email</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s">"new.resident@example.test"</span><span class="p">);</span>
+<a id="__codelineno-26-5" name="__codelineno-26-5" href="#__codelineno-26-5"></a><span class="n">Assert</span><span class="p">.</span><span class="n">Equal</span><span class="p">(</span><span class="n">UserRoleType</span><span class="p">.</span><span class="n">Resident</span><span class="p">,</span><span class="w"> </span><span class="n">created</span><span class="p">.</span><span class="n">Role</span><span class="o">!</span><span class="p">.</span><span class="n">Role</span><span class="p">);</span>
+<a id="__codelineno-26-6" name="__codelineno-26-6" href="#__codelineno-26-6"></a><span class="n">Assert</span><span class="p">.</span><span class="n">True</span><span class="p">(</span><span class="n">created</span><span class="p">.</span><span class="n">IsActive</span><span class="p">);</span>
+<a id="__codelineno-26-7" name="__codelineno-26-7" href="#__codelineno-26-7"></a><span class="n">Assert</span><span class="p">.</span><span class="n">True</span><span class="p">(</span><span class="n">created</span><span class="p">.</span><span class="n">Credential</span><span class="o">!</span><span class="p">.</span><span class="n">MustChangePassword</span><span class="p">);</span>
+<a id="__codelineno-26-8" name="__codelineno-26-8" href="#__codelineno-26-8"></a><span class="n">Assert</span><span class="p">.</span><span class="n">NotEqual</span><span class="p">(</span><span class="n">TemporaryPassword</span><span class="p">,</span><span class="w"> </span><span class="n">created</span><span class="p">.</span><span class="n">Credential</span><span class="p">.</span><span class="n">PasswordHash</span><span class="p">);</span>
+<a id="__codelineno-26-9" name="__codelineno-26-9" href="#__codelineno-26-9"></a><span class="n">Assert</span><span class="p">.</span><span class="n">True</span><span class="p">(</span><span class="n">passwordHasher</span><span class="p">.</span><span class="n">VerifyPassword</span><span class="p">(</span>
+<a id="__codelineno-26-10" name="__codelineno-26-10" href="#__codelineno-26-10"></a><span class="w">    </span><span class="n">created</span><span class="p">.</span><span class="n">Credential</span><span class="p">.</span><span class="n">PasswordHash</span><span class="p">,</span><span class="w"> </span><span class="n">TemporaryPassword</span><span class="p">));</span>
+</code></pre></div>
+<ul>
+<li>[ ] <strong>Step 2: Run the test class and verify <code>POST</code> failure</strong></li>
+</ul>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-27-1" name="__codelineno-27-1" href="#__codelineno-27-1"></a>dotnet<span class="w"> </span><span class="nb">test</span><span class="w"> </span>backend/tests/Locatarius.Infrastructure.Tests/Locatarius.Infrastructure.Tests.csproj<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-27-2" name="__codelineno-27-2" href="#__codelineno-27-2"></a><span class="w">  </span>--filter<span class="w"> </span>FullyQualifiedName~ResidentAdministrationHttpTests
+</code></pre></div>
+<p>Expected: creation tests fail because the action is absent.</p>
+<ul>
+<li>[ ] <strong>Step 3: Implement strict validation</strong></li>
+</ul>
+<p>Accept exactly <code>firstName</code>, <code>lastName</code>, <code>email</code>, <code>apartmentId</code>,
+<code>temporaryPassword</code>, and <code>confirmPassword</code>. Trim names, enforce 1–100
+characters, canonicalize email using the same helper as login, parse a nonempty
+GUID, enforce the 15–128 password rule, and require confirmation equality.
+Never accept <code>role</code> or <code>isActive</code> in create JSON.</p>
+<ul>
+<li>[ ] <strong>Step 4: Implement atomic creation and conflict mapping</strong></li>
+</ul>
+<p>Verify the apartment with a query including <code>Building.AdminId == adminId</code>.
+Create <code>User</code>, <code>UserCredential</code>, and <code>UserRole</code> together. Catch PostgreSQL unique
+constraint <code>23505</code> only for the email index and map it to a new
+<code>ApiErrors.Conflict("EMAIL_EXISTS", "An account with this email already exists.")</code>.
+Return <code>CreatedAtAction</code> with the safe DTO and no credential fields.</p>
+<ul>
+<li>[ ] <strong>Step 5: Run tests and commit</strong></li>
+</ul>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-28-1" name="__codelineno-28-1" href="#__codelineno-28-1"></a>dotnet<span class="w"> </span><span class="nb">test</span><span class="w"> </span>backend/tests/Locatarius.Infrastructure.Tests/Locatarius.Infrastructure.Tests.csproj<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-28-2" name="__codelineno-28-2" href="#__codelineno-28-2"></a><span class="w">  </span>--filter<span class="w"> </span>FullyQualifiedName~ResidentAdministrationHttpTests
+<a id="__codelineno-28-3" name="__codelineno-28-3" href="#__codelineno-28-3"></a>git<span class="w"> </span>add<span class="w"> </span>backend/src/Locatarius.Api/Validation/ResidentRequestValidator.cs<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-28-4" name="__codelineno-28-4" href="#__codelineno-28-4"></a><span class="w">  </span>backend/src/Locatarius.Infrastructure/Residents/ResidentAdministrationService.cs<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-28-5" name="__codelineno-28-5" href="#__codelineno-28-5"></a><span class="w">  </span>backend/src/Locatarius.Api/Controllers/ResidentsController.cs<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-28-6" name="__codelineno-28-6" href="#__codelineno-28-6"></a><span class="w">  </span>backend/src/Locatarius.Api/json/ApiErrors.cs<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-28-7" name="__codelineno-28-7" href="#__codelineno-28-7"></a><span class="w">  </span>backend/tests/Locatarius.Infrastructure.Tests/ResidentAdministrationHttpTests.cs
+<a id="__codelineno-28-8" name="__codelineno-28-8" href="#__codelineno-28-8"></a>git<span class="w"> </span>commit<span class="w"> </span>-m<span class="w"> </span><span class="s2">"feat(residents): create resident accounts securely #94"</span>
+</code></pre></div>
+<h3 id="task-7-edit-deactivate-and-reactivate-residents">Task 7: Edit, Deactivate, and Reactivate Residents</h3>
+<p><strong>Files:</strong>
+- Modify: <code>backend/src/Locatarius.Api/Validation/ResidentRequestValidator.cs</code>
+- Modify: <code>backend/src/Locatarius.Infrastructure/Residents/ResidentAdministrationService.cs</code>
+- Modify: <code>backend/src/Locatarius.Api/Controllers/ResidentsController.cs</code>
+- Modify: <code>backend/tests/Locatarius.Infrastructure.Tests/ResidentAdministrationHttpTests.cs</code></p>
+<p><strong>Interfaces:</strong>
+- Produces: <code>UpdateResidentCommand(string FirstName, string LastName, string CanonicalEmail, Guid ApartmentId, bool IsActive)</code>.
+- Produces: <code>UpdateResidentAsync(Guid adminId, Guid residentId, UpdateResidentCommand command, CancellationToken)</code>.
+- Produces: <code>DeactivateResidentAsync(Guid adminId, Guid residentId, CancellationToken)</code>.
+- Produces: <code>PUT /api/residents/{id}</code> and <code>DELETE /api/residents/{id}</code>.</p>
+<ul>
+<li>[ ] <strong>Step 1: Write failing mutation tests</strong></li>
+</ul>
+<p>Test successful edit, reactivation, idempotent deactivation, session revocation,
+duplicate email <code>409</code>, foreign resident <code>404</code>, foreign apartment <code>404</code>, resident
+caller <code>403</code>, missing CSRF <code>403</code>, and rejection of <code>password</code> or <code>role</code> fields.
+The deactivation assertion is:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-29-1" name="__codelineno-29-1" href="#__codelineno-29-1"></a><span class="kt">var</span><span class="w"> </span><span class="n">response</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="n">client</span><span class="p">.</span><span class="n">DeleteAsync</span><span class="p">(</span><span class="s">$"/api/residents/{residentId}"</span><span class="p">);</span>
+<a id="__codelineno-29-2" name="__codelineno-29-2" href="#__codelineno-29-2"></a><span class="n">Assert</span><span class="p">.</span><span class="n">Equal</span><span class="p">(</span><span class="n">HttpStatusCode</span><span class="p">.</span><span class="n">NoContent</span><span class="p">,</span><span class="w"> </span><span class="n">response</span><span class="p">.</span><span class="n">StatusCode</span><span class="p">);</span>
+<a id="__codelineno-29-3" name="__codelineno-29-3" href="#__codelineno-29-3"></a>
+<a id="__codelineno-29-4" name="__codelineno-29-4" href="#__codelineno-29-4"></a><span class="kt">var</span><span class="w"> </span><span class="n">resident</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="n">db</span><span class="p">.</span><span class="n">Users</span><span class="p">.</span><span class="n">SingleAsync</span><span class="p">(</span><span class="n">x</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">x</span><span class="p">.</span><span class="n">UserId</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">residentId</span><span class="p">);</span>
+<a id="__codelineno-29-5" name="__codelineno-29-5" href="#__codelineno-29-5"></a><span class="n">Assert</span><span class="p">.</span><span class="n">False</span><span class="p">(</span><span class="n">resident</span><span class="p">.</span><span class="n">IsActive</span><span class="p">);</span>
+<a id="__codelineno-29-6" name="__codelineno-29-6" href="#__codelineno-29-6"></a><span class="n">Assert</span><span class="p">.</span><span class="n">Empty</span><span class="p">(</span><span class="k">await</span><span class="w"> </span><span class="n">db</span><span class="p">.</span><span class="n">Sessions</span><span class="p">.</span><span class="n">Where</span><span class="p">(</span><span class="n">x</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">x</span><span class="p">.</span><span class="n">UserId</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">residentId</span><span class="p">).</span><span class="n">ToListAsync</span><span class="p">());</span>
+</code></pre></div>
+<ul>
+<li>[ ] <strong>Step 2: Run tests and verify mutation failures</strong></li>
+</ul>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-30-1" name="__codelineno-30-1" href="#__codelineno-30-1"></a>dotnet<span class="w"> </span><span class="nb">test</span><span class="w"> </span>backend/tests/Locatarius.Infrastructure.Tests/Locatarius.Infrastructure.Tests.csproj<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-30-2" name="__codelineno-30-2" href="#__codelineno-30-2"></a><span class="w">  </span>--filter<span class="w"> </span>FullyQualifiedName~ResidentAdministrationHttpTests
+</code></pre></div>
+<p>Expected: new <code>PUT</code> and <code>DELETE</code> tests fail because actions are absent.</p>
+<ul>
+<li>[ ] <strong>Step 3: Implement scoped transactional mutations</strong></li>
+</ul>
+<p>Select the resident with one predicate that includes resident role and
+<code>Apartment.Building.AdminId == adminId</code>. Verify the target apartment using the
+same administrator predicate. Update only names, canonical email, apartment,
+and active state. When transitioning to inactive, remove every session for that
+user before saving. <code>DeactivateResidentAsync</code> returns success for an already
+inactive in-scope resident.</p>
+<ul>
+<li>[ ] <strong>Step 4: Add controller actions</strong></li>
+</ul>
+<p>Validate CSRF before parsing mutations. <code>PUT</code> returns the updated safe DTO.
+<code>DELETE</code> returns <code>204</code>. Map inaccessible resources to <code>404</code> and duplicate email
+to <code>409</code> using the same safe conflict body as create.</p>
+<ul>
+<li>[ ] <strong>Step 5: Run tests and commit</strong></li>
+</ul>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-31-1" name="__codelineno-31-1" href="#__codelineno-31-1"></a>dotnet<span class="w"> </span><span class="nb">test</span><span class="w"> </span>backend/tests/Locatarius.Infrastructure.Tests/Locatarius.Infrastructure.Tests.csproj<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-31-2" name="__codelineno-31-2" href="#__codelineno-31-2"></a><span class="w">  </span>--filter<span class="w"> </span>FullyQualifiedName~ResidentAdministrationHttpTests
+<a id="__codelineno-31-3" name="__codelineno-31-3" href="#__codelineno-31-3"></a>git<span class="w"> </span>add<span class="w"> </span>backend/src/Locatarius.Api/Validation/ResidentRequestValidator.cs<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-31-4" name="__codelineno-31-4" href="#__codelineno-31-4"></a><span class="w">  </span>backend/src/Locatarius.Infrastructure/Residents/ResidentAdministrationService.cs<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-31-5" name="__codelineno-31-5" href="#__codelineno-31-5"></a><span class="w">  </span>backend/src/Locatarius.Api/Controllers/ResidentsController.cs<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-31-6" name="__codelineno-31-6" href="#__codelineno-31-6"></a><span class="w">  </span>backend/tests/Locatarius.Infrastructure.Tests/ResidentAdministrationHttpTests.cs
+<a id="__codelineno-31-7" name="__codelineno-31-7" href="#__codelineno-31-7"></a>git<span class="w"> </span>commit<span class="w"> </span>-m<span class="w"> </span><span class="s2">"feat(residents): manage resident lifecycle #94"</span>
+</code></pre></div>
+<h3 id="task-8-replace-frontend-mock-authentication-with-the-backend-session">Task 8: Replace Frontend Mock Authentication with the Backend Session</h3>
+<p><strong>Files:</strong>
+- Modify: <code>frontend/package.json</code>
+- Modify: <code>frontend/package-lock.json</code>
+- Modify: <code>frontend/vite.config.ts</code>
+- Create: <code>frontend/src/test/setup.ts</code>
+- Create: <code>frontend/src/api/client.ts</code>
+- Replace: <code>frontend/src/auth/auth.ts</code>
+- Modify: <code>frontend/src/App.tsx</code>
+- Modify: <code>frontend/src/pages/LoginPage.tsx</code>
+- Modify: <code>frontend/src/pages/ChangePassword.tsx</code>
+- Modify: <code>frontend/src/pages/Dashboard.tsx</code>
+- Create: <code>frontend/src/auth/auth.test.ts</code>
+- Create: <code>frontend/src/App.test.tsx</code></p>
+<p><strong>Interfaces:</strong>
+- Produces: <code>ApiError { status: number; code: string; message: string; fields: Record&lt;string, string[]&gt; }</code>.
+- Produces: <code>apiRequest&lt;T&gt;(path: string, options?: RequestInit &amp; { csrf?: boolean }): Promise&lt;T&gt;</code>.
+- Produces: <code>getIdentity</code>, <code>login</code>, <code>changePassword</code>, and <code>logout</code> using same-origin credentials.
+- Produces: <code>SessionUser { id: string; name: string; email: string; role: "admin" | "resident"; mustChangePassword: boolean }</code>.</p>
+<ul>
+<li>[ ] <strong>Step 1: Install the frontend test harness</strong></li>
+</ul>
+<p>Run:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-32-1" name="__codelineno-32-1" href="#__codelineno-32-1"></a><span class="nb">cd</span><span class="w"> </span>frontend
+<a id="__codelineno-32-2" name="__codelineno-32-2" href="#__codelineno-32-2"></a>npm<span class="w"> </span>install<span class="w"> </span>--save-dev<span class="w"> </span>vitest<span class="w"> </span>jsdom<span class="w"> </span>@testing-library/react<span class="w"> </span>@testing-library/user-event
+<a id="__codelineno-32-3" name="__codelineno-32-3" href="#__codelineno-32-3"></a>npm<span class="w"> </span>install<span class="w"> </span>--save-dev<span class="w"> </span>@testing-library/jest-dom
+</code></pre></div>
+<p>Add scripts:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-33-1" name="__codelineno-33-1" href="#__codelineno-33-1"></a><span class="nt">"test"</span><span class="p">:</span><span class="w"> </span><span class="s2">"vitest run"</span>
+</code></pre></div>
+<p>Change the <code>defineConfig</code> import in <code>vite.config.ts</code> to <code>vitest/config</code>, add:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-34-1" name="__codelineno-34-1" href="#__codelineno-34-1"></a><span class="nx">test</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-34-2" name="__codelineno-34-2" href="#__codelineno-34-2"></a><span class="w">  </span><span class="nx">clearMocks</span><span class="o">:</span><span class="w"> </span><span class="kt">true</span><span class="p">,</span>
+<a id="__codelineno-34-3" name="__codelineno-34-3" href="#__codelineno-34-3"></a><span class="w">  </span><span class="nx">environment</span><span class="o">:</span><span class="w"> </span><span class="s2">"jsdom"</span><span class="p">,</span>
+<a id="__codelineno-34-4" name="__codelineno-34-4" href="#__codelineno-34-4"></a><span class="w">  </span><span class="nx">setupFiles</span><span class="o">:</span><span class="w"> </span><span class="s2">"./src/test/setup.ts"</span><span class="p">,</span>
+<a id="__codelineno-34-5" name="__codelineno-34-5" href="#__codelineno-34-5"></a><span class="p">},</span>
+</code></pre></div>
+<p>Create <code>src/test/setup.ts</code> with:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-35-1" name="__codelineno-35-1" href="#__codelineno-35-1"></a><span class="k">import</span><span class="w"> </span><span class="s2">"@testing-library/jest-dom/vitest"</span><span class="p">;</span>
+</code></pre></div>
+<ul>
+<li>[ ] <strong>Step 2: Write failing API and bootstrap tests</strong></li>
+</ul>
+<p>Mock global <code>fetch</code>, not the auth functions. Assert CSRF is fetched before an
+unsafe request, credentials are <code>same-origin</code>, the CSRF header is present,
+backend field errors become <code>ApiError</code>, and no password is stored. Render <code>App</code>
+and assert loading, unauthenticated login, password-change routing, admin
+directory access, and resident navigation without the directory link.</p>
+<p>Example API assertion:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-36-1" name="__codelineno-36-1" href="#__codelineno-36-1"></a><span class="k">await</span><span class="w"> </span><span class="nx">login</span><span class="p">(</span><span class="s2">"admin@example.test"</span><span class="p">,</span><span class="w"> </span><span class="s2">"TemporaryPassword123!"</span><span class="p">);</span>
+<a id="__codelineno-36-2" name="__codelineno-36-2" href="#__codelineno-36-2"></a>
+<a id="__codelineno-36-3" name="__codelineno-36-3" href="#__codelineno-36-3"></a><span class="nx">expect</span><span class="p">(</span><span class="nx">fetch</span><span class="p">).</span><span class="nx">toHaveBeenNthCalledWith</span><span class="p">(</span><span class="mf">1</span><span class="p">,</span><span class="w"> </span><span class="s2">"/api/auth/csrf"</span><span class="p">,</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-36-4" name="__codelineno-36-4" href="#__codelineno-36-4"></a><span class="w">  </span><span class="nx">credentials</span><span class="o">:</span><span class="w"> </span><span class="s2">"same-origin"</span><span class="p">,</span>
+<a id="__codelineno-36-5" name="__codelineno-36-5" href="#__codelineno-36-5"></a><span class="w">  </span><span class="nx">headers</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">Accept</span><span class="o">:</span><span class="w"> </span><span class="s2">"application/json"</span><span class="w"> </span><span class="p">},</span>
+<a id="__codelineno-36-6" name="__codelineno-36-6" href="#__codelineno-36-6"></a><span class="p">});</span>
+<a id="__codelineno-36-7" name="__codelineno-36-7" href="#__codelineno-36-7"></a><span class="nx">expect</span><span class="p">(</span><span class="nx">fetch</span><span class="p">).</span><span class="nx">toHaveBeenNthCalledWith</span><span class="p">(</span>
+<a id="__codelineno-36-8" name="__codelineno-36-8" href="#__codelineno-36-8"></a><span class="w">  </span><span class="mf">2</span><span class="p">,</span>
+<a id="__codelineno-36-9" name="__codelineno-36-9" href="#__codelineno-36-9"></a><span class="w">  </span><span class="s2">"/api/auth/login"</span><span class="p">,</span>
+<a id="__codelineno-36-10" name="__codelineno-36-10" href="#__codelineno-36-10"></a><span class="w">  </span><span class="nx">expect</span><span class="p">.</span><span class="nx">objectContaining</span><span class="p">({</span>
+<a id="__codelineno-36-11" name="__codelineno-36-11" href="#__codelineno-36-11"></a><span class="w">    </span><span class="nx">credentials</span><span class="o">:</span><span class="w"> </span><span class="s2">"same-origin"</span><span class="p">,</span>
+<a id="__codelineno-36-12" name="__codelineno-36-12" href="#__codelineno-36-12"></a><span class="w">    </span><span class="nx">method</span><span class="o">:</span><span class="w"> </span><span class="s2">"POST"</span><span class="p">,</span>
+<a id="__codelineno-36-13" name="__codelineno-36-13" href="#__codelineno-36-13"></a><span class="w">    </span><span class="nx">headers</span><span class="o">:</span><span class="w"> </span><span class="kt">expect.objectContaining</span><span class="p">({</span><span class="w"> </span><span class="s2">"X-CSRF-TOKEN"</span><span class="o">:</span><span class="w"> </span><span class="s2">"csrf-token"</span><span class="w"> </span><span class="p">}),</span>
+<a id="__codelineno-36-14" name="__codelineno-36-14" href="#__codelineno-36-14"></a><span class="w">  </span><span class="p">}),</span>
+<a id="__codelineno-36-15" name="__codelineno-36-15" href="#__codelineno-36-15"></a><span class="p">);</span>
+<a id="__codelineno-36-16" name="__codelineno-36-16" href="#__codelineno-36-16"></a><span class="nx">expect</span><span class="p">(</span><span class="nx">localStorage</span><span class="p">.</span><span class="nx">length</span><span class="p">).</span><span class="nx">toBe</span><span class="p">(</span><span class="mf">0</span><span class="p">);</span>
+</code></pre></div>
+<ul>
+<li>[ ] <strong>Step 3: Run tests and verify failure against mock auth</strong></li>
+</ul>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-37-1" name="__codelineno-37-1" href="#__codelineno-37-1"></a><span class="nb">cd</span><span class="w"> </span>frontend
+<a id="__codelineno-37-2" name="__codelineno-37-2" href="#__codelineno-37-2"></a>npm<span class="w"> </span><span class="nb">test</span>
+</code></pre></div>
+<p>Expected: tests fail because auth still reads <code>localStorage</code> and no API client exists.</p>
+<ul>
+<li>[ ] <strong>Step 4: Implement the API client and real auth functions</strong></li>
+</ul>
+<p>Cache the CSRF token in module memory only. Refresh and retry an unsafe request
+once when the backend returns <code>CSRF_INVALID</code>. Parse non-2xx error envelopes into
+<code>ApiError</code>. Every request sets <code>credentials: "same-origin"</code>. Auth functions
+send only their documented JSON bodies and never log them.</p>
+<ul>
+<li>[ ] <strong>Step 5: Convert application bootstrap and pages to async identity</strong></li>
+</ul>
+<p><code>App</code> loads identity in <code>useEffect</code>, renders a neutral loading screen, routes
+<code>mustChangePassword</code> sessions only to <code>/change-password</code>, and derives admin
+navigation from the server identity. Login follows <code>next</code>; change password uses
+<code>newPassword</code> and <code>confirmPassword</code>; logout awaits the backend before clearing
+in-memory identity and returning to login.</p>
+<ul>
+<li>[ ] <strong>Step 6: Run tests, lint, build, and commit</strong></li>
+</ul>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-38-1" name="__codelineno-38-1" href="#__codelineno-38-1"></a><span class="nb">cd</span><span class="w"> </span>frontend
+<a id="__codelineno-38-2" name="__codelineno-38-2" href="#__codelineno-38-2"></a>npm<span class="w"> </span><span class="nb">test</span>
+<a id="__codelineno-38-3" name="__codelineno-38-3" href="#__codelineno-38-3"></a>npm<span class="w"> </span>run<span class="w"> </span>lint
+<a id="__codelineno-38-4" name="__codelineno-38-4" href="#__codelineno-38-4"></a>npm<span class="w"> </span>run<span class="w"> </span>build
+<a id="__codelineno-38-5" name="__codelineno-38-5" href="#__codelineno-38-5"></a>git<span class="w"> </span>add<span class="w"> </span>package.json<span class="w"> </span>package-lock.json<span class="w"> </span>vite.config.ts<span class="w"> </span>src/test/setup.ts<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-38-6" name="__codelineno-38-6" href="#__codelineno-38-6"></a><span class="w">  </span>src/api/client.ts<span class="w"> </span>src/auth/auth.ts<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-38-7" name="__codelineno-38-7" href="#__codelineno-38-7"></a><span class="w">  </span>src/auth/auth.test.ts<span class="w"> </span>src/App.tsx<span class="w"> </span>src/App.test.tsx<span class="w"> </span>src/pages/LoginPage.tsx<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-38-8" name="__codelineno-38-8" href="#__codelineno-38-8"></a><span class="w">  </span>src/pages/ChangePassword.tsx<span class="w"> </span>src/pages/Dashboard.tsx
+<a id="__codelineno-38-9" name="__codelineno-38-9" href="#__codelineno-38-9"></a>git<span class="w"> </span>commit<span class="w"> </span>-m<span class="w"> </span><span class="s2">"feat(auth): connect frontend to secure sessions #94"</span>
+</code></pre></div>
+<h3 id="task-9-connect-the-resident-table-and-action-dialogs-to-the-api">Task 9: Connect the Resident Table and Action Dialogs to the API</h3>
+<p><strong>Files:</strong>
+- Create: <code>frontend/src/api/residents.ts</code>
+- Create: <code>frontend/src/components/ResidentFormDialog.tsx</code>
+- Create: <code>frontend/src/components/ConfirmResidentDeactivation.tsx</code>
+- Modify: <code>frontend/src/pages/Residents.tsx</code>
+- Modify: <code>frontend/src/styles/Residents.css</code>
+- Delete: <code>frontend/src/data/residentsMock.json</code>
+- Replace: <code>frontend/src/pages/Residents.test.mjs</code> with <code>frontend/src/pages/Residents.test.tsx</code>
+- Create: <code>frontend/src/components/ResidentFormDialog.test.tsx</code></p>
+<p><strong>Interfaces:</strong>
+- Produces: <code>Resident</code>, <code>ApartmentOption</code>, <code>CreateResidentInput</code>, and <code>UpdateResidentInput</code> frontend types matching safe API DTOs.
+- Produces: <code>listResidents</code>, <code>listApartments</code>, <code>createResident</code>, <code>updateResident</code>, and <code>deactivateResident</code>.
+- Consumes: <code>apiRequest</code> and server-derived <code>SessionUser</code> from Task 8.</p>
+<ul>
+<li>[ ] <strong>Step 1: Write failing page and form interaction tests</strong></li>
+</ul>
+<p>Mock the network boundary in <code>src/api/residents.ts</code>. Test:</p>
+<ul>
+<li>loading followed by populated table;</li>
+<li><code>Resident</code> role and active/inactive badges;</li>
+<li>empty and network-error states;</li>
+<li>add modal labels, apartment choices, pending state, field errors, success row;</li>
+<li>edit modal without password fields and successful reactivation;</li>
+<li>deactivation confirmation, disabled duplicate submission, and inactive row;</li>
+<li>credential inputs cleared after cancel and success;</li>
+<li><code>401</code> navigation to login and <code>403/404/409</code> Romanian messages.</li>
+</ul>
+<p>Example interaction:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-39-1" name="__codelineno-39-1" href="#__codelineno-39-1"></a><span class="k">await</span><span class="w"> </span><span class="nx">user</span><span class="p">.</span><span class="nx">click</span><span class="p">(</span><span class="nx">screen</span><span class="p">.</span><span class="nx">getByRole</span><span class="p">(</span><span class="s2">"button"</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">name</span><span class="o">:</span><span class="w"> </span><span class="s2">"Adaugă locatar"</span><span class="w"> </span><span class="p">}));</span>
+<a id="__codelineno-39-2" name="__codelineno-39-2" href="#__codelineno-39-2"></a><span class="k">await</span><span class="w"> </span><span class="nx">user</span><span class="p">.</span><span class="kr">type</span><span class="p">(</span><span class="nx">screen</span><span class="p">.</span><span class="nx">getByLabelText</span><span class="p">(</span><span class="s2">"Prenume"</span><span class="p">),</span><span class="w"> </span><span class="s2">"Maria"</span><span class="p">);</span>
+<a id="__codelineno-39-3" name="__codelineno-39-3" href="#__codelineno-39-3"></a><span class="k">await</span><span class="w"> </span><span class="nx">user</span><span class="p">.</span><span class="kr">type</span><span class="p">(</span><span class="nx">screen</span><span class="p">.</span><span class="nx">getByLabelText</span><span class="p">(</span><span class="s2">"Nume"</span><span class="p">),</span><span class="w"> </span><span class="s2">"Popescu"</span><span class="p">);</span>
+<a id="__codelineno-39-4" name="__codelineno-39-4" href="#__codelineno-39-4"></a><span class="k">await</span><span class="w"> </span><span class="nx">user</span><span class="p">.</span><span class="kr">type</span><span class="p">(</span><span class="nx">screen</span><span class="p">.</span><span class="nx">getByLabelText</span><span class="p">(</span><span class="s2">"Email"</span><span class="p">),</span><span class="w"> </span><span class="s2">"maria@example.test"</span><span class="p">);</span>
+<a id="__codelineno-39-5" name="__codelineno-39-5" href="#__codelineno-39-5"></a><span class="k">await</span><span class="w"> </span><span class="nx">user</span><span class="p">.</span><span class="nx">selectOptions</span><span class="p">(</span><span class="nx">screen</span><span class="p">.</span><span class="nx">getByLabelText</span><span class="p">(</span><span class="s2">"Apartament"</span><span class="p">),</span><span class="w"> </span><span class="nx">apartmentId</span><span class="p">);</span>
+<a id="__codelineno-39-6" name="__codelineno-39-6" href="#__codelineno-39-6"></a><span class="k">await</span><span class="w"> </span><span class="nx">user</span><span class="p">.</span><span class="kr">type</span><span class="p">(</span><span class="nx">screen</span><span class="p">.</span><span class="nx">getByLabelText</span><span class="p">(</span><span class="s2">"Parolă temporară"</span><span class="p">),</span><span class="w"> </span><span class="nx">temporaryPassword</span><span class="p">);</span>
+<a id="__codelineno-39-7" name="__codelineno-39-7" href="#__codelineno-39-7"></a><span class="k">await</span><span class="w"> </span><span class="nx">user</span><span class="p">.</span><span class="kr">type</span><span class="p">(</span><span class="nx">screen</span><span class="p">.</span><span class="nx">getByLabelText</span><span class="p">(</span><span class="s2">"Confirmă parola temporară"</span><span class="p">),</span><span class="w"> </span><span class="nx">temporaryPassword</span><span class="p">);</span>
+<a id="__codelineno-39-8" name="__codelineno-39-8" href="#__codelineno-39-8"></a><span class="k">await</span><span class="w"> </span><span class="nx">user</span><span class="p">.</span><span class="nx">click</span><span class="p">(</span><span class="nx">screen</span><span class="p">.</span><span class="nx">getByRole</span><span class="p">(</span><span class="s2">"button"</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">name</span><span class="o">:</span><span class="w"> </span><span class="s2">"Salvează locatarul"</span><span class="w"> </span><span class="p">}));</span>
+<a id="__codelineno-39-9" name="__codelineno-39-9" href="#__codelineno-39-9"></a>
+<a id="__codelineno-39-10" name="__codelineno-39-10" href="#__codelineno-39-10"></a><span class="nx">expect</span><span class="p">(</span><span class="k">await</span><span class="w"> </span><span class="nx">screen</span><span class="p">.</span><span class="nx">findByText</span><span class="p">(</span><span class="s2">"Maria Popescu"</span><span class="p">)).</span><span class="nx">toBeVisible</span><span class="p">();</span>
+<a id="__codelineno-39-11" name="__codelineno-39-11" href="#__codelineno-39-11"></a><span class="nx">expect</span><span class="p">(</span><span class="nx">screen</span><span class="p">.</span><span class="nx">queryByDisplayValue</span><span class="p">(</span><span class="nx">temporaryPassword</span><span class="p">)).</span><span class="nx">not</span><span class="p">.</span><span class="nx">toBeInTheDocument</span><span class="p">();</span>
+</code></pre></div>
+<ul>
+<li>[ ] <strong>Step 2: Run tests and verify failures</strong></li>
+</ul>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-40-1" name="__codelineno-40-1" href="#__codelineno-40-1"></a><span class="nb">cd</span><span class="w"> </span>frontend
+<a id="__codelineno-40-2" name="__codelineno-40-2" href="#__codelineno-40-2"></a>npm<span class="w"> </span><span class="nb">test</span><span class="w"> </span>--<span class="w"> </span>src/pages/Residents.test.tsx<span class="w"> </span>src/components/ResidentFormDialog.test.tsx
+</code></pre></div>
+<p>Expected: tests fail because the API module and dialogs do not exist.</p>
+<ul>
+<li>[ ] <strong>Step 3: Implement resident API functions and DTO mapping</strong></li>
+</ul>
+<p>Use only <code>/api/residents</code> and <code>/api/apartments</code>. Pass <code>{ csrf: true }</code> for
+create, update, and deactivate. Use the backend's returned <code>isActive</code>; render
+role as the literal <code>Resident</code> from the DTO. Do not keep the mock JSON as a
+runtime fallback.</p>
+<ul>
+<li>[ ] <strong>Step 4: Implement accessible dialogs and page state</strong></li>
+</ul>
+<p>Dialogs use <code>role="dialog"</code>, <code>aria-modal="true"</code>, labelled headings, initial
+focus, Escape/cancel behavior, and focus restoration. Add fields exactly from
+the approved contract. Disable submit and close controls during an in-flight
+mutation. The deactivation dialog names the selected resident and explains
+that access will be revoked without deleting history.</p>
+<ul>
+<li>[ ] <strong>Step 5: Preserve the existing design system</strong></li>
+</ul>
+<p>Extend <code>Residents.css</code> using only colors already present in project CSS. Reuse
+the existing 7–12 px radii, border, spacing, Georgia headings, Trebuchet/Segoe
+body typography, focus ring, reduced-motion rule, and mobile breakpoint. Do not
+add a second visual system or a new color token.</p>
+<ul>
+<li>[ ] <strong>Step 6: Run frontend verification and commit</strong></li>
+</ul>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-41-1" name="__codelineno-41-1" href="#__codelineno-41-1"></a><span class="nb">cd</span><span class="w"> </span>frontend
+<a id="__codelineno-41-2" name="__codelineno-41-2" href="#__codelineno-41-2"></a>npm<span class="w"> </span><span class="nb">test</span>
+<a id="__codelineno-41-3" name="__codelineno-41-3" href="#__codelineno-41-3"></a>npm<span class="w"> </span>run<span class="w"> </span>lint
+<a id="__codelineno-41-4" name="__codelineno-41-4" href="#__codelineno-41-4"></a>npm<span class="w"> </span>run<span class="w"> </span>build
+<a id="__codelineno-41-5" name="__codelineno-41-5" href="#__codelineno-41-5"></a>git<span class="w"> </span>add<span class="w"> </span>src/api/residents.ts<span class="w"> </span>src/components/ResidentFormDialog.tsx<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-41-6" name="__codelineno-41-6" href="#__codelineno-41-6"></a><span class="w">  </span>src/components/ConfirmResidentDeactivation.tsx<span class="w"> </span>src/pages/Residents.tsx<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-41-7" name="__codelineno-41-7" href="#__codelineno-41-7"></a><span class="w">  </span>src/styles/Residents.css<span class="w"> </span>src/pages/Residents.test.tsx<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-41-8" name="__codelineno-41-8" href="#__codelineno-41-8"></a><span class="w">  </span>src/components/ResidentFormDialog.test.tsx<span class="w"> </span>src/data/residentsMock.json
+<a id="__codelineno-41-9" name="__codelineno-41-9" href="#__codelineno-41-9"></a>git<span class="w"> </span>commit<span class="w"> </span>-m<span class="w"> </span><span class="s2">"feat(residents): connect directory actions to API #94"</span>
+</code></pre></div>
+<h3 id="task-10-full-verification-browser-review-and-delivery-evidence">Task 10: Full Verification, Browser Review, and Delivery Evidence</h3>
+<p><strong>Files:</strong>
+- Modify: <code>backend/src/Locatarius.Api/Locatarius.Api.http</code>
+- Modify: <code>README.md</code></p>
+<p><strong>Interfaces:</strong>
+- Consumes: every API and frontend flow from Tasks 2–9.
+- Produces: reproducible verification evidence for work package <code>#94</code>.</p>
+<ul>
+<li>[ ] <strong>Step 1: Run the complete backend test suite</strong></li>
+</ul>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-42-1" name="__codelineno-42-1" href="#__codelineno-42-1"></a>dotnet<span class="w"> </span><span class="nb">test</span><span class="w"> </span>backend/Locatarius.slnx
+</code></pre></div>
+<p>Expected: all unit, HTTP, PostgreSQL, concurrency, migration, and seeding tests pass with zero failures.</p>
+<ul>
+<li>[ ] <strong>Step 2: Run the complete frontend suite</strong></li>
+</ul>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-43-1" name="__codelineno-43-1" href="#__codelineno-43-1"></a><span class="nb">cd</span><span class="w"> </span>frontend
+<a id="__codelineno-43-2" name="__codelineno-43-2" href="#__codelineno-43-2"></a>npm<span class="w"> </span><span class="nb">test</span>
+<a id="__codelineno-43-3" name="__codelineno-43-3" href="#__codelineno-43-3"></a>npm<span class="w"> </span>run<span class="w"> </span>lint
+<a id="__codelineno-43-4" name="__codelineno-43-4" href="#__codelineno-43-4"></a>npm<span class="w"> </span>run<span class="w"> </span>build
+</code></pre></div>
+<p>Expected: all tests pass, ESLint exits 0, and Vite produces the production bundle.</p>
+<ul>
+<li>[ ] <strong>Step 3: Validate migration and end-to-end services from a clean database</strong></li>
+</ul>
+<p>Use a disposable Compose project name and explicit test secrets:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-44-1" name="__codelineno-44-1" href="#__codelineno-44-1"></a>docker<span class="w"> </span>compose<span class="w"> </span>-p<span class="w"> </span>locatarius94<span class="w"> </span>down<span class="w"> </span>-v
+<a id="__codelineno-44-2" name="__codelineno-44-2" href="#__codelineno-44-2"></a>docker<span class="w"> </span>compose<span class="w"> </span>-p<span class="w"> </span>locatarius94<span class="w"> </span>up<span class="w"> </span>--build<span class="w"> </span>-d
+<a id="__codelineno-44-3" name="__codelineno-44-3" href="#__codelineno-44-3"></a>docker<span class="w"> </span>compose<span class="w"> </span>-p<span class="w"> </span>locatarius94<span class="w"> </span>ps
+</code></pre></div>
+<p>Expected: migrator completes, PostgreSQL/backend/frontend/NGINX become healthy,
+and the schema contains <code>users.is_active</code>. Do not reuse or delete the user's
+normal development volume.</p>
+<ul>
+<li>[ ] <strong>Step 4: Exercise the approved end-to-end story through HTTPS</strong></li>
+</ul>
+<p>Verify in the browser:</p>
+<ol>
+<li>Admin login succeeds.</li>
+<li>Directory loads database residents and authorized apartments.</li>
+<li>Add creates a resident with a temporary password.</li>
+<li>Resident login redirects to password change.</li>
+<li>New private password produces a full session.</li>
+<li>Admin edits the resident and changes the apartment.</li>
+<li>Admin deactivates the resident; the existing resident session is rejected.</li>
+<li>Inactive login returns the generic invalid-credentials message.</li>
+<li>Admin reactivates the resident; login succeeds again.</li>
+<li>At 390×844, forms and the horizontally scrolling table remain usable.</li>
+</ol>
+<p>Check browser console logs after each role transition; expected: no application errors, no password output, and no failed API request outside intentionally tested rejection cases.</p>
+<ul>
+<li>[ ] <strong>Step 5: Inspect scope and security-sensitive diffs</strong></li>
+</ul>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-45-1" name="__codelineno-45-1" href="#__codelineno-45-1"></a>git<span class="w"> </span>diff<span class="w"> </span>main...HEAD<span class="w"> </span>--check
+<a id="__codelineno-45-2" name="__codelineno-45-2" href="#__codelineno-45-2"></a>git<span class="w"> </span>diff<span class="w"> </span>main...HEAD<span class="w"> </span>--<span class="w"> </span>backend/src<span class="w"> </span>frontend/src
+<a id="__codelineno-45-3" name="__codelineno-45-3" href="#__codelineno-45-3"></a>git<span class="w"> </span>status<span class="w"> </span>--short
+</code></pre></div>
+<p>Expected: no whitespace errors, no secrets or raw credentials, no
+<code>Proprietar</code>/<code>Chiriaș</code> authorization values, no hard-delete resident path, and
+no unrelated files.</p>
+<ul>
+<li>[ ] <strong>Step 6: Update the existing run documentation and API examples</strong></li>
+</ul>
+<p>Add <code>npm test</code> and the disposable Compose verification sequence to <code>README.md</code>.
+Add request examples for identity, password change, list residents, list
+apartments, create, update, and deactivate to <code>Locatarius.Api.http</code>. Use
+the synthetic values <code>admin@example.test</code> and <code>TemporaryPassword123!</code> in the
+examples; never write real credentials into either file.</p>
+<ul>
+<li>[ ] <strong>Step 7: Commit verification documentation, if changed</strong></li>
+</ul>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-46-1" name="__codelineno-46-1" href="#__codelineno-46-1"></a>git<span class="w"> </span>add<span class="w"> </span>README.md<span class="w"> </span>backend/src/Locatarius.Api/Locatarius.Api.http
+<a id="__codelineno-46-2" name="__codelineno-46-2" href="#__codelineno-46-2"></a>git<span class="w"> </span>commit<span class="w"> </span>-m<span class="w"> </span><span class="s2">"docs(residents): record CRUD verification flow #94"</span>
+</code></pre></div>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.instant", "navigation.tracking", "navigation.sections", "navigation.expand", "navigation.top", "search.suggest", "search.highlight", "content.code.copy"], "search": "../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>
