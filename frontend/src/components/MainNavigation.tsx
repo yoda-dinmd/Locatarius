@@ -1,7 +1,7 @@
 import Icon from "./Icon";
 import type { UserRole } from "../auth/auth";
 
-type Page = "dashboard" | "transparency" | "issues";
+export type Page = "dashboard" | "transparency" | "issues" | "residents";
 
 export type MainNavigationProps = {
   activePage: Page;
@@ -16,7 +16,7 @@ export default function MainNavigation({
     page: Page;
     label: string;
     href: string;
-    icon: "home" | "board" | "issue";
+    icon: "home" | "board" | "issue" | "users";
   }[] = [
     { page: "dashboard", label: "Dashboard", href: "/dashboard", icon: "home" },
     {
@@ -31,6 +31,16 @@ export default function MainNavigation({
       label: "Issues",
       href: role === "admin" ? "/admin/issues" : "/issues",
     },
+    ...(role === "admin"
+      ? [
+          {
+            page: "residents" as const,
+            label: "Residents",
+            href: "/residents",
+            icon: "users" as const,
+          },
+        ]
+      : []),
   ];
 
   return (

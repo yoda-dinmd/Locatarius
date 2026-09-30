@@ -8,6 +8,7 @@ const paths = {
   calendar: "M4 5h16v16H4ZM8 2v6M16 2v6M4 10h16",
   check: "m5 12 4 4L19 6",
   issue: "M12 3 2 21h20ZM12 9v5M12 17v1",
+  users: "M16 20v-1a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v1 M9.5 11a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z M21 20v-1a4 4 0 0 0-3-3.9 M15 4.2a3.5 3.5 0 0 1 0 6.6",
 } as const;
 
 export default function Icon({

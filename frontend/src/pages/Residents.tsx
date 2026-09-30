@@ -1,30 +1,14 @@
+import { useEffect, useState } from "react";
 import type { SessionUser } from "../auth/auth";
-import { signOut } from "../auth/auth";
+import { fetchResidents, type Resident } from "../auth/residents";
+import IssueLayout from "./IssueLayout";
 import residentsMock from "../data/residentsMock.json";
-import "../styles/Dashboard.css";
 import "../styles/Residents.css";
 
 type ResidentsProps = {
   user: SessionUser;
   residents?: readonly Resident[];
 };
-
-type Resident = {
-  id: number;
-  name: string;
-  apartment: string;
-  role: "Proprietar" | "Chiriaș";
-  status: "Activ" | "Inactiv";
-};
-
-function getInitials(name: string) {
-  return name
-    .split(" ")
-    .map((part) => part[0])
-    .join("")
-    .slice(0, 2)
-    .toUpperCase();
-}
 
 function EditIcon() {
   return (
@@ -44,71 +28,47 @@ function DeleteIcon() {
 
 export default function Residents({
   user,
-  residents = residentsMock as Resident[],
+  residents: providedResidents,
 }: ResidentsProps) {
-  function handleSignOut() {
-    signOut();
-    window.location.href = "/";
-  }
+  const [residents, setResidents] = useState<readonly Resident[]>(
+    providedResidents ?? (residentsMock as Resident[]),
+  );
+  const [loadFailed, setLoadFailed] = useState(false);
+
+  useEffect(() => {
+    if (providedResidents) return;
+
+    const controller = new AbortController();
+
+    fetchResidents(controller.signal)
+      .then((loaded) => {
+        setResidents(loaded);
+        setLoadFailed(false);
+      })
+      .catch((error: unknown) => {
+        if (!controller.signal.aborted) {
+          console.error(error);
+          setLoadFailed(true);
+        }
+      });
+
+    return () => controller.abort();
+  }, [providedResidents]);
 
   function handleAddResident() {
     console.info("Adaugă locatar");
   }
 
-  function handleEditResident(id: number) {
+  function handleEditResident(id: Resident["id"]) {
     console.info("Editează locatarul", id);
   }
 
-  function handleDeleteResident(id: number) {
+  function handleDeleteResident(id: Resident["id"]) {
     console.info("Șterge locatarul", id);
   }
 
   return (
-    <main className="dashboard-page">
-      <header className="dashboard-header">
-        <a className="dashboard-brand" href="/dashboard">
-          <span className="brand-mark">L</span>
-          <span>Locatarius</span>
-        </a>
-
-        <div className="dashboard-user">
-          <span className="user-initials">{getInitials(user.name)}</span>
-
-          <span className="user-details">
-            <strong>{user.name}</strong>
-            <small>Administrator</small>
-          </span>
-
-          <button
-            className="sign-out-button"
-            type="button"
-            onClick={handleSignOut}
-          >
-            Sign out
-          </button>
-        </div>
-      </header>
-
-      <div className="dashboard-layout">
-        <aside className="dashboard-sidebar">
-          <a className="dashboard-logo-text" href="/dashboard">
-            Locatarius
-          </a>
-
-          <nav aria-label="Main navigation">
-            <a className="dashboard-nav-link" href="/dashboard">
-              Dashboard
-            </a>
-            <a
-              className="dashboard-nav-link active"
-              href="/residents"
-              aria-current="page"
-            >
-              Locatari
-            </a>
-          </nav>
-        </aside>
-
+    <IssueLayout user={user} activePage="residents">
         <section className="dashboard-content residents-content">
           <div className="residents-heading">
             <div>
@@ -128,6 +88,13 @@ export default function Residents({
               Adaugă locatar
             </button>
           </div>
+
+          {loadFailed && (
+            <p className="residents-intro" role="alert">
+              Lista reală nu a putut fi încărcată (este necesară o sesiune de
+              administrator pe server). Se afișează date demonstrative.
+            </p>
+          )}
 
           <section className="residents-card" aria-labelledby="residents-list-title">
             <div className="residents-card-header">
@@ -202,7 +169,6 @@ export default function Residents({
             )}
           </section>
         </section>
-      </div>
-    </main>
+    </IssueLayout>
   );
 }
