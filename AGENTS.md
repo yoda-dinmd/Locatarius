@@ -22,6 +22,25 @@
   in commits and PR titles. Do not mark a whole work package complete when only a
   supporting change has been delivered.
 
+## Enforce task dependencies (Stop on missing upstream work)
+
+- Before writing any code for an assigned work package, inspect its `Depends on`
+  references in the latest CSV snapshot and verify that the required files,
+  endpoints or services from those upstream tasks actually exist in the current
+  checkout (`main`).
+- **Never mock, stub or reinvent another work package's deliverables** to work
+  around an unmerged dependency (for example, do not create a temporary
+  `frontend/src/api/client.ts` while working on `#82` or `#118` if `#77` has not
+  been merged yet).
+- If a required dependency from another task is not yet present in the codebase:
+  1. **Stop immediately** before creating or modifying files.
+  2. Inform the user in chat which upstream work package ID, file or endpoint is
+     missing, and state who is assigned to that upstream task according to the
+     CSV snapshot.
+  3. Instruct the user to notify their colleague to complete and merge that
+     dependency into `main` first (or offer to switch to the user's Wave 1
+     independent task if they have one).
+
 ## Updating work package context
 
 Store only CSV exports under `docs/openproject/`, following its README. Update the
