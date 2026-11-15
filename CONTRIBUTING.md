@@ -1,33 +1,22 @@
 # Contributing to Locatarius
 
-## 1. Scrum Workflow
+## 1. Git Branching Rules
 
-* Sprints run in **1-week cycles** starting Mondays.
+- Keep `main` as the only long-lived integration branch. Do not push directly to `main`.
 
-* Daily standups focus on: what was completed, what is planned today, and blockers.
+- Create each task branch from the current `main` branch:
+  - `feat/<area>-<short-description>`
+  - `fix/<area>-<short-description>`
+  - `test/<area>-<short-description>`
 
-* All team members must log working hours daily in OpenProject (**Time and costs** module).
+- Submit Pull Requests (PRs) targeting `main` once the task is complete.
 
----
-
-## 2. Git Branching Rules
-
-* Keep `main` as the only long-lived integration branch. Do not push directly to `main`.
-
-* Create each task branch from the current `main` branch:
-
-  * `feat/<area>-<short-description>`
-  * `fix/<area>-<short-description>`
-  * `test/<area>-<short-description>`
-
-* Submit Pull Requests (PRs) targeting `main` once the task is complete.
-
-* Delete the task branch after the PR is merged. Keep local and remote branch lists
+- Delete the task branch after the PR is merged. Keep local and remote branch lists
   pruned so they reflect the current repository state.
 
 ---
 
-## 3. Commit Convention
+## 2. Commit Convention
 
 Follow Conventional Commits and append the OpenProject work package reference:
 
@@ -36,23 +25,23 @@ Follow Conventional Commits and append the OpenProject work package reference:
 
 ```
 
-* `feat`: New capability or endpoint
+- `feat`: New capability or endpoint
 
-* `fix`: Bug fix
+- `fix`: Bug fix
 
-* `sec`: Security controls, RBAC, input sanitization
+- `sec`: Security controls, RBAC, input sanitization
 
-* `test`: Automated unit or integration tests
+- `test`: Automated unit or integration tests
 
-* `chore`: Tooling, Docker, or dependency configurations
+- `chore`: Tooling, Docker, or dependency configurations
 
-*Example:* `feat(auth): implement login endpoint and session creation #62`
+_Example:_ `feat(auth): implement login endpoint and session creation #62`
 
 ---
 
-## 4. Pull Requests & Review Checklist
+## 3. Pull Requests & Review Checklist
 
-### 4.1 PR Title Pattern
+### 3.1 PR Title Pattern
 
 All PR titles must strictly follow the work package pattern to maintain bidirectional traceability with OpenProject:
 
@@ -61,26 +50,29 @@ All PR titles must strictly follow the work package pattern to maintain bidirect
 
 ```
 
-*Examples:*
+_Examples:_
 
-* `[#62] feat(auth): add ASP.NET Core login endpoint and secure session creation`
-* `[#63] feat(users): add admin-guarded user creation endpoint and conflict validation`
-* `[#64] test(auth): add integration tests for resident role authorization boundaries`
+- `[#62] feat(auth): add ASP.NET Core login endpoint and secure session creation`
+- `[#63] feat(users): add admin-guarded user creation endpoint and conflict validation`
+- `[#64] test(auth): add integration tests for resident role authorization boundaries`
 
 ---
 
-### 4.2 PR Description Template
+### 3.2 PR Description Template
 
 Every PR description must reference its parent story or task:
 
 ```markdown
 ## OpenProject Work Package
+
 Resolves / Closes: #<WP-ID>
 
 ## Changes Proposed
+
 - Bullet points summarizing the technical changes
 
 ## Acceptance Criteria & Security Checklist
+
 - [ ] Meets user story acceptance criteria defined in OpenProject.
 - [ ] Adheres to project tenancy and role authorization checks (AUTH-01 / ERR-01).
 - [ ] No plain-text credentials, tokens, or connection strings committed.
@@ -88,18 +80,18 @@ Resolves / Closes: #<WP-ID>
 - [ ] Unit or integration tests pass locally.
 
 ## How to Test
-1. Step-by-step reproduction instructions for the reviewer.
 
+1. Step-by-step reproduction instructions for the reviewer.
 ```
 
 ---
 
-### 4.3 Review & Merge Gate
+### 3.3 Review & Merge Gate
 
 Before merging into `main`:
 
-* [ ] Code builds cleanly in the CI pipeline without errors or warnings.
+- [ ] Code builds cleanly in the CI pipeline without errors or warnings.
 
-* [ ] At least one peer review approval has been submitted.
+- [ ] At least one peer review approval has been submitted.
 
-* [ ] Pull requests are squash-merged to maintain a clean git history.
+- [ ] Pull requests are squash-merged to maintain a clean git history.
