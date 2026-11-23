@@ -43,26 +43,29 @@ async function expectNavigation(
   const sidebar = page.getByRole("complementary", {
     name: "Association and navigation",
   });
-  await expect(
-    sidebar.getByText("Your association", { exact: true }),
-  ).toBeVisible();
-  await expect(
-    sidebar.getByText("Teilor Residence", { exact: true }),
-  ).toBeVisible();
-  await expect(
-    sidebar.getByText("12 Teilor Street · Demo", { exact: true }),
-  ).toBeVisible();
+  // The sidebar holds only navigation and a decorative footer; association
+  // details were removed from it in the September layout change.
+  await expect(sidebar).toBeVisible();
+  await expect(sidebar.getByRole("navigation")).toHaveCount(1);
   const footer = sidebar.locator(".app-sidebar-footer");
   if (page.viewportSize()!.width > 720) {
     await expect(footer).toBeInViewport({ ratio: 1 });
   } else {
     await expect(footer).toBeHidden();
-    const positions = await nav
-      .getByRole("link")
-      .evaluateAll((links) =>
-        links.map((link) => link.getBoundingClientRect().top),
-      );
-    expect(new Set(positions).size).toBe(1);
+    // Mobile nav is a wrapping row (the admin's fourth link may wrap): links
+    // must sit side by side and stay inside the viewport without page scroll.
+    const layout = await nav.getByRole("link").evaluateAll((links) => ({
+      tops: links.map((link) => link.getBoundingClientRect().top),
+      overflow: links.some((link) => {
+        const box = link.getBoundingClientRect();
+        return box.left < 0 || box.right > window.innerWidth;
+      }),
+      pageScrollsSideways:
+        document.documentElement.scrollWidth > window.innerWidth,
+    }));
+    expect(new Set(layout.tops).size).toBeLessThan(layout.tops.length);
+    expect(layout.overflow).toBe(false);
+    expect(layout.pageScrollsSideways).toBe(false);
   }
   for (const [name, href] of [
     ["Dashboard", "/dashboard"],
@@ -172,12 +175,23 @@ test("transparency keeps correct values when the reporting month changes", async
   await page.locator("summary").first().focus();
   await page.keyboard.press("Enter");
   await expect(page.locator("details").first()).toHaveAttribute("open", "");
-  await page.getByLabel("Expense month").selectOption("4");
+  // The month control is a button that opens a listbox of month options.
+  const monthTrigger = page.getByRole("button", { name: "Expense month" });
+  await expect(monthTrigger).toHaveText(/August 2026/);
+  const monthMenu = page.getByRole("listbox");
+  await expect(monthMenu).toBeHidden();
+  await monthTrigger.click();
+  await expect(monthMenu).toBeVisible();
+  await monthMenu.getByRole("option", { name: "July 2026" }).click();
+  await expect(monthMenu).toBeHidden();
+  await expect(monthTrigger).toHaveText(/July 2026/);
+  await expect(page).toHaveURL(/[?&]month=july\b/);
   await expect(page.locator(".tp-big-number")).toContainText("44,500");
   await expect(page.locator(".tp-average")).toContainText("37,380 MDL");
   await expect(page.locator(".tp-change-total")).toContainText("+4,800 MDL");
   await page.reload();
-  await expect(page.getByLabel("Expense month")).toHaveValue("4");
+  await expect(monthTrigger).toHaveText(/July 2026/);
+  await expect(page.locator(".tp-big-number")).toContainText("44,500");
   await expect(page.locator(".tp-column-bar").first()).toHaveCSS(
     "animation-name",
     "none",
