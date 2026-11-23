@@ -23,7 +23,6 @@ export default function IssuesPage({ user }: IssuesPageProps) {
     <IssueLayout user={user} activePage="issues">
       <div className="issues-toolbar">
         <div>
-          <p className="issues-kicker">Issue reports</p>
           <h1>Building issues</h1>
         </div>
         {user.role === "resident" && <a className="primary-action button-link" href="/issues/new">Report Issue ✚</a>}

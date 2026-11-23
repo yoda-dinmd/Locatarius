@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import type { SubmitEvent } from "react";
+import { ApiError } from "../api/client";
 import { login } from "../auth/auth";
 import "../styles/LoginPage.css";
 
@@ -33,20 +34,18 @@ export default function LoginPage() {
 				String(form.get("password") ?? ""),
 			);
 
-			if (!result.ok) {
-				setError(result.message);
+			if (result.next === "change_password") {
+				window.location.assign("/change-password");
 				return;
 			}
 
-            if (result.next === "change_password") {
-				window.location.assign("/change-password");
-				return;
-            }
-
-            window.location.assign("/dashboard");
-		} catch {
+			window.location.assign("/dashboard");
+		} catch (caught) {
+			// Detailed field/401/429 handling is delivered by #76.
 			setError(
-				"Unable to connect to Locatarius. Check your connection and try again.",
+				caught instanceof ApiError
+					? caught.message
+					: "Unable to connect to Locatarius. Check your connection and try again.",
 			);
 		} finally {
 			setIsSubmitting(false);
