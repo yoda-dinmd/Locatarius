@@ -1,3 +1,4 @@
+import { useState } from "react";
 import type { ReactNode } from "react";
 import type { SessionUser } from "../auth/auth";
 import { signOut } from "../auth/auth";
@@ -12,9 +13,21 @@ type IssueLayoutProps = {
 };
 
 export default function IssueLayout({ user, activePage, children }: IssueLayoutProps) {
-  function handleSignOut() {
-    signOut();
-    window.location.href = "/";
+  const [isSigningOut, setIsSigningOut] = useState(false);
+
+  async function handleSignOut() {
+    if (isSigningOut) {
+      return;
+    }
+
+    setIsSigningOut(true);
+    try {
+      await signOut();
+      window.location.href = "/";
+    } catch {
+      setIsSigningOut(false);
+      window.alert("Unable to sign out. Check your connection and try again.");
+    }
   }
 
   return (
@@ -32,8 +45,14 @@ export default function IssueLayout({ user, activePage, children }: IssueLayoutP
             <strong>{user.name}</strong>
             <small>{user.role === "admin" ? "Administrator" : "Resident"}</small>
           </span>
-          <button className="sign-out-button" type="button" onClick={handleSignOut}>
-            Sign out
+          <button
+            className="sign-out-button"
+            type="button"
+            onClick={handleSignOut}
+            disabled={isSigningOut}
+            aria-busy={isSigningOut}
+          >
+            {isSigningOut ? "Signing out..." : "Sign out"}
           </button>
         </div>
       </header>

@@ -1,20 +1,18 @@
 import { useEffect, useRef, useState } from "react";
 import type { SubmitEvent } from "react";
-import {
-  changePassword,
-  getPendingUser,
-} from "../auth/auth";
+import { ApiError } from "../api/client";
+import { changePassword } from "../auth/auth";
 import "../styles/ChangePassword.css";
 
+// App.tsx renders this page only for a server identity with mustChangePassword.
 export default function ChangePassword() {
-  const pendingUser = getPendingUser();
-
   const [showNew, setShowNew] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isPasswordChanged, setIsPasswordChanged] = useState(false);
+  const [isSessionExpired, setIsSessionExpired] = useState(false);
   const errorRef = useRef<HTMLParagraphElement>(null);
 
   useEffect(() => {
@@ -37,15 +35,10 @@ export default function ChangePassword() {
     const form = new FormData(event.currentTarget);
 
     try {
-      const result = await changePassword(
+      await changePassword(
         String(form.get("newPassword") ?? ""),
         String(form.get("confirmation") ?? ""),
       );
-
-      if (!result.ok) {
-        setError(result.message);
-        return;
-      }
 
       setIsPasswordChanged(true);
       setMessage("Password changed successfully.");
@@ -53,7 +46,18 @@ export default function ChangePassword() {
       window.setTimeout(() => {
         window.location.assign("/dashboard");
       }, 700);
-    } catch {
+    } catch (caught) {
+      // Detailed per-field error display is delivered by #76.
+      if (caught instanceof ApiError && caught.status === 401) {
+        // The 5-minute password-change session has expired.
+        setIsSessionExpired(true);
+        return;
+      }
+      if (caught instanceof ApiError) {
+        const fieldMessage = Object.values(caught.fields).flat()[0];
+        setError(fieldMessage ?? caught.message);
+        return;
+      }
       setError(
         "Unable to save the password. Check your connection and try again.",
       );
@@ -62,7 +66,7 @@ export default function ChangePassword() {
     }
   }
 
-  if (!pendingUser && !isPasswordChanged) {
+  if (isSessionExpired && !isPasswordChanged) {
     return (
       <main className="login-page">
         <section className="login-shell">

@@ -1,4 +1,11 @@
-import { getBuildingIdForUser } from "./auth";
+// Mock issue data stays until #118 wires these pages to /api/issues.
+// The server identity (#77) no longer exposes a building, so every resident
+// sees the demo building's issues until then.
+const DEMO_BUILDING_ID = "BLD-01";
+
+function getBuildingIdForUser(userId: string): string | null {
+  return userId ? DEMO_BUILDING_ID : null;
+}
 
 export type IssueStatus = "Open" | "In Progress" | "Closed";
 
