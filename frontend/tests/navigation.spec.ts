@@ -1,5 +1,38 @@
 import { expect, test, type Page } from "@playwright/test";
 
+type Role = "admin" | "resident";
+
+/**
+ * Isolated mock session: the app reads identity from `GET /api/auth/me`
+ * (HttpOnly cookie session), so tests answer that request instead of seeding
+ * browser storage. No real users or shared data are touched.
+ */
+async function mockSession(page: Page, role: Role) {
+  // Registered first, so it only handles API calls the routes below don't.
+  // Match the path prefix, not a glob: "**/api/**" would also catch the
+  // app's own source module /src/api/client.ts in the Vite dev server.
+  await page.route((url) => url.pathname.startsWith("/api/"), (route) =>
+    route.fulfill({
+      status: 404,
+      json: { error: { code: "NOT_FOUND", message: "Not mocked.", fields: {} } },
+    }),
+  );
+  await page.route((url) => url.pathname === "/api/auth/me", (route) =>
+    route.fulfill({
+      json: {
+        id:
+          role === "admin"
+            ? "00000000-0000-4000-8000-000000000001"
+            : "00000000-0000-4000-8000-000000000002",
+        name: "Navigation Test",
+        email: "navigation@locatarius.test",
+        role,
+        mustChangePassword: false,
+      },
+    }),
+  );
+}
+
 async function expectNavigation(
   page: Page,
   active: string,
@@ -52,19 +85,7 @@ for (const role of ["resident", "admin"] as const) {
   }) => {
     const errors: string[] = [];
     page.on("pageerror", (error) => errors.push(error.message));
-    // Isolated mock session: navigation tests do not change real users or shared storage.
-    await page.addInitScript((sessionRole) => {
-      localStorage.setItem(
-        "locatarius-mock-session",
-        JSON.stringify({
-          id: sessionRole === "admin" ? "admin-1" : "resident-1",
-          name: "Navigation Test",
-          email: "navigation@locatarius.test",
-          role: sessionRole,
-          buildingId: "BLD-01",
-        }),
-      );
-    }, role);
+    await mockSession(page, role);
     const issuesPath = role === "admin" ? "/admin/issues" : "/issues";
     await page.goto("/transparency");
     await expectNavigation(page, "Transparency", issuesPath);
@@ -112,18 +133,7 @@ test("sidebar placement does not depend on page length", async ({
   page,
 }, testInfo) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
-  await page.addInitScript(() =>
-    localStorage.setItem(
-      "locatarius-mock-session",
-      JSON.stringify({
-        id: "resident-1",
-        name: "Navigation Test",
-        email: "navigation@locatarius.test",
-        role: "resident",
-        buildingId: "BLD-01",
-      }),
-    ),
-  );
+  await mockSession(page, "resident");
   let previousWidth: number | undefined;
   for (const path of ["/dashboard", "/issues", "/transparency"]) {
     await page.goto(path);
@@ -151,6 +161,8 @@ test("transparency keeps correct values when the reporting month changes", async
   page,
 }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
+  // /transparency requires a signed-in user.
+  await mockSession(page, "resident");
   await page.goto("/transparency");
   await expect(page.locator(".tp-big-number")).toContainText("41,850");
   await expect(page.locator(".tp-average")).toContainText("38,125 MDL");
