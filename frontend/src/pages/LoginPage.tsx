@@ -4,17 +4,74 @@ import { ApiError } from "../api/client";
 import { login } from "../auth/auth";
 import "../styles/LoginPage.css";
 
+type LoginField = "email" | "password";
+type FieldErrors = Partial<Record<LoginField, string[]>>;
+
+const RATE_LIMITED_MESSAGE = "Too many requests. Try again later.";
+const INVALID_CREDENTIALS_MESSAGE = "Email or password is incorrect.";
+const CONNECTION_MESSAGE =
+	"Unable to connect to Locatarius. Check your connection and try again.";
+
+function pickFieldErrors(fields: Record<string, string[]>): FieldErrors {
+	const result: FieldErrors = {};
+	if (fields.email?.length) result.email = fields.email;
+	if (fields.password?.length) result.password = fields.password;
+	return result;
+}
+
 export default function LoginPage() {
 	const [showPassword, setShowPassword] = useState(false);
 	const [error, setError] = useState("");
+	const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const errorRef = useRef<HTMLParagraphElement>(null);
+	const emailRef = useRef<HTMLInputElement>(null);
+	const passwordRef = useRef<HTMLInputElement>(null);
 
+	// Move focus to the first problem so keyboard and screen-reader users hear it.
 	useEffect(() => {
-		if (error) {
+		if (fieldErrors.email) {
+			emailRef.current?.focus();
+		} else if (fieldErrors.password) {
+			passwordRef.current?.focus();
+		} else if (error) {
 			errorRef.current?.focus();
 		}
-	}, [error]);
+	}, [error, fieldErrors]);
+
+	function showLoginError(caught: unknown) {
+		if (!(caught instanceof ApiError)) {
+			setError(CONNECTION_MESSAGE);
+			return;
+		}
+
+		if (caught.status === 400 && caught.code === "VALIDATION_FAILED") {
+			const fields = pickFieldErrors(caught.fields);
+			setFieldErrors(fields);
+			// Fall back to the banner if the backend named no known field.
+			if (!fields.email && !fields.password) {
+				setError(caught.message);
+			}
+			return;
+		}
+
+		if (caught.status === 401 && caught.code === "INVALID_CREDENTIALS") {
+			// Never keep a rejected password in the form.
+			if (passwordRef.current) {
+				passwordRef.current.value = "";
+			}
+			setShowPassword(false);
+			setError(INVALID_CREDENTIALS_MESSAGE);
+			return;
+		}
+
+		if (caught.status === 429 || caught.code === "RATE_LIMITED") {
+			setError(RATE_LIMITED_MESSAGE);
+			return;
+		}
+
+		setError(caught.message || CONNECTION_MESSAGE);
+	}
 
 	async function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
 		event.preventDefault();
@@ -24,6 +81,7 @@ export default function LoginPage() {
 		}
 
 		setError("");
+		setFieldErrors({});
 		setIsSubmitting(true);
 
 		const form = new FormData(event.currentTarget);
@@ -41,12 +99,7 @@ export default function LoginPage() {
 
 			window.location.assign("/dashboard");
 		} catch (caught) {
-			// Detailed field/401/429 handling is delivered by #76.
-			setError(
-				caught instanceof ApiError
-					? caught.message
-					: "Unable to connect to Locatarius. Check your connection and try again.",
-			);
+			showLoginError(caught);
 		} finally {
 			setIsSubmitting(false);
 		}
@@ -87,22 +140,36 @@ export default function LoginPage() {
 						<form onSubmit={handleSubmit}>
 							<label htmlFor="email">Email address</label>
 							<input
+								ref={emailRef}
 								id="email"
 								name="email"
 								type="email"
 								autoComplete="email"
 								required
+								aria-invalid={fieldErrors.email ? true : undefined}
+								aria-describedby={fieldErrors.email ? "email-error" : undefined}
 							/>
+
+							{fieldErrors.email && (
+								<p id="email-error" className="error-message">
+									{fieldErrors.email.join(" ")}
+								</p>
+							)}
 
 							<label htmlFor="password">Password</label>
 
 							<div className="password-field">
 								<input
+									ref={passwordRef}
 									id="password"
 									name="password"
 									type={showPassword ? "text" : "password"}
 									autoComplete="current-password"
 									required
+									aria-invalid={fieldErrors.password ? true : undefined}
+									aria-describedby={
+										fieldErrors.password ? "password-error" : undefined
+									}
 								/>
 
 								<button
@@ -113,6 +180,12 @@ export default function LoginPage() {
 									{showPassword ? "Hide" : "Show"}
 								</button>
 							</div>
+
+							{fieldErrors.password && (
+								<p id="password-error" className="error-message">
+									{fieldErrors.password.join(" ")}
+								</p>
+							)}
 
 							{error && (
 								<p
