@@ -1,0 +1,240 @@
+﻿id,Subject,Type,Status,Assignee,Priority,Description
+62,Administrator can Authenticate ,User story,In progress,"",Normal,"As an administrator, I want to sign in using my provisioned account so I can access administration functions for my association.
+
+\- An active administrator account and association membership exist; its password is stored only as a salted password hash.  
+\- Valid credentials authenticate the administrator through the shared login endpoint; the system derives the correct association role.  
+\- Incorrect credentials, nonexistent accounts and globally inactive accounts receive the same generic 401 response.  
+\- Anonymous callers cannot use protected endpoints; authenticated callers cannot access another association without membership.  
+\- Authentication responses expose no password, hash or unrelated profile data. Enforce the agreed expiry, abuse limits and browser protection rules.  
+\- Evidence: S1-62 tests, implementation tasks #73–#78 and the shared #83/#86 policy/test work."
+63,Administrator can create users ,User story,In progress,"",Normal,"As an association administrator, I want to create resident accounts so approved people can access our association.
+
+- Only a caller with active admin membership in the target association can create an account; resident callers receive 403 and inaccessible associations receive 404.
+- Validate `displayName`, `email`, `temporaryPassword` and `confirmPassword` against the shared rules. Do not accept a role field.
+- Canonical email is globally unique. Duplicate email returns 409 with the agreed safe error body and no partial records.
+- Store only a salted password hash; atomically create the user and active resident membership.
+- Success returns 201 with a safe user DTO and confirmation in the interface. Temporary credentials are handled privately and are never logged or returned in a toast.
+- Under the documented onboarding contract, a new account must change its temporary password before business access. Link the first-login implementation under #64.
+- User listing and access-state management are deferred until after the internship; scheduling is to be decided."
+64,Registered user can authenticate,User story,In progress,"",Normal,"As a registered user, I want to sign in with my administrator-created account so I can securely access the functions permitted to me.
+
+\- Use the same login endpoint as administrators. Valid credentials advance through any required first-login password change and then allow identity loading.  
+\- Incorrect credentials, nonexistent accounts and globally inactive accounts receive generic 401 responses.  
+\- A globally active account may authenticate with zero active association memberships, but receives no association access. Disabling one membership denies that association without disabling unrelated memberships.  
+\- GET identity returns only the caller&#x27;s profile and active memberships. Server policies reject resident calls to admin functions and reject cross-association access.  
+\- Valid authentication persists across protected navigation and page reload within the agreed expiry. Logout/expiry prevents credential reuse and clears protected frontend state.  
+\- Display field/credential/network errors and prevent duplicate submissions according to the UI criteria.  
+\- Evidence: S1-64-01–08, shared S1-62 authentication/password criteria, tasks #83–#86 and first-login tasks if not already implemented. Profile editing is deferred until after the internship; scheduling is to be decided."
+66,Authentication & User Management,Epic,In progress,"",Normal,"&nbsp;  Deliver secure administrator and registered-user authentication, administrator-created resident accounts and association-scoped authorization.
+
+  The remaining internship is dedicated to completing stories #62, #63 and #64 and tasks #73–#90, including first-login password change, database documentation and initialization/seeding verification.
+
+  Demonstrate administrator login → resident creation → first-login password change → resident login → rejected unauthorized access → secure sign-out, with recorded test evidence.
+
+  Account listing, membership activation/deactivation management, profile editing and the additional delivery proposals in the documentation are deferred until after the internship. They are not current sprint commitments and have not yet been created as work packages.
+
+  Buildings/tickets and MFA/OIDC remain semester work. Do not add Owner, Tenant or Student permission roles."
+81,[FE] Resident Add/Edit Form Modal & Deactivation Confirmation Dialog,Task,In progress,Loredana Tacu,Normal,"## Context & Anti-Hallucination Rules (READ FIRST)
+
+- Follow Task 9 of `docs/superpowers/plans/2026-09-23-resident-administration-crud.md`.
+- **DO NOT** use `displayName`! The backend (`ResidentsController.cs`) requires `firstName`, `lastName`, `email`, `apartmentId`, `temporaryPassword`, `confirmPassword`.
+- **DO NOT** add a Role dropdown (`Proprietar` / `Chiriaș`). The only resident role is `""Resident""`.
+
+## Files to Create
+
+- Create: `frontend/src/components/ResidentFormDialog.tsx`
+- Create: `frontend/src/components/ConfirmResidentDeactivation.tsx`
+- Modify: `frontend/src/styles/Residents.css`
+
+## Exact Implementation Requirements
+
+1. **`ResidentFormDialog.tsx` (Controlled Accessible Modal Pattern):**
+   - Supports two modes: `mode: ""create"" | ""edit""`.
+   - Uses `role=""dialog""`, `aria-modal=""true""`, focus trap / initial input focus, and `Escape` to close when not submitting.
+   - **Create mode fields:** `firstName` (""Prenume""), `lastName` (""Nume""), `email` (""Email""), `apartmentId` (""Apartament"" select dropdown populated from `ApartmentOptionDto[]`), `temporaryPassword` (""Parolă temporară"", 15–128 chars), `confirmPassword` (""Confirmă parola temporară"").
+   - **Edit mode fields:** `firstName`, `lastName`, `email`, `apartmentId`, and `isActive` checkbox/select (""Activ"" / ""Inactiv""). **Never show password fields in Edit mode.**
+   - Clear password state immediately on close, cancel, or success. Never log or display the temporary password in a toast.
+   - Render field-level validation errors (`fields.firstName`, `fields.lastName`, `fields.email`, `fields.apartmentId`, `fields.temporaryPassword`, `fields.confirmPassword`) beside each input and a form-level alert banner for `409 EMAIL_EXISTS` or network errors.
+2. **`ConfirmResidentDeactivation.tsx`:**
+   - Accessible confirmation dialog naming the selected resident and explaining that deactivation revokes active sessions and blocks login without deleting historical records.
+   - Disables buttons while request is in flight (`aria-busy=""true""`).
+"
+82,[FE] Wire Residents Directory Page to Live CRUD & Apartments API,Task,New,Loredana Tacu,Normal,"## Context & Anti-Hallucination Rules (READ FIRST)
+
+- Depends on `#81` (Dialogs), `#77` (`frontend/src/api/client.ts`), and `#116` (`PUT/DELETE /api/residents/{id}`).
+- Follow Task 9 of `docs/superpowers/plans/2026-09-23-resident-administration-crud.md`.
+
+## Files to Modify / Delete
+
+- Modify: `frontend/src/auth/residents.ts` (or move to `frontend/src/api/residents.ts`)
+- Modify: `frontend/src/pages/Residents.tsx`
+- Delete: `frontend/src/data/residentsMock.json`
+- Modify: `frontend/src/pages/Residents.test.mjs` (or convert to Vitest `Residents.test.tsx`)
+
+## Exact Implementation Requirements
+
+1. **API Functions (`frontend/src/auth/residents.ts`):**
+   - Use `apiRequest` from `frontend/src/api/client.ts` (so CSRF tokens are sent automatically on mutations).
+   - Implement:
+     - `fetchResidents()` -> `GET /api/residents`
+     - `fetchApartments()` -> `GET /api/apartments` (`{ id, apartment, building }[]`)
+     - `createResident(input)` -> `POST /api/residents` with `{ csrf: true }`
+     - `updateResident(id, input)` -> `PUT /api/residents/${id}` with `{ csrf: true }`
+     - `deactivateResident(id)` -> `DELETE /api/residents/${id}` with `{ csrf: true }`
+   - Fix `Resident` mapping: `role` must be `""Resident""` (from DTO), NOT hardcoded `""Chiriaș""`. Keep `firstName`, `lastName`, `email`, `apartmentId`, `isActive` on the frontend model so the Edit modal can pre-fill them!
+2. **Connect `Residents.tsx`:**
+   - Remove `residentsMock.json` fallback so unauthenticated/failed loads show an honest error state instead of fake residents.
+   - Load `fetchResidents()` and `fetchApartments()` in parallel via `Promise.all`.
+   - Wire `+ Adaugă locatar`, `Editează`, and `Șterge` (Deactivate) buttons to open `ResidentFormDialog` and `ConfirmResidentDeactivation`, update state on success, and add component tests.
+"
+86,"[SEC/QA] CSP Security Headers, Redacted Security Audit Logger & E2E Smoke Suite",Task,In progress,Victor Gafenco,Normal,"## Context & Anti-Hallucination Rules (READ FIRST)
+
+- Implements `SEC-03` (CSP headers), `SEC-07` (Structured Redacted Security Logging), and `#86` (End-to-End Auth & RBAC verification) from `docs/operations-and-testing.md`.
+- **NEVER** log plaintext passwords, emails, session tokens, or request bodies.
+
+## Files to Create / Modify
+
+- Modify: `nginx/nginx.conf`
+- Create: `backend/src/Locatarius.Infrastructure/Auth/SecurityAuditLogger.cs`
+- Modify: `backend/src/Locatarius.Infrastructure/Auth/AuthenticationService.cs`
+- Modify: `backend/src/Locatarius.Infrastructure/Residents/ResidentAdministrationService.cs`
+- Modify: `scripts/smoke-local.py`
+
+## Exact Implementation Requirements
+
+1. **Production CSP Header (`nginx/nginx.conf` - SEC-03):**
+   - Add `add_header Content-Security-Policy ""default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'"" always;` (or strict `'self'` if inline styles in `TransparencyPage.tsx` are refactored to CSS classes).
+   - Assert the presence of `Content-Security-Policy`, `X-Content-Type-Options: nosniff`, and `Referrer-Policy: no-referrer` in `scripts/smoke-local.py`.
+2. **Structured Security Audit Logger (`SecurityAuditLogger.cs` - SEC-07):**
+   - Use `ILogger<SecurityAuditLogger>` with structured parameters: `EventCode`, `ActorUserId` (nullable Guid), `TargetId` (nullable Guid), `Outcome` (`""Success""` | `""Denied""` | `""Locked""`), and `UtcTimestamp`.
+   - Emit events for: `AUTH_LOGIN_SUCCESS`, `AUTH_LOGIN_FAILED`, `AUTH_ACCOUNT_LOCKED`, `AUTH_PASSWORD_CHANGED`, `AUTH_LOGOUT`, `ACCESS_DENIED`, `RESIDENT_CREATED`, `RESIDENT_DEACTIVATED`.
+   - Add a unit test verifying that log output contains event codes and UUIDs but never contains passwords, emails, or tokens.
+3. **Extend E2E Smoke Script (`scripts/smoke-local.py`):**
+   - Extend `smoke-local.py` to test the full lifecycle against the Docker stack:
+     1. Seeded Admin login (`next: ""change_password""`) -> Admin changes password (`POST /api/auth/change-password`) -> `GET /api/auth/me` returns `role: ""admin""`.
+     2. Admin enables demo data or creates a resident (`POST /api/residents`) -> `201 Created`.
+     3. Resident logs in with temporary password -> blocked from `/api/residents` (`403`) -> completes password change -> `GET /api/auth/me` returns `role: ""resident""`.
+     4. Resident attempts admin action (`GET /api/residents`) -> `403 FORBIDDEN`.
+     5. Admin deactivates resident (`DELETE /api/residents/{id}`) -> Resident's existing session cookie immediately returns `401 UNAUTHENTICATED`.
+"
+89,[DOCS] Rewrite database documentation to match the EF Core schema,Task,In progress,Gabriel Balan,Normal,"## Context & Anti-Hallucination Rules (READ FIRST)
+
+- Migration 3 (`20260923120000_AddUserActiveState`) added `is_active boolean NOT NULL DEFAULT TRUE` to `users`.
+- `docs/data-model.md` and `docs/schema.sql` still only reflect up to Migration 2 (`20260917091807_AddSessionsAndLoginLockout`).
+
+## Files to Modify
+
+- Modify: `docs/data-model.md`
+- Modify: `docs/schema.sql`
+
+## Exact Implementation Requirements
+
+1. Update `docs/data-model.md`:
+   - Add `is_active` to the `users / User` row in the Tables & Relationships table.
+   - Update the migration reference from `20260917091807_AddSessionsAndLoginLockout` to `20260923120000_AddUserActiveState`.
+   - Under ""Outstanding requirements"", clarify that tenant isolation is implemented via `User.ApartmentId -> Apartment.BuildingId -> Building.AdminId` and account active state is implemented via `users.is_active`.
+2. Regenerate `docs/schema.sql` through `20260923120000_AddUserActiveState` using `dotnet ef migrations script 0 20260923120000_AddUserActiveState` as documented in `docs/data-model.md`.
+"
+116,[BE] Resident Update/Deactivate Endpoints & PasswordHasher Security Upgrade,Task,In progress,Gabriel Balan,Normal,"## Context &amp; Anti-Hallucination Rules (READ FIRST)
+
+*   Follow Task 7 of `docs/superpowers/plans/2026-09-23-resident-administration-crud.md`.
+    
+*   **DO NOT** hard-delete users from PostgreSQL. `DELETE /api/residents/{id}` is a **logical deactivation** (`user.IsActive = false`) that also deletes all active `Session` rows for that user in the same transaction.
+    
+*   Tenant isolation is enforced via `user.Role.Role == UserRoleType.Resident && user.Apartment != null && user.Apartment.Building.AdminId == adminId`.
+    
+
+## Files to Modify
+
+*   Modify: `backend/src/Locatarius.Api/Validation/ResidentRequestValidator.cs`
+    
+*   Modify: `backend/src/Locatarius.Infrastructure/Residents/ResidentAdministrationService.cs`
+    
+*   Modify: `backend/src/Locatarius.Api/Controllers/ResidentsController.cs`
+    
+*   Modify: `backend/src/Locatarius.Infrastructure/PasswordHasher.cs`
+    
+*   Move &amp; Fix: `backend/tests/PasswordHasherTests.cs` -&gt; `backend/tests/Locatarius.Infrastructure.Tests/PasswordHasherTests.cs`
+    
+*   Modify: `backend/tests/Locatarius.Infrastructure.Tests/ResidentAdministrationHttpTests.cs`
+    
+*   Modify: `backend/src/Locatarius.Infrastructure/Auth/AuthenticationService.cs`
+    
+
+## Exact Implementation Requirements
+
+1.  **Resident Update (**`**PUT /api/residents/{id}**`**) &amp; Logical Deactivation (**`**DELETE /api/residents/{id}**`**):**
+    
+    *   In `ResidentRequestValidator`, add `ValidateUpdate` accepting ONLY `firstName`, `lastName`, `email`, `apartmentId` (GUID), and `isActive` (boolean). Reject `role`, `password`, or unknown fields with `400 INVALID_REQUEST`.
+        
+    *   In `ResidentAdministrationService`, implement:
+        
+        *   `UpdateResidentAsync(Guid adminId, Guid residentId, UpdateResidentCommand command, CancellationToken)`
+            
+        *   `DeactivateResidentAsync(Guid adminId, Guid residentId, CancellationToken)`
+            
+    *   Scope resident lookup to `user.UserId == residentId && user.Role!.Role == UserRoleType.Resident && user.Apartment != null && user.Apartment.Building.AdminId == adminId`. Return `404 RESIDENT_NOT_FOUND` if not found or owned by another admin.
+        
+    *   Verify target `apartmentId` belongs to `Building.AdminId == adminId` (`404 APARTMENT_NOT_FOUND` otherwise).
+        
+    *   When `isActive` becomes `false` (via `PUT` or `DELETE`), delete all `dbContext.Sessions.Where(s => s.UserId == residentId)` atomically in the same transaction, following lock order (`users` -&gt; `sessions`).
+        
+    *   `PUT` returns `200 OK` with updated `ResidentDto`. `DELETE` returns `204 NoContent` (idempotent if already inactive). Duplicate email returns `409 EMAIL_EXISTS`.
+        
+2.  **PasswordHasher Hardening (**`**PasswordHasher.cs**`**):**
+    
+    *   Guard `Convert.FromBase64String` in `VerifyPassword` and `NeedsRehash` with `Convert.TryFromBase64String` (or `try/catch (FormatException)`) so malformed stored hashes return `false` / `true` instead of throwing an unhandled exception.
+        
+    *   Move `backend/tests/PasswordHasherTests.cs` into `backend/tests/Locatarius.Infrastructure.Tests/` so `dotnet test` actually compiles and runs it, and remove/fix the 3 dummy `HMAC_SHA256` placeholder inline data rows (`""e8e8e8...""`, `""7b7b7b...""`, `""5d5d5d...""`).
+	
+    *   Upgrade `PasswordHasher` from `PBKDF2-HMAC-SHA256` (`10,000` iterations) to **`PBKDF2-HMAC-SHA512` with `220,000` iterations** (matching `docs/sources.md` and OWASP Password Storage guidance; keep 16-byte random salt, 32-byte derived hash, and `CryptographicOperations.FixedTimeEquals`).
+    
+	*   Encode algorithm and work factor in the stored hash format (e.g., `pbkdf2-sha512$220000$<base64(salt)>$<base64(hash)>`) so future parameter upgrades are self-describing.
+    
+	* 	Maintain backward compatibility in `VerifyPassword` for legacy 2-part `<base64(salt)>.<base64(hash)>` hashes (verifying them with legacy `SHA256` / `10,000` iterations) and have `NeedsRehash` return `true` for any legacy hash, mismatched algorithm, or iteration count below `220,000`.
+    
+	* 	In `backend/src/Locatarius.Infrastructure/Auth/AuthenticationService.cs`, after a successful `VerifyPassword` on login, check `passwordHasher.NeedsRehash(credential.PasswordHash)` and transparently rehash and persist `credential.PasswordHash` within the login transaction.
+    
+    * Add unit tests in `PasswordHasherTests.cs` covering: new `SHA512` / `220,000` hash format, malformed base64 handling without throwing, legacy `SHA256`/`10,000` hash verification + `NeedsRehash == true`, and upgraded hash `NeedsRehash == false`."
+118,[FE] Connect Resident & Admin Issues Pages to Live /api/issues Backend,Task,New,Daniel Moisei,Normal,"## Context & Anti-Hallucination Rules (READ FIRST)
+
+- Depends on `#117` (`IssuesController` backend endpoints) and `#77` (`frontend/src/api/client.ts`).
+- Currently, `frontend/src/auth/issues.ts` uses `localStorage` (`locatarius-mock-issues`) and `frontend/src/features/issue-triage/IssueTriage.tsx` uses `issuesMock.json`.
+- Note on file uploads: The backend stores metadata or text descriptions; keep optional client preview non-blocking, or make evidence optional when submitting to `POST /api/issues` so the 16 KiB JSON cap is respected (never send multi-megabyte base64 data URLs to the 16 KiB JSON API!).
+
+## Files to Modify
+
+- Modify: `frontend/src/auth/issues.ts`
+- Modify: `frontend/src/features/issue-triage/IssueTriage.tsx`
+- Modify: `frontend/src/pages/IssuesPage.tsx`
+- Modify: `frontend/src/pages/IssueDetailsPage.tsx`
+- Modify: `frontend/src/pages/ReportIssuePage.tsx`
+- Modify: `frontend/src/pages/CloseIssuePage.tsx`
+
+## Exact Implementation Requirements
+
+1. Replace `localStorage` in `frontend/src/auth/issues.ts` with async calls to `GET /api/issues`, `GET /api/issues/${id}`, `POST /api/issues`, and `PATCH /api/issues/${id}` via `apiRequest`.
+2. In `IssueTriage.tsx` (Admin Kanban board), load issues from `GET /api/issues` on mount and call `PATCH /api/issues/${id}` when dragging cards across columns or changing status/priority in the details modal.
+3. In `ReportIssuePage.tsx`, make file attachment optional (do not send base64 blobs to the JSON API) and submit `{ title, description }` to `POST /api/issues`.
+4. In `IssuesPage.tsx` and `IssueDetailsPage.tsx`, load live issues from the API and handle loading/error states cleanly.
+"
+119,"[DOCS/SEC] Backup Restore Rehearsal, Incident Drill & Updated Status Report",Task,New,Victor Gafenco,Normal,"## Context & Anti-Hallucination Rules (READ FIRST)
+
+- Covers the final course assessment evidence in `docs/operations-and-testing.md` (`SEC-04` Backup Restore, Incident Response Drill, and updating `docs/traceability.md` + the Teacher Status Report).
+
+## Files to Modify
+
+- Modify: `docs/traceability.md`
+- Modify: `docs/validation.md`
+- Update: Teacher Project Status Report (LaTeX/PDF)
+
+## Exact Implementation Requirements
+
+1. **Update Project Status Report for Instructors:**
+   - Correct Sections 1.1, 1.2, 2.x, and 3.x to reflect the actual implemented codebase (cookie sessions, CSRF, rate limiting, `FOR UPDATE` locking, DevOps privilege separation `locatarius_migrator` vs `locatarius_app`, State Pattern for sessions, and building-scoped isolation).
+   - Remove the stray `.S` typo at the end of Conclusions (p. 12).
+2. **Backup Restore & Session Invalidation Drill (`docs/validation.md`):**
+   - Run and record a timed `pg_dump` -> restore into disposable PostgreSQL 18 container -> `DELETE FROM sessions;` -> verify accounts/buildings/issues survive while pre-backup session cookies return `401`.
+3. **Update `docs/traceability.md`:**
+   - Replace `""planned / not verified""` with actual commit hashes, test commands, and pass counts.
+"
