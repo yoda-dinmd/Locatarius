@@ -1,12 +1,13 @@
 # OpenProject work package snapshots
 
-Latest snapshot: [2026-11-23 work packages](2026-11-23/work-packages.csv).
+Latest snapshot: [2026-11-24 work packages](2026-11-24/work-packages.csv).
 
-This CSV contains 13 open work packages (`In progress` or `New`) for `Sprint Final: Security & E2E Integration`: epic #66, stories #62–#64, and the 9 remaining active sprint tasks (#76, #77, #81, #82, #86, #89, #116, #118, #119). Closed work packages from earlier sprints and completed sprint tasks (#73–#75, #78–#80, #83–#85, #87, #88, #90, #92–#97, #117, #120) were filtered out during export. It records IDs, subjects, types, statuses, assignees, priorities and full descriptions. It does **not** include parent/child relations or sprint/version fields. OpenProject remains the live planning source; this export records its state at export time.
+This CSV contains 11 open work packages (`In progress` or `New`) for `Sprint Final: Security & E2E Integration`: epic #66, stories #62–#64, and the 7 remaining active sprint tasks (#81, #82, #86, #89, #116, #118, #119). Closed work packages from earlier sprints and completed sprint tasks (#73–#80, #83–#85, #87, #88, #90, #92–#97, #117, #120) were filtered out during export. It records IDs, subjects, types, statuses, assignees, priorities and full descriptions. It does **not** include parent/child relations or sprint/version fields. OpenProject remains the live planning source; this export records its state at export time.
 
 ## Snapshot history and current scope
 
-- [Latest export, 23 November 2026](2026-11-23/work-packages.csv): 13 open work packages (#62–#64, #66, #76, #77, #81, #82, #86, #89, #116, #118, #119), filtering out completed tasks #117 and #120.
+- [Latest export, 24 November 2026](2026-11-24/work-packages.csv): 11 open work packages (#62–#64, #66, #81, #82, #86, #89, #116, #118, #119), filtering out completed tasks #76 and #77.
+- [23 November 2026 export](2026-11-23/work-packages.csv): 13 open work packages (#62–#64, #66, #76, #77, #81, #82, #86, #89, #116, #118, #119), filtering out completed tasks #117 and #120.
 - [19 November 2026 export](2026-11-19/work-packages.csv): 15 open work packages (#62–#64, #66, #76, #77, #81, #82, #86, #89, #116–#120), updating #116 to include the `PasswordHasher` cryptographic upgrade (`PBKDF2-HMAC-SHA512`, `220,000` iterations, self-describing hash format, legacy hash verification, and transparent rehash on login).
 - [16 November 2026 export](2026-11-16/work-packages.csv): 15 open work packages (#62–#64, #66, #76, #77, #81, #82, #86, #89, #116–#120), adding #120 (`[BE/CI] Resolve NuGet NU1902/NU1903 vulnerabilities in backend projects`).
 - [15 November 2026 export](2026-11-15/work-packages.csv): 14 open work packages (#62–#64, #66, #76, #77, #81, #82, #86, #89, #116–#119) with updated anti-hallucination specifications aligned with the actual codebase (`Building.AdminId` tenant isolation, `/api/residents`, `/api/apartments`, `/api/issues`).
@@ -21,7 +22,7 @@ it has no Sprint or Parent fields.
 ## Find your task
 
 Read the assigned ID's full description and its referenced dependencies before
-working. Use the latest snapshot (`docs/openproject/2026-11-23/work-packages.csv`) for active tasks, or `docs/openproject/2026-09-16-1613/work-packages.csv` for historical closed tasks (#73, #74, #75, #78, #90). A Closed status alone does not establish that every requirement is implemented.
+working. Use the latest snapshot (`docs/openproject/2026-11-24/work-packages.csv`) for active tasks, `docs/openproject/2026-11-23/work-packages.csv` for recently closed tasks (#76, #77), or `docs/openproject/2026-09-16-1613/work-packages.csv` for historical closed tasks (#73, #74, #75, #78, #90). A Closed status alone does not establish that every requirement is implemented.
 
 Use a CSV parser rather than splitting lines: descriptions span multiple lines
 and may contain commas and HTML entities. From the repository root:
@@ -31,8 +32,8 @@ import csv
 import html
 from pathlib import Path
 
-snapshot = Path("docs/openproject/2026-11-23/work-packages.csv")
-task_id = "77"
+snapshot = Path("docs/openproject/2026-11-24/work-packages.csv")
+task_id = "82"
 with snapshot.open(encoding="utf-8-sig", newline="") as source:
     tasks = {row["id"]: row for row in csv.DictReader(source)}
 task = tasks[task_id]
