@@ -129,7 +129,9 @@
 }
 
 .issue-page-content {
-  width: 100%;
+  /* Auto width fills the layout minus the side margins; 100% plus margins
+     overflowed and cut off the right edge. */
+  width: auto;
   max-width: 1100px;
   margin: 0 2.4rem;
   padding: 3rem 0rem 4rem;
@@ -210,6 +212,8 @@
   }
 
   .issue-page-content {
+    /* width: 100% plus the desktop side margins overflows narrow screens. */
+    margin: 0;
     padding: 2rem 1rem 3rem;
   }
 

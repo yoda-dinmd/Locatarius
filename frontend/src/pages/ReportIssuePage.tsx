@@ -91,7 +91,6 @@ export default function ReportIssuePage({ user }: ReportIssuePageProps) {
     <IssueLayout user={user} activePage="issues">
       <div className="issue-form-page">
         <a className="back-link" href="/issues">⮜ Back to issues</a>
-        <p className="issues-kicker">Issue reports</p>
         <h1>Report a new issue</h1>
 
         <form className="issue-form standalone-form" onSubmit={handleSubmit}>
