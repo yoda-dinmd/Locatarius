@@ -1,10 +1,13 @@
 import { useEffect, useRef, useState } from "react";
 import type { DragEvent } from "react";
-import issuesMock from "./issuesMock.json";
+import { describeIssueError, listIssues, updateIssue } from "../../auth/issues";
+import type { IssueChanges } from "../../auth/issues";
+import { useAsyncResource } from "../../hooks/useAsyncResource";
 import {
   issueLabel,
   moveIssue,
   priorityLabels,
+  replaceIssue,
   reporterName,
   reprioritizeIssue,
   statuses,
@@ -12,6 +15,22 @@ import {
 } from "./issueModel";
 import type { Issue, IssuePriority, IssueStatus } from "./issueModel";
 import "./IssueTriage.css";
+
+/**
+ * One board change, captured as an object (command style): `apply` shows it
+ * immediately, `changes` is what PATCH /api/issues/{id} receives, and the
+ * issue's snapshot taken before `apply` undoes it if the server refuses.
+ */
+type IssueCommand = {
+  issueId: string;
+  changes: IssueChanges;
+  apply: (issues: Issue[], now: string) => Issue[];
+  successMessage: string;
+};
+
+function loadIssues(signal: AbortSignal) {
+  return listIssues({ signal });
+}
 
 const dateFormat = new Intl.DateTimeFormat("en-GB", {
   day: "numeric",
@@ -80,6 +99,7 @@ function TriageSelect({
 
 type IssueDetailsProps = {
   issue: Issue;
+  saving: boolean;
   onClose: () => void;
   onStatusChange: (status: IssueStatus) => void;
   onPriorityChange: (priority: IssuePriority) => void;
@@ -87,6 +107,7 @@ type IssueDetailsProps = {
 
 function IssueDetails({
   issue,
+  saving,
   onClose,
   onStatusChange,
   onPriorityChange,
@@ -160,6 +181,7 @@ function IssueDetails({
             <TriageSelect
               id="triage-detail-status"
               value={String(issue.status)}
+              disabled={saving}
               onChange={(value) => onStatusChange(Number(value) as IssueStatus)}
               options={statuses.map((value) => ({ value: String(value), label: statusLabels[value] }))}
             />
@@ -167,7 +189,7 @@ function IssueDetails({
             <TriageSelect
               id="triage-detail-priority"
               value={String(issue.priority)}
-              disabled={issue.status === 3}
+              disabled={saving || issue.status === 3}
               onChange={(value) => onPriorityChange(Number(value) as IssuePriority)}
               options={priorityOptions.map((value) => ({ value: String(value), label: priorityLabels[value] }))}
             />
@@ -177,7 +199,7 @@ function IssueDetails({
         <h3>Attached photo <span className="triage-muted">({issue.attachments.length})</span></h3>
         {issue.attachments.length ? issue.attachments.map((attachment) => (
           <figure className="triage-photo" key={attachment.attachmentId}>
-            <a href={attachment.fileUrl} target="_blank" rel="noreferrer" aria-label="Open full water meter photo in a new tab">
+            <a href={attachment.fileUrl} target="_blank" rel="noreferrer" aria-label="Open the full attached photo in a new tab">
               <img src={attachment.fileUrl} alt={`Photo attached to ${issue.title}`} />
             </a>
           </figure>
@@ -188,7 +210,10 @@ function IssueDetails({
 }
 
 export default function IssueTriage() {
-  const [issues, setIssues] = useState<Issue[]>(() => structuredClone(issuesMock) as Issue[]);
+  const { resource, reload, update } = useAsyncResource(loadIssues);
+  const issues = resource.status === "ready" ? resource.data : [];
+  const [pendingIds, setPendingIds] = useState<ReadonlySet<string>>(() => new Set());
+  const [saveError, setSaveError] = useState("");
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [query, setQuery] = useState("");
   const [priority, setPriority] = useState("all");
@@ -209,17 +234,57 @@ export default function IssueTriage() {
     return b.priority - a.priority || b.createdAt.localeCompare(a.createdAt);
   });
 
+  function setPending(id: string, pending: boolean) {
+    setPendingIds((current) => {
+      const next = new Set(current);
+      if (pending) next.add(id);
+      else next.delete(id);
+      return next;
+    });
+  }
+
+  // Invoker: optimistic apply → PATCH → keep the server copy, or roll back.
+  // One request per issue at a time, so a rollback never overwrites a newer change.
+  function run(command: IssueCommand) {
+    const snapshot = issues.find((issue) => issue.issueId === command.issueId);
+    if (!snapshot || pendingIds.has(command.issueId)) return;
+    setSaveError("");
+    update((current) => command.apply(current, new Date().toISOString()));
+    setPending(command.issueId, true);
+    updateIssue(command.issueId, command.changes)
+      .then((saved) => {
+        update((current) => replaceIssue(current, saved));
+        setAnnouncement(command.successMessage);
+      })
+      .catch((error: unknown) => {
+        update((current) => replaceIssue(current, snapshot));
+        const message = `${issueLabel(snapshot)} was not changed: ${describeIssueError(error)}`;
+        setSaveError(message);
+        setAnnouncement(message);
+      })
+      .finally(() => setPending(command.issueId, false));
+  }
+
   function changeStatus(id: string, status: IssueStatus) {
     const issue = issues.find((candidate) => candidate.issueId === id);
     if (!issue || issue.status === status) return;
-    setIssues((current) => moveIssue(current, id, status, new Date().toISOString()));
-    setAnnouncement(`${issueLabel(issue)} moved to ${statusLabels[status]}.`);
+    run({
+      issueId: id,
+      changes: { status },
+      apply: (current, now) => moveIssue(current, id, status, now),
+      successMessage: `${issueLabel(issue)} moved to ${statusLabels[status]}.`,
+    });
   }
 
   function reprioritizeSelected(nextPriority: IssuePriority) {
-    if (!selected || selected.status === 3) return;
-    setIssues((current) => reprioritizeIssue(current, selected.issueId, nextPriority, new Date().toISOString()));
-    setAnnouncement(`${issueLabel(selected)} priority changed to ${priorityLabels[nextPriority]}.`);
+    if (!selected || selected.status === 3 || selected.priority === nextPriority) return;
+    const id = selected.issueId;
+    run({
+      issueId: id,
+      changes: { priority: nextPriority },
+      apply: (current, now) => reprioritizeIssue(current, id, nextPriority, now),
+      successMessage: `${issueLabel(selected)} priority changed to ${priorityLabels[nextPriority]}.`,
+    });
   }
 
   function startDrag(event: DragEvent<HTMLButtonElement>, id: string) {
@@ -289,16 +354,25 @@ export default function IssueTriage() {
         </div>
       </div>
       <div className="triage-toolbar-meta">
-        <p className="triage-results" role="status">{announcement || `Showing ${visible.length} of ${issues.length} issues`}</p>
+        <p className="triage-results" role="status">
+          {resource.status === "loading" ? "Loading issues…" : announcement || `Showing ${visible.length} of ${issues.length} issues`}
+        </p>
         {hasFilters && <button type="button" className="triage-clear" onClick={clearFilters}>Clear filters</button>}
       </div>
-      {!visible.length && (
+      {saveError && <div className="issues-alert issues-alert-error" role="alert">{saveError}</div>}
+      {resource.status === "error" && (
+        <div className="issues-alert issues-alert-error" role="alert">
+          {describeIssueError(resource.error)}{" "}
+          <button type="button" className="triage-secondary" onClick={reload}>Try again</button>
+        </div>
+      )}
+      {resource.status === "ready" && !visible.length && (
         <div className="triage-empty-results">
           <strong>No matching issues</strong>
           <p>Try another search or clear the filters to see all reports.</p>
         </div>
       )}
-      <div className="triage-board">
+      <div className="triage-board" aria-busy={resource.status === "loading"}>
         {statuses.map((status) => {
           const column = visible.filter((issue) => issue.status === status);
           return (
@@ -321,7 +395,8 @@ export default function IssueTriage() {
                     id={`triage-card-${issue.issueId}`}
                     type="button"
                     key={issue.issueId}
-                    draggable
+                    draggable={!pendingIds.has(issue.issueId)}
+                    aria-busy={pendingIds.has(issue.issueId)}
                     onDragStart={(event) => startDrag(event, issue.issueId)}
                     onDragEnd={() => { setDraggedId(null); setDropStatus(null); }}
                     onClick={() => setSelectedId(issue.issueId)}
@@ -343,7 +418,7 @@ export default function IssueTriage() {
                     </span>
                   </button>
                 ))}
-                {!column.length && <p className="triage-column-empty">{status === 3 ? "Completed issues will appear here." : "No issues in this stage."}</p>}
+                {resource.status === "ready" && !column.length && <p className="triage-column-empty">{status === 3 ? "Completed issues will appear here." : "No issues in this stage."}</p>}
               </div>
             </section>
           );
@@ -353,6 +428,7 @@ export default function IssueTriage() {
         <IssueDetails
           key={selected.issueId}
           issue={selected}
+          saving={pendingIds.has(selected.issueId)}
           onClose={() => { setSelectedId(null); setAnnouncement(""); }}
           onStatusChange={(status) => changeStatus(selected.issueId, status)}
           onPriorityChange={reprioritizeSelected}

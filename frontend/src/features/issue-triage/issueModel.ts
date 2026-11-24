@@ -2,10 +2,12 @@
 export type IssueStatus = 1 | 2 | 3;
 export type IssuePriority = 1 | 2 | 3 | 4;
 
+// Mirrors IssueDto returned by GET/POST/PATCH /api/issues (#117).
 export type Issue = {
   issueId: string;
   reportedBy: string;
   buildingId: string;
+  buildingNumber: string;
   title: string;
   description: string;
   status: IssueStatus;
@@ -42,7 +44,13 @@ export function reporterName(issue: Issue): string {
   return `${issue.reporter.firstName} ${issue.reporter.lastName}`;
 }
 
-// Local demo state mirrors the EF Issue fields. Reopening clears ResolvedAt.
+/** Replaces one issue with the server's authoritative copy, keeping list order. */
+export function replaceIssue(issues: Issue[], updated: Issue): Issue[] {
+  return issues.map((issue) => issue.issueId === updated.issueId ? updated : issue);
+}
+
+// Optimistic local transitions mirror the backend rules: resolving stamps
+// resolvedAt, reopening clears it, and a Closed issue keeps its priority.
 export function moveIssue(issues: Issue[], id: string, status: IssueStatus, now: string): Issue[] {
   return issues.map((issue) => issue.issueId === id && issue.status !== status
     ? { ...issue, status, updatedAt: now, resolvedAt: status === 3 ? now : null }

@@ -1,232 +1,154 @@
-// Mock issue data stays until #118 wires these pages to /api/issues.
-// The server identity (#77) no longer exposes a building, so every resident
-// sees the demo building's issues until then.
-const DEMO_BUILDING_ID = "BLD-01";
+import { ApiError, apiRequest } from "../api/client";
+import type {
+  Issue,
+  IssuePriority,
+  IssueStatus,
+} from "../features/issue-triage/issueModel";
 
-function getBuildingIdForUser(userId: string): string | null {
-  return userId ? DEMO_BUILDING_ID : null;
+/**
+ * Issues API facade (#118) over `/api/issues` (#117).
+ *
+ * Pages call these functions instead of building URLs, attaching CSRF tokens
+ * or parsing JSON themselves. The backend decides which issues the caller may
+ * see (administrators: their buildings; residents: their own building), so no
+ * scoping happens here. Nothing is stored in browser storage.
+ */
+
+export type { Issue, IssuePriority, IssueStatus };
+
+export type NewIssue = { title: string; description: string };
+export type IssueChanges = { status?: IssueStatus; priority?: IssuePriority };
+
+export const ISSUE_TITLE_MIN = 5;
+export const ISSUE_TITLE_MAX = 120;
+export const ISSUE_DESCRIPTION_MIN = 10;
+export const ISSUE_DESCRIPTION_MAX = 2000;
+
+const ISSUES_PATH = "/api/issues";
+const GUID_PATTERN =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+type RequestOptions = { signal?: AbortSignal };
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
-export type IssueStatus = "Open" | "In Progress" | "Closed";
-
-export type IssueEvidence = {
-  name: string;
-  type: string;
-  url: string;
-};
-
-export type IssueRecord = {
-  id: string;
-  residentId: string;
-  reporterName: string;
-  buildingId: string;
-  title: string;
-  description: string;
-  status: IssueStatus;
-  evidenceName?: string;
-  evidenceType?: string;
-  evidenceUrl?: string;
-  evidenceFiles?: IssueEvidence[];
-  fixDescription?: string;
-  fixEvidenceName?: string;
-  fixEvidenceType?: string;
-  fixEvidenceUrl?: string;
-  fixEvidenceFiles?: IssueEvidence[];
-  closedBy?: string;
-  createdAt: string;
-  updatedAt: string;
-};
-
-export type IssueFilter = "All" | IssueStatus;
-
-const ISSUES_KEY = "locatarius-mock-issues";
-
-const initialIssues: IssueRecord[] = [
-  {
-    id: "ISS-1001",
-    residentId: "resident-1",
-    reporterName: "Ana Popescu",
-    buildingId: "BLD-01",
-    title: "Flickering hallway light",
-    description:
-      "The ceiling light in the main hallway flickers intermittently after 8 PM.",
-    status: "Open",
-    evidenceName: "hallway-light.jpg",
-    evidenceType: "image/jpeg",
-    createdAt: "2026-09-09T18:40:00.000Z",
-    updatedAt: "2026-09-09T18:40:00.000Z",
-  },
-  {
-    id: "ISS-1002",
-    residentId: "resident-1",
-    reporterName: "Ana Popescu",
-    buildingId: "BLD-01",
-    title: "Leaking pipe in bathroom",
-    description:
-      "There is a small leak under the sink that is causing water to collect on the cabinet floor.",
-    status: "In Progress",
-    evidenceName: "bathroom-leak.mp4",
-    evidenceType: "video/mp4",
-    createdAt: "2026-09-10T09:00:00.000Z",
-    updatedAt: "2026-09-10T09:15:00.000Z",
-  },
-  {
-    id: "ISS-1003",
-    residentId: "resident-2",
-    reporterName: "Ana Munteanu",
-    buildingId: "BLD-02",
-    title: "Broken gate sensor",
-    description:
-      "The main entry gate sensor fails to detect vehicles during the evening shift.",
-    status: "Closed",
-    evidenceName: "gate-sensor.jpg",
-    evidenceType: "image/jpeg",
-    createdAt: "2026-09-04T14:10:00.000Z",
-    updatedAt: "2026-09-05T11:30:00.000Z",
-  },
-  {
-    id: "ISS-1004",
-    residentId: "resident-3",
-    reporterName: "Ion Munteanu",
-    buildingId: "BLD-03",
-    title: "Noisy elevator",
-    description:
-      "The elevator rattles when reaching the 4th floor and has been making unusual noise during operation.",
-    status: "Open",
-    evidenceName: "elevator-noise.mp4",
-    evidenceType: "video/mp4",
-    createdAt: "2026-09-12T07:30:00.000Z",
-    updatedAt: "2026-09-12T07:30:00.000Z",
-  },
-];
-
-export function readIssues(): IssueRecord[] {
-  const storedIssues = localStorage.getItem(ISSUES_KEY);
-
-  if (!storedIssues) {
-    localStorage.setItem(ISSUES_KEY, JSON.stringify(initialIssues));
-    return initialIssues;
-  }
-
-  return JSON.parse(storedIssues) as IssueRecord[];
-}
-
-export function writeIssues(issues: IssueRecord[]) {
-  localStorage.setItem(ISSUES_KEY, JSON.stringify(issues));
-}
-
-export function getFilterOptions(): IssueFilter[] {
-  return ["All", "Open", "In Progress", "Closed"];
-}
-
-export function getIssuesForResident(residentId: string): IssueRecord[] {
-  const issues = readIssues();
-  const residentBuildingId = getBuildingIdForUser(residentId);
-
-  return issues
-    .filter((issue) => issue.buildingId === residentBuildingId)
-    .sort(
-      (left, right) =>
-        new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime(),
-    );
-}
-
-export function getBuildingForResident(residentId: string): string {
-  return getBuildingIdForUser(residentId) ?? "BLD-01";
-}
-
-export function getAllIssues(): IssueRecord[] {
-  return readIssues().sort(
-    (left, right) =>
-      new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime(),
+// Adapter guard: reject responses that do not match IssueDto instead of
+// letting a malformed payload crash a page later during rendering.
+function isIssue(value: unknown): value is Issue {
+  if (!isRecord(value) || !isRecord(value.reporter)) return false;
+  const apartment = value.reporter.apartment;
+  return (
+    typeof value.issueId === "string" &&
+    typeof value.reportedBy === "string" &&
+    typeof value.buildingId === "string" &&
+    typeof value.buildingNumber === "string" &&
+    typeof value.title === "string" &&
+    typeof value.description === "string" &&
+    (value.status === 1 || value.status === 2 || value.status === 3) &&
+    [1, 2, 3, 4].includes(value.priority as number) &&
+    typeof value.createdAt === "string" &&
+    (value.updatedAt === null || typeof value.updatedAt === "string") &&
+    (value.resolvedAt === null || typeof value.resolvedAt === "string") &&
+    typeof value.reporter.userId === "string" &&
+    typeof value.reporter.firstName === "string" &&
+    typeof value.reporter.lastName === "string" &&
+    (apartment === null ||
+      (isRecord(apartment) && typeof apartment.apartmentNumber === "string")) &&
+    Array.isArray(value.attachments)
   );
 }
 
-export function createIssue(input: {
-  residentId: string;
-  reporterName: string;
-  buildingId: string;
-  title: string;
-  description: string;
-  evidenceName?: string;
-  evidenceType?: string;
-  evidenceUrl?: string;
-  evidenceFiles?: IssueEvidence[];
-}): IssueRecord {
-  const now = new Date().toISOString();
-
-  const issue: IssueRecord = {
-    id: `ISS-${Date.now()}`,
-    residentId: input.residentId,
-    reporterName: input.reporterName,
-    buildingId: input.buildingId,
-    title: input.title.trim(),
-    description: input.description.trim(),
-    status: "Open",
-    evidenceName: input.evidenceName,
-    evidenceType: input.evidenceType,
-    evidenceUrl: input.evidenceUrl,
-    evidenceFiles: input.evidenceFiles,
-    createdAt: now,
-    updatedAt: now,
-  };
-
-  const issues = readIssues();
-  issues.unshift(issue);
-  writeIssues(issues);
-
-  return issue;
+function invalidResponse(): ApiError {
+  return new ApiError(
+    500,
+    "INVALID_ISSUE",
+    "The server returned an unexpected issue format.",
+  );
 }
 
-export function updateIssueStatus(
+function toIssue(value: unknown): Issue {
+  if (!isIssue(value)) throw invalidResponse();
+  return value;
+}
+
+export function isIssueId(value: string): boolean {
+  return GUID_PATTERN.test(value);
+}
+
+/** Issues visible to the signed-in user, newest first (server order). */
+export async function listIssues(options: RequestOptions = {}): Promise<Issue[]> {
+  const payload = await apiRequest<unknown>(ISSUES_PATH, { signal: options.signal });
+  if (!Array.isArray(payload)) throw invalidResponse();
+  return payload.map(toIssue);
+}
+
+/**
+ * One issue, or `null` when it does not exist or is outside the caller's
+ * buildings (the backend answers both with 404 ISSUE_NOT_FOUND).
+ */
+export async function getIssue(
   issueId: string,
-  status: IssueStatus,
-): IssueRecord | null {
-  const issues = readIssues();
-  const issueIndex = issues.findIndex((issue) => issue.id === issueId);
-
-  if (issueIndex === -1) {
-    return null;
+  options: RequestOptions = {},
+): Promise<Issue | null> {
+  // Legacy mock IDs such as "ISS-1001" can never exist; skip the request.
+  if (!isIssueId(issueId)) return null;
+  try {
+    const payload = await apiRequest<unknown>(
+      `${ISSUES_PATH}/${encodeURIComponent(issueId)}`,
+      { signal: options.signal },
+    );
+    return toIssue(payload);
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 404) return null;
+    throw error;
   }
-
-  const updatedIssue = {
-    ...issues[issueIndex],
-    status,
-    updatedAt: new Date().toISOString(),
-  };
-  issues[issueIndex] = updatedIssue;
-  writeIssues(issues);
-  return updatedIssue;
 }
 
-export function closeIssue(input: {
-  issueId: string;
-  description: string;
-  evidenceName: string;
-  evidenceType: string;
-  evidenceUrl: string;
-  fixEvidenceFiles?: IssueEvidence[];
-  closedBy: string;
-}): IssueRecord | null {
-  const issues = readIssues();
-  const issueIndex = issues.findIndex((issue) => issue.id === input.issueId);
+/**
+ * Residents only. Reporter, building, status and timestamps are assigned by
+ * the server, so only the title and description are sent.
+ */
+export async function createIssue(input: NewIssue): Promise<Issue> {
+  const payload = await apiRequest<unknown>(ISSUES_PATH, {
+    method: "POST",
+    body: { title: input.title, description: input.description },
+  });
+  return toIssue(payload);
+}
 
-  if (issueIndex === -1) {
-    return null;
+/** Administrators only: change status and/or priority. */
+export async function updateIssue(
+  issueId: string,
+  changes: IssueChanges,
+): Promise<Issue> {
+  const body: IssueChanges = {};
+  if (changes.status !== undefined) body.status = changes.status;
+  if (changes.priority !== undefined) body.priority = changes.priority;
+  const payload = await apiRequest<unknown>(
+    `${ISSUES_PATH}/${encodeURIComponent(issueId)}`,
+    { method: "PATCH", body },
+  );
+  return toIssue(payload);
+}
+
+/** User-facing message for any error thrown by the functions above. */
+export function describeIssueError(error: unknown): string {
+  if (error instanceof ApiError) {
+    switch (error.code) {
+      case "UNAUTHENTICATED":
+        return "Your session has expired. Sign in again to continue.";
+      case "ISSUE_NOT_FOUND":
+        return "This issue no longer exists or is not available to you.";
+      case "APARTMENT_NOT_FOUND":
+        return "Your account is not assigned to an apartment yet, so you cannot report issues. Contact your administrator.";
+      default:
+        if (error.status >= 500) {
+          return "The server could not complete the request. Try again later.";
+        }
+        return error.message;
+    }
   }
-
-  const updatedIssue = {
-    ...issues[issueIndex],
-    status: "Closed" as IssueStatus,
-    updatedAt: new Date().toISOString(),
-    fixDescription: input.description.trim(),
-    fixEvidenceName: input.evidenceName,
-    fixEvidenceType: input.evidenceType,
-    fixEvidenceUrl: input.evidenceUrl,
-    fixEvidenceFiles: input.fixEvidenceFiles,
-    closedBy: input.closedBy,
-  };
-  issues[issueIndex] = updatedIssue;
-  writeIssues(issues);
-  return updatedIssue;
+  return "Unable to reach Locatarius. Check your connection and try again.";
 }

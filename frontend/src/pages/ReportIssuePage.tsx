@@ -1,90 +1,62 @@
 import { useState } from "react";
-import type { ChangeEvent, SubmitEvent } from "react";
+import type { SubmitEvent } from "react";
+import { ApiError } from "../api/client";
 import type { SessionUser } from "../auth/auth";
-import { createIssue, getBuildingForResident, type IssueEvidence } from "../auth/issues";
+import {
+  ISSUE_DESCRIPTION_MAX,
+  ISSUE_DESCRIPTION_MIN,
+  ISSUE_TITLE_MAX,
+  ISSUE_TITLE_MIN,
+  createIssue,
+  describeIssueError,
+} from "../auth/issues";
 import IssueLayout from "./IssueLayout";
 import "../styles/IssueFormPage.css";
 
 type ReportIssuePageProps = { user: SessionUser };
-type SelectedEvidence = IssueEvidence & { file: File };
-const MAX_EVIDENCE_FILES = 5;
-const MAX_FILE_SIZE = 10 * 1024 * 1024;
+type FieldErrors = { title?: string; description?: string };
 
-function readFile(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(String(reader.result));
-    reader.onerror = () => reject(new Error("The selected file could not be read."));
-    reader.readAsDataURL(file);
-  });
+// Mirrors the backend rules so most mistakes are caught before a request;
+// the server remains the authority and its field errors are shown as well.
+function validate(title: string, description: string): FieldErrors {
+  const errors: FieldErrors = {};
+  const trimmedTitle = title.trim();
+  const trimmedDescription = description.trim();
+  if (trimmedTitle.length < ISSUE_TITLE_MIN || trimmedTitle.length > ISSUE_TITLE_MAX) {
+    errors.title = `Use between ${ISSUE_TITLE_MIN} and ${ISSUE_TITLE_MAX} characters.`;
+  }
+  if (trimmedDescription.length < ISSUE_DESCRIPTION_MIN || trimmedDescription.length > ISSUE_DESCRIPTION_MAX) {
+    errors.description = `Use between ${ISSUE_DESCRIPTION_MIN} and ${ISSUE_DESCRIPTION_MAX} characters.`;
+  }
+  return errors;
 }
 
 export default function ReportIssuePage({ user }: ReportIssuePageProps) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [evidence, setEvidence] = useState<SelectedEvidence[]>([]);
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [error, setError] = useState("");
   const [isSaving, setIsSaving] = useState(false);
 
   async function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!title.trim() || !description.trim() || evidence.length === 0) {
-      setError("Title, description, and evidence are required.");
-      return;
-    }
+    if (isSaving) return;
+    const errors = validate(title, description);
+    setFieldErrors(errors);
+    setError("");
+    if (errors.title || errors.description) return;
 
     setIsSaving(true);
     try {
-      const evidenceFiles = await Promise.all(evidence.map(async (item) => ({
-        name: item.name,
-        type: item.type,
-        url: await readFile(item.file),
-      })));
-      const firstEvidence = evidenceFiles[0];
-      createIssue({
-        residentId: user.id,
-        reporterName: user.name,
-        buildingId: getBuildingForResident(user.id),
-        title,
-        description,
-        evidenceName: firstEvidence.name,
-        evidenceType: firstEvidence.type,
-        evidenceUrl: firstEvidence.url,
-        evidenceFiles,
-      });
+      await createIssue({ title: title.trim(), description: description.trim() });
       window.location.href = "/issues";
-    } catch {
-      setError("The evidence file could not be uploaded.");
+    } catch (caught) {
+      if (caught instanceof ApiError && caught.code === "VALIDATION_FAILED") {
+        setFieldErrors({ title: caught.fields.title?.[0], description: caught.fields.description?.[0] });
+      }
+      setError(describeIssueError(caught));
       setIsSaving(false);
     }
-  }
-
-  function handleEvidenceChange(event: ChangeEvent<HTMLInputElement>) {
-    const selectedFiles = Array.from(event.target.files ?? []);
-    const remainingSlots = MAX_EVIDENCE_FILES - evidence.length;
-    const validFiles = selectedFiles.filter((file) => file.type.startsWith("image/") || file.type.startsWith("video/"));
-
-    if (selectedFiles.length > remainingSlots || validFiles.some((file) => file.size > MAX_FILE_SIZE)) {
-      setError("You can upload up to 5 image or video files, with a maximum of 10 MB per file.");
-      event.currentTarget.value = "";
-      return;
-    }
-
-    setEvidence((current) => [...current, ...validFiles.map((file) => ({
-      file,
-      name: file.name,
-      type: file.type,
-      url: URL.createObjectURL(file),
-    }))]);
-    setError("");
-    event.currentTarget.value = "";
-  }
-
-  function removeEvidence(index: number) {
-    setEvidence((current) => {
-      URL.revokeObjectURL(current[index].url);
-      return current.filter((_, itemIndex) => itemIndex !== index);
-    });
   }
 
   return (
@@ -93,26 +65,15 @@ export default function ReportIssuePage({ user }: ReportIssuePageProps) {
         <a className="back-link" href="/issues">⮜ Back to issues</a>
         <h1>Report a new issue</h1>
 
-        <form className="issue-form standalone-form" onSubmit={handleSubmit}>
+        <form className="issue-form standalone-form" onSubmit={handleSubmit} noValidate>
           {error && <div className="issues-alert issues-alert-error" role="alert">{error}</div>}
           <label htmlFor="issue-title">Title <span className="required-mark">*</span></label>
-          <input id="issue-title" value={title} onChange={(event) => setTitle(event.target.value)} placeholder="Example: Water leak in bathroom" required />
+          <input id="issue-title" value={title} onChange={(event) => setTitle(event.target.value)} placeholder="Example: Water leak in bathroom" maxLength={ISSUE_TITLE_MAX} required aria-invalid={Boolean(fieldErrors.title)} aria-describedby="issue-title-hint" />
+          <small className="issue-form-hint" id="issue-title-hint">{fieldErrors.title ?? `${ISSUE_TITLE_MIN}–${ISSUE_TITLE_MAX} characters.`}</small>
 
           <label htmlFor="issue-description">Description <span className="required-mark">*</span></label>
-          <textarea id="issue-description" value={description} onChange={(event) => setDescription(event.target.value)} placeholder="Describe the issue in detail." rows={7} required />
-
-          <label htmlFor="issue-evidence">Evidence <span className="required-mark">*</span></label>
-          <div className="file-picker">
-            <label className="file-picker-button" htmlFor="issue-evidence">Choose files</label>
-            <input className="file-picker-input" id="issue-evidence" type="file" accept="image/*,video/*" multiple onChange={handleEvidenceChange} required={evidence.length === 0} />
-            {evidence.length > 0 && <div className="file-picker-previews">
-              {evidence.map((item, index) => <span className="file-picker-preview" title={item.name} key={`${item.name}-${index}`}>
-                {item.type.startsWith("video/") ? <video src={item.url} muted /> : <img src={item.url} alt={`Selected evidence ${index + 1}`} />}
-                <button type="button" className="file-picker-remove" onClick={() => removeEvidence(index)} aria-label={`Remove ${item.name}`}>×</button>
-              </span>)}
-            </div>}
-          </div>
-          <small className="issue-form-hint">Upload a photo or short video. Recommended file size: up to 10 MB.</small>
+          <textarea id="issue-description" value={description} onChange={(event) => setDescription(event.target.value)} placeholder="Describe the issue in detail." rows={7} maxLength={ISSUE_DESCRIPTION_MAX} required aria-invalid={Boolean(fieldErrors.description)} aria-describedby="issue-description-hint" />
+          <small className="issue-form-hint" id="issue-description-hint">{fieldErrors.description ?? `${ISSUE_DESCRIPTION_MIN}–${ISSUE_DESCRIPTION_MAX} characters. Photo uploads are not available yet.`}</small>
 
           <div className="issue-form-actions">
             <a className="secondary-action button-link" href="/issues">Cancel</a>
