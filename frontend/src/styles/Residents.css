@@ -211,6 +211,192 @@
   text-align: center;
 }
 
+.resident-dialog-backdrop {
+  position: fixed;
+  z-index: 1000;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  overflow-y: auto;
+  padding: 1.5rem;
+  background: rgba(13, 43, 44, 0.55);
+}
+
+.resident-dialog {
+  width: min(100%, 620px);
+  max-height: calc(100vh - 3rem);
+  overflow-y: auto;
+  border: 1px solid #dce9e5;
+  border-radius: 12px;
+  padding: 1.5rem;
+  color: #4d7075;
+  background: #ffffff;
+  box-shadow: 0 18px 45px #377d7030;
+}
+
+.resident-dialog--confirmation {
+  width: min(100%, 500px);
+}
+
+.resident-dialog-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.resident-dialog-header h2 {
+  margin: 0.25rem 0 0;
+  color: #164950;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 1.7rem;
+  line-height: 1.15;
+}
+
+.resident-dialog-header p:last-child,
+.resident-dialog-confirmation-copy {
+  margin: 0.55rem 0 0;
+  color: #5a7c80;
+  font-size: 0.82rem;
+  line-height: 1.6;
+}
+
+.resident-dialog-confirmation-copy {
+  margin-bottom: 1.5rem;
+}
+
+.resident-dialog-confirmation-copy strong {
+  color: #164950;
+}
+
+.resident-dialog-close {
+  display: inline-grid;
+  flex: 0 0 auto;
+  width: 36px;
+  height: 36px;
+  place-items: center;
+  border: 1px solid #cfe1e4;
+  border-radius: 7px;
+  color: #4d7075;
+  background: #ffffff;
+  font-size: 1.35rem;
+  line-height: 1;
+}
+
+.resident-dialog-form {
+  display: grid;
+  gap: 1rem;
+}
+
+.resident-dialog-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.resident-dialog-field {
+  display: grid;
+  gap: 0.42rem;
+}
+
+.resident-dialog-field label {
+  color: #164950;
+  font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+  font-size: 0.74rem;
+  font-weight: 700;
+}
+
+.resident-dialog-field input,
+.resident-dialog-field select {
+  width: 100%;
+  min-height: 42px;
+  box-sizing: border-box;
+  border: 1px solid #cfe1e4;
+  border-radius: 7px;
+  padding: 0.65rem 0.75rem;
+  color: #164950;
+  background: #ffffff;
+  font: inherit;
+  font-size: 0.82rem;
+}
+
+.resident-dialog-field input:disabled,
+.resident-dialog-field select:disabled,
+.resident-dialog-button:disabled,
+.resident-dialog-close:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.resident-dialog-field-error {
+  margin: 0;
+  color: #b43e43;
+  font-size: 0.72rem;
+  line-height: 1.45;
+}
+
+.resident-dialog-alert {
+  margin: 0 0 1rem;
+  border: 1px solid #b43e43;
+  border-radius: 7px;
+  padding: 0.75rem 0.85rem;
+  color: #b43e43;
+  background: #ffffff;
+  font-size: 0.76rem;
+  line-height: 1.5;
+}
+
+.resident-dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.65rem;
+  margin-top: 0.5rem;
+}
+
+.resident-dialog-button {
+  min-height: 42px;
+  border: 1px solid #cfe1e4;
+  border-radius: 9px;
+  padding: 0.65rem 1rem;
+  font-size: 0.76rem;
+  font-weight: 700;
+}
+
+.resident-dialog-button--secondary {
+  color: #087d6b;
+  background: #ffffff;
+}
+
+.resident-dialog-button--primary {
+  border-color: #087d6b;
+  color: #ffffff;
+  background: #087d6b;
+}
+
+.resident-dialog-button--danger {
+  border-color: #b43e43;
+  color: #ffffff;
+  background: #b43e43;
+}
+
+.resident-dialog-close:hover,
+.resident-dialog-button--secondary:hover {
+  background: #e4f2ed;
+}
+
+.resident-dialog-button--primary:hover {
+  background: #056b5c;
+}
+
+.resident-dialog-close:focus-visible,
+.resident-dialog-field input:focus-visible,
+.resident-dialog-field select:focus-visible,
+.resident-dialog-button:focus-visible {
+  outline: 3px solid #1682721f;
+  outline-offset: 2px;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .resident-add-button,
   .resident-action-button,
@@ -238,5 +424,27 @@
   .residents-table td {
     padding-right: 1rem;
     padding-left: 1rem;
+  }
+
+  .resident-dialog-backdrop {
+    align-items: end;
+    padding: 0.75rem;
+  }
+
+  .resident-dialog {
+    max-height: calc(100vh - 1.5rem);
+    padding: 1.15rem;
+  }
+
+  .resident-dialog-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .resident-dialog-actions {
+    flex-direction: column-reverse;
+  }
+
+  .resident-dialog-button {
+    width: 100%;
   }
 }
