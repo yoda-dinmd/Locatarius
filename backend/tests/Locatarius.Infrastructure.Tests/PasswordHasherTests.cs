@@ -14,10 +14,32 @@ namespace Locatarius.Infrastructure.Tests
             _passwordHasher = new PasswordHasher();
         }
 
+        private static string CreateLegacySha256Hash(string password, int iterations = 10_000, int saltSize = 16, int hashSize = 32)
+        {
+            byte[] salt = new byte[saltSize];
+            RandomNumberGenerator.Fill(salt);
+            byte[] hash = Rfc2898DeriveBytes.Pbkdf2(password, salt, iterations, HashAlgorithmName.SHA256, hashSize);
+            return $"{Convert.ToBase64String(salt)}.{Convert.ToBase64String(hash)}";
+        }
+
+        private static string CreateFormattedHash(
+            string algorithmName,
+            HashAlgorithmName hashAlgorithm,
+            int iterations,
+            string password,
+            int saltSize = 16,
+            int hashSize = 32)
+        {
+            byte[] salt = new byte[saltSize];
+            RandomNumberGenerator.Fill(salt);
+            byte[] hash = Rfc2898DeriveBytes.Pbkdf2(password, salt, iterations, hashAlgorithm, hashSize);
+            return $"{algorithmName}${iterations}${Convert.ToBase64String(salt)}${Convert.ToBase64String(hash)}";
+        }
+
         [Fact]
         public void HashPassword_ShouldThrowExceptionForNullPassword()
         {
-            Assert.Throws<ArgumentNullException>(() => _passwordHasher.HashPassword(null));
+            Assert.Throws<ArgumentNullException>(() => _passwordHasher.HashPassword(null!));
         }
 
         [Fact]
@@ -37,13 +59,24 @@ namespace Locatarius.Infrastructure.Tests
         }
 
         [Fact]
-        public void HashPassword_ShouldGenerateConsistentHashFormat()
+        public void HashPassword_ShouldUseSelfDescribingSha512FormatWith220000Iterations()
         {
             string password = "SecurePassword123!";
-            string hash = _passwordHasher.HashPassword(password);
+            string storedHash = _passwordHasher.HashPassword(password);
 
-            string[] parts = hash.Split('.');
-            Assert.Equal(2, parts.Length); // Ensure salt and hash are present
+            string[] parts = storedHash.Split('$');
+            Assert.Equal(4, parts.Length);
+            Assert.Equal("pbkdf2-sha512", parts[0]);
+            Assert.Equal("220000", parts[1]);
+
+            byte[] salt = Convert.FromBase64String(parts[2]);
+            byte[] derived = Convert.FromBase64String(parts[3]);
+            Assert.Equal(16, salt.Length);
+            Assert.Equal(32, derived.Length);
+
+            byte[] expected = Rfc2898DeriveBytes.Pbkdf2(
+                password, salt, 220_000, HashAlgorithmName.SHA512, 32);
+            Assert.True(CryptographicOperations.FixedTimeEquals(derived, expected));
         }
 
         [Fact]
@@ -101,31 +134,86 @@ namespace Locatarius.Infrastructure.Tests
         }
 
         [Fact]
-        public void NeedsRehash_ShouldReturnTrueForInvalidHashFormat()
+        public void VerifyPassword_ShouldSupportLegacySha256HashAndMarkForRehash()
         {
-            string invalidHash = "InvalidHashFormat";
-            bool result = _passwordHasher.NeedsRehash(invalidHash);
+            string password = "LegacyPassword123!";
+            string legacyHash = CreateLegacySha256Hash(password);
 
-            Assert.True(result);
+            Assert.True(_passwordHasher.VerifyPassword(legacyHash, password));
+            Assert.False(_passwordHasher.VerifyPassword(legacyHash, "WrongPassword!"));
+            Assert.True(_passwordHasher.NeedsRehash(legacyHash));
+        }
+
+        [Fact]
+        public void NeedsRehash_ShouldReturnFalseForUpgradedSha512Hash()
+        {
+            string password = "SecurePassword123!";
+            string hash = _passwordHasher.HashPassword(password);
+
+            Assert.False(_passwordHasher.NeedsRehash(hash));
+            Assert.True(_passwordHasher.VerifyPassword(hash, password));
+        }
+
+        [Fact]
+        public void NeedsRehash_ShouldReturnTrueForMismatchedAlgorithm()
+        {
+            string password = "SecurePassword123!";
+            string sha256Hash = CreateFormattedHash("pbkdf2-sha256", HashAlgorithmName.SHA256, 220_000, password);
+
+            Assert.True(_passwordHasher.VerifyPassword(sha256Hash, password));
+            Assert.True(_passwordHasher.NeedsRehash(sha256Hash));
+        }
+
+        [Fact]
+        public void NeedsRehash_ShouldReturnTrueForIterationCountBelow220000()
+        {
+            string password = "SecurePassword123!";
+            string weakHash = CreateFormattedHash("pbkdf2-sha512", HashAlgorithmName.SHA512, 100_000, password);
+
+            Assert.True(_passwordHasher.VerifyPassword(weakHash, password));
+            Assert.True(_passwordHasher.NeedsRehash(weakHash));
+        }
+
+        [Fact]
+        public void NeedsRehash_ShouldReturnFalseForHigherFutureIterationCount()
+        {
+            string password = "SecurePassword123!";
+            string strongerHash = CreateFormattedHash("pbkdf2-sha512", HashAlgorithmName.SHA512, 250_000, password);
+
+            Assert.True(_passwordHasher.VerifyPassword(strongerHash, password));
+            Assert.False(_passwordHasher.NeedsRehash(strongerHash));
+        }
+
+        [Theory]
+        [InlineData("InvalidHashFormat")]
+        [InlineData("not-base64!.not-base64!")]
+        [InlineData("AAAAAAAAAAAAAAAAAAAAAA==.not!valid!base64")]
+        [InlineData("not!valid!base64.AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=")]
+        [InlineData("pbkdf2-sha512$220000$not!valid$also!invalid")]
+        [InlineData("pbkdf2-sha512$220000$AAAAAAAAAAAAAAAAAAAAAA==$not!valid")]
+        [InlineData("pbkdf2-sha512$notanumber$AAAAAAAAAAAAAAAAAAAAAA==$AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=")]
+        [InlineData("pbkdf2-sha512$-10$AAAAAAAAAAAAAAAAAAAAAA==$AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=")]
+        [InlineData("pbkdf2-sha512$0$AAAAAAAAAAAAAAAAAAAAAA==$AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=")]
+        [InlineData("pbkdf2-sha512$00220000$AAAAAAAAAAAAAAAAAAAAAA==$AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=")]
+        [InlineData("pbkdf2-md5$220000$AAAAAAAAAAAAAAAAAAAAAA==$AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=")]
+        [InlineData("pbkdf2-sha512$220000$AAAA$BBBB$extra")]
+        [InlineData("pbkdf2-sha512$220000$AAAA")]
+        [InlineData("pbkdf2-sha512$220000$AAA A$AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=")]
+        public void MalformedHashes_ShouldReturnFalseAndNeedsRehashTrueWithoutThrowing(string malformedHash)
+        {
+            Assert.False(_passwordHasher.VerifyPassword(malformedHash, "SecurePassword123!"));
+            Assert.True(_passwordHasher.NeedsRehash(malformedHash));
         }
 
         [Fact]
         public void NeedsRehash_ShouldReturnTrueForOutdatedSaltOrHashSize()
         {
-            string outdatedHash = $"{Convert.ToBase64String(new byte[8])}.{Convert.ToBase64String(new byte[16])}";
-            bool result = _passwordHasher.NeedsRehash(outdatedHash);
+            string outdatedLegacyHash = $"{Convert.ToBase64String(new byte[8])}.{Convert.ToBase64String(new byte[16])}";
+            string outdatedCurrentHash = $"pbkdf2-sha512$220000${Convert.ToBase64String(new byte[8])}${Convert.ToBase64String(new byte[16])}";
 
-            Assert.True(result);
-        }
-
-        [Fact]
-        public void NeedsRehash_ShouldReturnFalseForValidHash()
-        {
-            string password = "SecurePassword123!";
-            string hash = _passwordHasher.HashPassword(password);
-
-            bool result = _passwordHasher.NeedsRehash(hash);
-            Assert.False(result);
+            Assert.True(_passwordHasher.NeedsRehash(outdatedLegacyHash));
+            Assert.True(_passwordHasher.NeedsRehash(outdatedCurrentHash));
+            Assert.False(_passwordHasher.VerifyPassword(outdatedCurrentHash, "SecurePassword123!"));
         }
 
         [Fact]
@@ -186,17 +274,18 @@ namespace Locatarius.Infrastructure.Tests
             string password = "SecurePassword123!";
             string hash = _passwordHasher.HashPassword(password);
 
-            // Corrupt the hash
+            // Corrupt the trailing base64 padding character
             string corruptedHash = hash.Substring(0, hash.Length - 1) + "A";
 
             bool result = _passwordHasher.NeedsRehash(corruptedHash);
             Assert.True(result);
+            Assert.False(_passwordHasher.VerifyPassword(corruptedHash, password));
         }
 
         [Theory]
-        [InlineData("", "", "fbdb1d1b18aa6c08f7909b02e6b0d6398a3aa5a5e6bfb7c5e3e8a5e8e8e8e8e")] // Empty strings
-        [InlineData("key", "The quick brown fox jumps over the lazy dog", "f7bc83f430538424b13298e6aa6fb143ef4d59a149461f7a7b7b7b7b7b7b7b")] // ASCII
-        [InlineData("key", "", "5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d")] // Empty message
+        [InlineData("", "", "b613679a0814d9ec772f95d778c35fc5ff1697c493715653c6c712144292c5ad")] // Empty strings
+        [InlineData("key", "The quick brown fox jumps over the lazy dog", "f7bc83f430538424b13298e6aa6fb143ef4d59a14946175997479dbc2d1a3cd8")] // ASCII
+        [InlineData("key", "", "5d5d139563c95b5967b9bd9a8c9b233a9dedb45072794cd232dc1b74832607d0")] // Empty message
         public void HMAC_SHA256_ShouldMatchExpectedOutput(string key, string message, string expectedHex)
         {
             byte[] keyBytes = Encoding.UTF8.GetBytes(key);
@@ -205,7 +294,7 @@ namespace Locatarius.Infrastructure.Tests
             using var hmac = new HMACSHA256(keyBytes);
             byte[] computedHash = hmac.ComputeHash(messageBytes);
 
-            string computedHex = BitConverter.ToString(computedHash).Replace("-", "").ToLower();
+            string computedHex = Convert.ToHexStringLower(computedHash);
             Assert.Equal(expectedHex, computedHex);
         }
 
