@@ -3,7 +3,6 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using Locatarius.Domain.Entities;
 using Locatarius.Domain.Enums;
-using Locatarius.Api.Validation;
 using Locatarius.Infrastructure.Auth;
 using Locatarius.Infrastructure.Persistence;
 using Locatarius.Infrastructure.Residents;
@@ -147,19 +146,12 @@ public sealed class ResidentAdministrationHttpTests
     public async Task UpdatePersistsProfileChangesAndKeepsSessionsWhenActive()
     {
         await using var factory = new DirectoryFactory();
-        using var client = factory.CreateClient(new() { BaseAddress = new Uri("https://localhost") });
-        await SeedDirectory(factory, client);
-        await AddCsrf(client);
-
-        Guid anaId;
+        using var client = await NewAdminDirectoryClient(factory);
+        var (anaId, _, originalHash) = await FindResident(factory, "ana@a.example.test");
         Guid apartment12Id;
-        string originalHash;
         await using (var scope = factory.Services.CreateAsyncScope())
         {
             var db = scope.ServiceProvider.GetRequiredService<LocatariusDbContext>();
-            var ana = await db.Users.Include(u => u.Credential).SingleAsync(u => u.Credential!.Email == "ana@a.example.test");
-            anaId = ana.UserId;
-            originalHash = ana.Credential!.PasswordHash;
             apartment12Id = (await db.Apartments.SingleAsync(a => a.ApartmentNumber == "12")).ApartmentId;
             AddActiveSession(db, anaId, "ana-active-session");
             await db.SaveChangesAsync();
@@ -190,8 +182,7 @@ public sealed class ResidentAdministrationHttpTests
 
         await using var verifyScope = factory.Services.CreateAsyncScope();
         var verifyDb = verifyScope.ServiceProvider.GetRequiredService<LocatariusDbContext>();
-        var updated = await verifyDb.Users.Include(u => u.Credential).Include(u => u.Role)
-            .SingleAsync(u => u.UserId == anaId);
+        var updated = await verifyDb.Users.Include(u => u.Credential).Include(u => u.Role).SingleAsync(u => u.UserId == anaId);
         Assert.Equal("Ana-Maria", updated.FirstName);
         Assert.Equal("Ionescu", updated.LastName);
         Assert.Equal("ana.updated@a.example.test", updated.Credential!.Email);
@@ -206,19 +197,8 @@ public sealed class ResidentAdministrationHttpTests
     public async Task UpdateAllowsKeepingSameCanonicalEmail()
     {
         await using var factory = new DirectoryFactory();
-        using var client = factory.CreateClient(new() { BaseAddress = new Uri("https://localhost") });
-        await SeedDirectory(factory, client);
-        await AddCsrf(client);
-
-        Guid anaId;
-        Guid apartment3AId;
-        await using (var scope = factory.Services.CreateAsyncScope())
-        {
-            var db = scope.ServiceProvider.GetRequiredService<LocatariusDbContext>();
-            var ana = await db.Users.Include(u => u.Credential).SingleAsync(u => u.Credential!.Email == "ana@a.example.test");
-            anaId = ana.UserId;
-            apartment3AId = ana.ApartmentId!.Value;
-        }
+        using var client = await NewAdminDirectoryClient(factory);
+        var (anaId, apartment3AId, _) = await FindResident(factory, "ana@a.example.test");
 
         var response = await client.PutAsJsonAsync($"/api/residents/{anaId}", new
         {
@@ -239,21 +219,12 @@ public sealed class ResidentAdministrationHttpTests
     public async Task UpdateDeactivatingResidentRevokesOnlyTargetSessions()
     {
         await using var factory = new DirectoryFactory();
-        using var client = factory.CreateClient(new() { BaseAddress = new Uri("https://localhost") });
-        await SeedDirectory(factory, client);
-        await AddCsrf(client);
-
-        Guid anaId;
-        Guid mihaiId;
-        Guid apartment3AId;
+        using var client = await NewAdminDirectoryClient(factory);
+        var (anaId, apartment3AId, _) = await FindResident(factory, "ana@a.example.test");
+        var (mihaiId, _, _) = await FindResident(factory, "mihai@a.example.test");
         await using (var scope = factory.Services.CreateAsyncScope())
         {
             var db = scope.ServiceProvider.GetRequiredService<LocatariusDbContext>();
-            var ana = await db.Users.Include(u => u.Credential).SingleAsync(u => u.Credential!.Email == "ana@a.example.test");
-            var mihai = await db.Users.Include(u => u.Credential).SingleAsync(u => u.Credential!.Email == "mihai@a.example.test");
-            anaId = ana.UserId;
-            mihaiId = mihai.UserId;
-            apartment3AId = ana.ApartmentId!.Value;
             AddActiveSession(db, anaId, "ana-session-1");
             AddActiveSession(db, anaId, "ana-session-2");
             AddActiveSession(db, mihaiId, "mihai-session-1");
@@ -270,13 +241,11 @@ public sealed class ResidentAdministrationHttpTests
         });
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        var dto = await response.Content.ReadFromJsonAsync<JsonElement>();
-        Assert.False(dto.GetProperty("isActive").GetBoolean());
+        Assert.False((await response.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("isActive").GetBoolean());
 
         await using var verifyScope = factory.Services.CreateAsyncScope();
         var verifyDb = verifyScope.ServiceProvider.GetRequiredService<LocatariusDbContext>();
-        var resident = await verifyDb.Users.SingleAsync(u => u.UserId == anaId);
-        Assert.False(resident.IsActive);
+        Assert.False((await verifyDb.Users.SingleAsync(u => u.UserId == anaId)).IsActive);
         Assert.Empty(await verifyDb.Sessions.Where(s => s.UserId == anaId).ToListAsync());
         Assert.Single(await verifyDb.Sessions.Where(s => s.UserId == mihaiId).ToListAsync());
     }
@@ -285,20 +254,8 @@ public sealed class ResidentAdministrationHttpTests
     public async Task UpdateCanReactivateInactiveResident()
     {
         await using var factory = new DirectoryFactory();
-        using var client = factory.CreateClient(new() { BaseAddress = new Uri("https://localhost") });
-        await SeedDirectory(factory, client);
-        await AddCsrf(client);
-
-        Guid ioanaId;
-        Guid apartment12Id;
-        await using (var scope = factory.Services.CreateAsyncScope())
-        {
-            var db = scope.ServiceProvider.GetRequiredService<LocatariusDbContext>();
-            var ioana = await db.Users.Include(u => u.Credential).SingleAsync(u => u.Credential!.Email == "ioana@a.example.test");
-            ioanaId = ioana.UserId;
-            apartment12Id = ioana.ApartmentId!.Value;
-            Assert.False(ioana.IsActive);
-        }
+        using var client = await NewAdminDirectoryClient(factory);
+        var (ioanaId, apartment12Id, _) = await FindResident(factory, "ioana@a.example.test");
 
         var response = await client.PutAsJsonAsync($"/api/residents/{ioanaId}", new
         {
@@ -310,30 +267,23 @@ public sealed class ResidentAdministrationHttpTests
         });
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        var dto = await response.Content.ReadFromJsonAsync<JsonElement>();
-        Assert.True(dto.GetProperty("isActive").GetBoolean());
+        Assert.True((await response.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("isActive").GetBoolean());
 
         await using var verifyScope = factory.Services.CreateAsyncScope();
         var verifyDb = verifyScope.ServiceProvider.GetRequiredService<LocatariusDbContext>();
-        var reactivated = await verifyDb.Users.SingleAsync(u => u.UserId == ioanaId);
-        Assert.True(reactivated.IsActive);
+        Assert.True((await verifyDb.Users.SingleAsync(u => u.UserId == ioanaId)).IsActive);
     }
 
     [Fact]
     public async Task DeleteLogicallyDeactivatesResidentRevokesSessionsAndIsIdempotent()
     {
         await using var factory = new DirectoryFactory();
-        using var client = factory.CreateClient(new() { BaseAddress = new Uri("https://localhost") });
-        await SeedDirectory(factory, client);
-        await AddCsrf(client);
-
-        Guid anaId;
-        Guid mihaiId;
+        using var client = await NewAdminDirectoryClient(factory);
+        var (anaId, _, _) = await FindResident(factory, "ana@a.example.test");
+        var (mihaiId, _, _) = await FindResident(factory, "mihai@a.example.test");
         await using (var scope = factory.Services.CreateAsyncScope())
         {
             var db = scope.ServiceProvider.GetRequiredService<LocatariusDbContext>();
-            anaId = (await db.Users.Include(u => u.Credential).SingleAsync(u => u.Credential!.Email == "ana@a.example.test")).UserId;
-            mihaiId = (await db.Users.Include(u => u.Credential).SingleAsync(u => u.Credential!.Email == "mihai@a.example.test")).UserId;
             AddActiveSession(db, anaId, "ana-delete-session-1");
             AddActiveSession(db, anaId, "ana-delete-session-2");
             AddActiveSession(db, mihaiId, "mihai-delete-session-1");
@@ -347,20 +297,17 @@ public sealed class ResidentAdministrationHttpTests
         await using (var verifyScope = factory.Services.CreateAsyncScope())
         {
             var verifyDb = verifyScope.ServiceProvider.GetRequiredService<LocatariusDbContext>();
-            var resident = await verifyDb.Users.SingleAsync(x => x.UserId == anaId);
-            Assert.False(resident.IsActive);
+            Assert.False((await verifyDb.Users.SingleAsync(x => x.UserId == anaId)).IsActive);
             Assert.Empty(await verifyDb.Sessions.Where(x => x.UserId == anaId).ToListAsync());
             Assert.Single(await verifyDb.Sessions.Where(x => x.UserId == mihaiId).ToListAsync());
         }
 
         // Second DELETE on already-inactive resident is idempotent and does not hard-delete.
-        var secondResponse = await client.DeleteAsync($"/api/residents/{anaId}");
-        Assert.Equal(HttpStatusCode.NoContent, secondResponse.StatusCode);
+        Assert.Equal(HttpStatusCode.NoContent, (await client.DeleteAsync($"/api/residents/{anaId}")).StatusCode);
 
         await using var verifyScope2 = factory.Services.CreateAsyncScope();
         var verifyDb2 = verifyScope2.ServiceProvider.GetRequiredService<LocatariusDbContext>();
-        var stillPresent = await verifyDb2.Users.SingleAsync(x => x.UserId == anaId);
-        Assert.False(stillPresent.IsActive);
+        Assert.False((await verifyDb2.Users.SingleAsync(x => x.UserId == anaId)).IsActive);
     }
 
     [Theory]
@@ -373,6 +320,7 @@ public sealed class ResidentAdministrationHttpTests
     [InlineData("lastName", "", HttpStatusCode.BadRequest, "VALIDATION_FAILED")]
     [InlineData("email", "invalid", HttpStatusCode.BadRequest, "VALIDATION_FAILED")]
     [InlineData("isActive", null, HttpStatusCode.BadRequest, "VALIDATION_FAILED")]
+    [InlineData("isActive", "<omit>", HttpStatusCode.BadRequest, "VALIDATION_FAILED")]
     [InlineData("isActive", "true", HttpStatusCode.BadRequest, "INVALID_REQUEST")]
     [InlineData("role", "Admin", HttpStatusCode.BadRequest, "INVALID_REQUEST")]
     [InlineData("password", "NewSecretPassword123!", HttpStatusCode.BadRequest, "INVALID_REQUEST")]
@@ -381,30 +329,26 @@ public sealed class ResidentAdministrationHttpTests
     public async Task RejectedUpdateDoesNotModifyResident(string field, string? value, HttpStatusCode status, string expectedCode)
     {
         await using var factory = new DirectoryFactory();
-        using var client = factory.CreateClient(new() { BaseAddress = new Uri("https://localhost") });
-        await SeedDirectory(factory, client);
-        await AddCsrf(client);
-
-        Guid anaId;
-        Guid originalApartmentId;
-        Dictionary<string, object?> body;
-        await using (var scope = factory.Services.CreateAsyncScope())
+        using var client = await NewAdminDirectoryClient(factory);
+        var (anaId, originalApartmentId, _) = await FindResident(factory, "ana@a.example.test");
+        var body = new Dictionary<string, object?>
         {
+            ["firstName"] = "Ana-Changed",
+            ["lastName"] = "Popescu-Changed",
+            ["email"] = "ana.changed@a.example.test",
+            ["apartmentId"] = originalApartmentId.ToString(),
+            ["isActive"] = true
+        };
+        if (value == "<omit>")
+            body.Remove(field);
+        else if (value == "foreign")
+        {
+            await using var scope = factory.Services.CreateAsyncScope();
             var db = scope.ServiceProvider.GetRequiredService<LocatariusDbContext>();
-            var ana = await db.Users.Include(u => u.Credential).SingleAsync(u => u.Credential!.Email == "ana@a.example.test");
-            anaId = ana.UserId;
-            originalApartmentId = ana.ApartmentId!.Value;
-            var foreignApartmentId = (await db.Apartments.SingleAsync(a => a.Building.BuildingNumber == "Building B")).ApartmentId;
-            body = new()
-            {
-                ["firstName"] = "Ana-Changed",
-                ["lastName"] = "Popescu-Changed",
-                ["email"] = "ana.changed@a.example.test",
-                ["apartmentId"] = originalApartmentId.ToString(),
-                ["isActive"] = true
-            };
-            body[field] = value == "foreign" ? foreignApartmentId.ToString() : value;
+            body[field] = (await db.Apartments.SingleAsync(a => a.Building.BuildingNumber == "Building B")).ApartmentId.ToString();
         }
+        else
+            body[field] = value;
 
         var response = await client.PutAsJsonAsync($"/api/residents/{anaId}", body);
         Assert.Equal(status, response.StatusCode);
@@ -429,9 +373,7 @@ public sealed class ResidentAdministrationHttpTests
     public async Task UpdateAndDeactivateReturnResidentNotFoundForOutOfScopeTargets(string target)
     {
         await using var factory = new DirectoryFactory();
-        using var client = factory.CreateClient(new() { BaseAddress = new Uri("https://localhost") });
-        await SeedDirectory(factory, client);
-        await AddCsrf(client);
+        using var client = await NewAdminDirectoryClient(factory);
 
         Guid targetId;
         Guid ownedApartmentId;
@@ -440,13 +382,10 @@ public sealed class ResidentAdministrationHttpTests
             var db = scope.ServiceProvider.GetRequiredService<LocatariusDbContext>();
             ownedApartmentId = (await db.Apartments.SingleAsync(a => a.ApartmentNumber == "12")).ApartmentId;
             if (target == "missing")
-            {
                 targetId = Guid.NewGuid();
-            }
             else
             {
-                var user = await db.Users.Include(u => u.Credential).SingleAsync(u => u.Credential!.Email == target);
-                targetId = user.UserId;
+                targetId = (await db.Users.Include(u => u.Credential).SingleAsync(u => u.Credential!.Email == target)).UserId;
                 AddActiveSession(db, targetId, $"session-{target}");
                 await db.SaveChangesAsync();
             }
@@ -494,11 +433,8 @@ public sealed class ResidentAdministrationHttpTests
         if (csrf) await AddCsrf(client);
 
         var id = Guid.NewGuid();
-        var putResponse = await client.PutAsJsonAsync($"/api/residents/{id}", new { });
-        Assert.Equal(status, putResponse.StatusCode);
-
-        var deleteResponse = await client.DeleteAsync($"/api/residents/{id}");
-        Assert.Equal(status, deleteResponse.StatusCode);
+        Assert.Equal(status, (await client.PutAsJsonAsync($"/api/residents/{id}", new { })).StatusCode);
+        Assert.Equal(status, (await client.DeleteAsync($"/api/residents/{id}")).StatusCode);
     }
 
     [Theory]
@@ -540,53 +476,6 @@ public sealed class ResidentAdministrationHttpTests
             $"/api/residents/{Guid.NewGuid()}",
             new StringContent(new string(' ', 16385), System.Text.Encoding.UTF8, "application/json"));
         Assert.Equal(HttpStatusCode.RequestEntityTooLarge, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task UpdateMissingIsActiveReturnsValidationFailed()
-    {
-        await using var factory = new DirectoryFactory();
-        using var client = factory.CreateClient(new() { BaseAddress = new Uri("https://localhost") });
-        await SeedDirectory(factory, client);
-        await AddCsrf(client);
-
-        Guid anaId;
-        Guid apartment3AId;
-        await using (var scope = factory.Services.CreateAsyncScope())
-        {
-            var db = scope.ServiceProvider.GetRequiredService<LocatariusDbContext>();
-            var ana = await db.Users.Include(u => u.Credential).SingleAsync(u => u.Credential!.Email == "ana@a.example.test");
-            anaId = ana.UserId;
-            apartment3AId = ana.ApartmentId!.Value;
-        }
-
-        var response = await client.PutAsJsonAsync($"/api/residents/{anaId}", new
-        {
-            firstName = "Ana",
-            lastName = "Popescu",
-            email = "ana@a.example.test",
-            apartmentId = apartment3AId.ToString()
-        });
-
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-        var error = (await response.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("error");
-        Assert.Equal("VALIDATION_FAILED", error.GetProperty("code").GetString());
-        Assert.True(error.GetProperty("fields").TryGetProperty("isActive", out _));
-    }
-
-    [Theory]
-    [InlineData("{\"firstName\":\"Ana\",\"lastName\":\"Popescu\",\"email\":\"ana@a.example.test\",\"apartmentId\":\"11111111-1111-1111-1111-111111111111\",\"isActive\":true,\"role\":\"Admin\"}")]
-    [InlineData("{\"firstName\":\"Ana\",\"lastName\":\"Popescu\",\"email\":\"ana@a.example.test\",\"apartmentId\":\"11111111-1111-1111-1111-111111111111\",\"isActive\":true,\"password\":\"SecretPassword123!\"}")]
-    [InlineData("{\"firstName\":\"Ana\",\"lastName\":\"Popescu\",\"email\":\"ana@a.example.test\",\"apartmentId\":\"11111111-1111-1111-1111-111111111111\",\"isActive\":\"true\"}")]
-    public void ValidateUpdateDirectlyRejectsDisallowedFieldsAndInvalidTypes(string json)
-    {
-        using var document = JsonDocument.Parse(json);
-        var values = document.RootElement.EnumerateObject()
-            .ToDictionary(p => p.Name, p => p.Value.Clone());
-
-        var result = ResidentRequestValidator.ValidateUpdate(values);
-        Assert.True(result.IsInvalidRequest);
-        Assert.Null(result.Command);
     }
 
     [Fact]
@@ -642,6 +531,23 @@ public sealed class ResidentAdministrationHttpTests
                         constraintName: "IX_user_credentials_email"));
             return ValueTask.FromResult(result);
         }
+    }
+
+    private static async Task<HttpClient> NewAdminDirectoryClient(DirectoryFactory factory)
+    {
+        var client = factory.CreateClient(new() { BaseAddress = new Uri("https://localhost") });
+        await SeedDirectory(factory, client);
+        await AddCsrf(client);
+        return client;
+    }
+
+    private static async Task<(Guid UserId, Guid ApartmentId, string PasswordHash)> FindResident(
+        DirectoryFactory factory, string email)
+    {
+        await using var scope = factory.Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<LocatariusDbContext>();
+        var user = await db.Users.Include(u => u.Credential).SingleAsync(u => u.Credential!.Email == email);
+        return (user.UserId, user.ApartmentId!.Value, user.Credential!.PasswordHash);
     }
 
     private static void AddActiveSession(LocatariusDbContext db, Guid userId, string rawToken)

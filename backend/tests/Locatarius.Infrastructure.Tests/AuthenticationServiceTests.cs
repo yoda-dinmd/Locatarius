@@ -160,11 +160,7 @@ public sealed class AuthenticationServiceTests
         await using var context = CreateContext();
         await SeedUserAsync(context, mustChangePassword: false);
 
-        var salt = new byte[16];
-        RandomNumberGenerator.Fill(salt);
-        var legacyBytes = Rfc2898DeriveBytes.Pbkdf2(Password, salt, 10_000, HashAlgorithmName.SHA256, 32);
-        var legacyHash = $"{Convert.ToBase64String(salt)}.{Convert.ToBase64String(legacyBytes)}";
-
+        var legacyHash = CreateLegacySha256Hash(Password);
         var credential = await context.UserCredentials.SingleAsync();
         credential.PasswordHash = legacyHash;
         await context.SaveChangesAsync();
@@ -191,11 +187,7 @@ public sealed class AuthenticationServiceTests
         await using var context = CreateContext();
         await SeedUserAsync(context, mustChangePassword: false);
 
-        var salt = new byte[16];
-        RandomNumberGenerator.Fill(salt);
-        var legacyBytes = Rfc2898DeriveBytes.Pbkdf2(Password, salt, 10_000, HashAlgorithmName.SHA256, 32);
-        var legacyHash = $"{Convert.ToBase64String(salt)}.{Convert.ToBase64String(legacyBytes)}";
-
+        var legacyHash = CreateLegacySha256Hash(Password);
         var credential = await context.UserCredentials.SingleAsync();
         credential.PasswordHash = legacyHash;
         await context.SaveChangesAsync();
@@ -221,6 +213,14 @@ public sealed class AuthenticationServiceTests
         Assert.Equal(LoginResultStatus.Success, outcome.Status);
         var currentHash = (await context.UserCredentials.SingleAsync()).PasswordHash;
         Assert.Equal(originalHash, currentHash);
+    }
+
+    private static string CreateLegacySha256Hash(string password)
+    {
+        var salt = new byte[16];
+        RandomNumberGenerator.Fill(salt);
+        var derived = Rfc2898DeriveBytes.Pbkdf2(password, salt, 10_000, HashAlgorithmName.SHA256, 32);
+        return $"{Convert.ToBase64String(salt)}.{Convert.ToBase64String(derived)}";
     }
 
     [Fact]
