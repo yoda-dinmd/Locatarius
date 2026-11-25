@@ -1,3 +1,4 @@
+using System.Security.Cryptography;
 using Locatarius.Domain.Entities;
 using Locatarius.Domain.Enums;
 using Locatarius.Infrastructure.Auth;
@@ -151,6 +152,75 @@ public sealed class AuthenticationServiceTests
         var credential = await context.UserCredentials.SingleAsync();
         Assert.Equal(0, credential.FailedLoginAttempts);
         Assert.Null(credential.LockedUntil);
+    }
+
+    [Fact]
+    public async Task LoginAsync_LegacyHashWithValidPassword_TransparentlyRehashesAndPersists()
+    {
+        await using var context = CreateContext();
+        await SeedUserAsync(context, mustChangePassword: false);
+
+        var legacyHash = CreateLegacySha256Hash(Password);
+        var credential = await context.UserCredentials.SingleAsync();
+        credential.PasswordHash = legacyHash;
+        await context.SaveChangesAsync();
+
+        var hasher = new PasswordHasher();
+        Assert.True(hasher.NeedsRehash(credential.PasswordHash));
+
+        var service = CreateService(context);
+        var outcome = await service.LoginAsync("resident@example.com", Password, default);
+
+        Assert.Equal(LoginResultStatus.Success, outcome.Status);
+        var updated = await context.UserCredentials.SingleAsync();
+        Assert.NotEqual(legacyHash, updated.PasswordHash);
+        Assert.StartsWith("pbkdf2-sha512$220000$", updated.PasswordHash);
+        Assert.False(hasher.NeedsRehash(updated.PasswordHash));
+        Assert.True(hasher.VerifyPassword(updated.PasswordHash, Password));
+        Assert.False(updated.MustChangePassword);
+        Assert.Null(updated.PasswordChangedAt);
+    }
+
+    [Fact]
+    public async Task LoginAsync_LegacyHashWithWrongPassword_DoesNotRehash()
+    {
+        await using var context = CreateContext();
+        await SeedUserAsync(context, mustChangePassword: false);
+
+        var legacyHash = CreateLegacySha256Hash(Password);
+        var credential = await context.UserCredentials.SingleAsync();
+        credential.PasswordHash = legacyHash;
+        await context.SaveChangesAsync();
+
+        var service = CreateService(context);
+        var outcome = await service.LoginAsync("resident@example.com", "WrongPassword!", default);
+
+        Assert.Equal(LoginResultStatus.InvalidCredentials, outcome.Status);
+        var updated = await context.UserCredentials.SingleAsync();
+        Assert.Equal(legacyHash, updated.PasswordHash);
+    }
+
+    [Fact]
+    public async Task LoginAsync_CurrentHashWithValidPassword_DoesNotRewriteHash()
+    {
+        await using var context = CreateContext();
+        await SeedUserAsync(context, mustChangePassword: false);
+        var originalHash = (await context.UserCredentials.SingleAsync()).PasswordHash;
+
+        var service = CreateService(context);
+        var outcome = await service.LoginAsync("resident@example.com", Password, default);
+
+        Assert.Equal(LoginResultStatus.Success, outcome.Status);
+        var currentHash = (await context.UserCredentials.SingleAsync()).PasswordHash;
+        Assert.Equal(originalHash, currentHash);
+    }
+
+    private static string CreateLegacySha256Hash(string password)
+    {
+        var salt = new byte[16];
+        RandomNumberGenerator.Fill(salt);
+        var derived = Rfc2898DeriveBytes.Pbkdf2(password, salt, 10_000, HashAlgorithmName.SHA256, 32);
+        return $"{Convert.ToBase64String(salt)}.{Convert.ToBase64String(derived)}";
     }
 
     [Fact]

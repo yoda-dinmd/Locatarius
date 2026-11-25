@@ -1,70 +1,128 @@
-using System;
+using System.Globalization;
 using System.Security.Cryptography;
-using System.Text;
 
-namespace Locatarius.Infrastructure
+namespace Locatarius.Infrastructure;
+
+public class PasswordHasher
 {
-    public class PasswordHasher
+    private const string Algorithm = "pbkdf2-sha512";
+    private const int Iterations = 220_000;
+    private const int LegacyIterations = 10_000;
+    private const int MaxSupportedIterations = 10_000_000;
+    private const int SaltSize = 16; // 128-bit salt
+    private const int HashSize = 32; // 256-bit hash
+
+    public string HashPassword(string password)
     {
-        private const int SaltSize = 16; // 128-bit salt
-        private const int HashSize = 32; // 256-bit hash
-        private const int Iterations = 10000;
+        if (password == null) throw new ArgumentNullException(nameof(password));
+        if (string.IsNullOrWhiteSpace(password))
+            throw new ArgumentException("Password cannot be empty or whitespace.", nameof(password));
 
-        public string HashPassword(string password)
+        byte[] salt = new byte[SaltSize];
+        RandomNumberGenerator.Fill(salt);
+
+        byte[] hash = Rfc2898DeriveBytes.Pbkdf2(
+            password,
+            salt,
+            Iterations,
+            HashAlgorithmName.SHA512,
+            HashSize);
+
+        return $"{Algorithm}${Iterations}${Convert.ToBase64String(salt)}${Convert.ToBase64String(hash)}";
+    }
+
+    public bool VerifyPassword(string? hashedPassword, string? password)
+    {
+        if (string.IsNullOrWhiteSpace(hashedPassword) || string.IsNullOrWhiteSpace(password))
+            return false;
+
+        if (!TryParseHash(hashedPassword, out var algorithm, out var iterations, out var salt, out var hash))
+            return false;
+
+        if (salt.Length == 0 || hash.Length != HashSize)
+            return false;
+
+        byte[] computedHash = Rfc2898DeriveBytes.Pbkdf2(
+            password,
+            salt,
+            iterations,
+            algorithm,
+            HashSize);
+
+        return CryptographicOperations.FixedTimeEquals(hash, computedHash);
+    }
+
+    public bool NeedsRehash(string? hashedPassword)
+    {
+        if (string.IsNullOrWhiteSpace(hashedPassword))
+            return true;
+
+        if (!TryParseHash(hashedPassword, out var algorithm, out var iterations, out var salt, out var hash))
+            return true;
+
+        return algorithm != HashAlgorithmName.SHA512
+            || iterations < Iterations
+            || salt.Length != SaltSize
+            || hash.Length != HashSize;
+    }
+
+    private static bool TryParseHash(
+        string hashedPassword,
+        out HashAlgorithmName algorithm,
+        out int iterations,
+        out byte[] salt,
+        out byte[] hash)
+    {
+        algorithm = default;
+        iterations = 0;
+        salt = [];
+        hash = [];
+
+        if (hashedPassword.Contains('$'))
         {
-            if (password == null) throw new ArgumentNullException(nameof(password));
-            if (string.IsNullOrWhiteSpace(password)) throw new ArgumentException("Password cannot be empty or whitespace.", nameof(password));
+            string[] parts = hashedPassword.Split('$');
+            if (parts.Length != 4 || !string.Equals(parts[0], Algorithm, StringComparison.Ordinal))
+                return false;
 
-            // Generate salt
-            byte[] salt = new byte[SaltSize];
-            RandomNumberGenerator.Fill(salt);
+            if (parts[1].Length == 0 || (parts[1].Length > 1 && parts[1][0] == '0'))
+                return false;
 
-            // Generate hash
-            byte[] hash = Rfc2898DeriveBytes.Pbkdf2(
-                password,
-                salt,
-                Iterations,
-                HashAlgorithmName.SHA256,
-                HashSize
-            );
+            if (!int.TryParse(parts[1], NumberStyles.None, CultureInfo.InvariantCulture, out iterations)
+                || iterations <= 0
+                || iterations > MaxSupportedIterations)
+                return false;
 
-            // Combine salt and hash
-            return Convert.ToBase64String(salt) + "." + Convert.ToBase64String(hash);
+            algorithm = HashAlgorithmName.SHA512;
+            return TryDecodeBase64(parts[2], out salt) && TryDecodeBase64(parts[3], out hash);
         }
 
-        public bool VerifyPassword(string hashedPassword, string password)
+        string[] legacyParts = hashedPassword.Split('.');
+        if (legacyParts.Length != 2)
+            return false;
+
+        algorithm = HashAlgorithmName.SHA256;
+        iterations = LegacyIterations;
+        return TryDecodeBase64(legacyParts[0], out salt) && TryDecodeBase64(legacyParts[1], out hash);
+    }
+
+    private static bool TryDecodeBase64(string encoded, out byte[] bytes)
+    {
+        bytes = [];
+        if (string.IsNullOrEmpty(encoded) || encoded.Length % 4 != 0)
+            return false;
+
+        foreach (char c in encoded)
         {
-            if (string.IsNullOrWhiteSpace(hashedPassword)) return false;
-            if (string.IsNullOrWhiteSpace(password)) return false;
-
-            string[] parts = hashedPassword.Split('.');
-            if (parts.Length != 2) return false;
-
-            byte[] salt = Convert.FromBase64String(parts[0]);
-            byte[] hash = Convert.FromBase64String(parts[1]);
-
-            byte[] computedHash = Rfc2898DeriveBytes.Pbkdf2(
-                password,
-                salt,
-                Iterations,
-                HashAlgorithmName.SHA256,
-                HashSize
-            );
-
-            return CryptographicOperations.FixedTimeEquals(hash, computedHash);
+            if (char.IsWhiteSpace(c)) return false;
         }
 
-        public bool NeedsRehash(string hashedPassword)
-        {
-            if (string.IsNullOrWhiteSpace(hashedPassword)) return true;
+        byte[] buffer = new byte[(encoded.Length / 4) * 3];
+        if (!Convert.TryFromBase64String(encoded, buffer, out int bytesWritten))
+            return false;
 
-            string[] parts = hashedPassword.Split('.');
-            if (parts.Length != 2) return true;
-
-            byte[] salt = Convert.FromBase64String(parts[0]);
-            byte[] hash = Convert.FromBase64String(parts[1]);
-
-            return salt.Length != SaltSize || hash.Length != HashSize;
-        }
+        bytes = bytesWritten == buffer.Length
+            ? buffer
+            : buffer.AsSpan(0, bytesWritten).ToArray();
+        return true;
     }
 }

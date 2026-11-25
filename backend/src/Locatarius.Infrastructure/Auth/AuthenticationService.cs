@@ -113,6 +113,11 @@ public sealed class AuthenticationService(
             return new LoginOutcome(LoginResultStatus.InvalidCredentials, null, null, null);
         }
 
+        if (passwordHasher.NeedsRehash(credential.PasswordHash))
+        {
+            credential.PasswordHash = passwordHasher.HashPassword(password);
+        }
+
         credential.FailedLoginAttempts = 0;
         credential.LockedUntil = null;
 
