@@ -29,23 +29,16 @@ public sealed class ResidentsController(
         var (authorization, denied) = await AuthorizeAdminAsync(cancellationToken);
         if (denied is not null) return denied;
 
-        var values = new Dictionary<string, string?>();
-        try
+        if (!TryParseObject(bytes!, length, ResidentRequestValidator.CreateFields, out var rawValues))
+            return ApiErrors.InvalidRequest();
+
+        var values = new Dictionary<string, string?>(rawValues.Count);
+        foreach (var (key, value) in rawValues)
         {
-            using var document = JsonDocument.Parse(new UTF8Encoding(false, true).GetString(bytes!, 0, length));
-            if (document.RootElement.ValueKind != JsonValueKind.Object) return ApiErrors.InvalidRequest();
-            foreach (var property in document.RootElement.EnumerateObject())
-            {
-                if (!ResidentRequestValidator.CreateFields.Contains(property.Name)
-                    || property.Value.ValueKind is not (JsonValueKind.String or JsonValueKind.Null)
-                    || !values.TryAdd(property.Name, property.Value.GetString())) return ApiErrors.InvalidRequest();
-            }
+            if (value.ValueKind is not (JsonValueKind.String or JsonValueKind.Null))
+                return ApiErrors.InvalidRequest();
+            values[key] = value.GetString();
         }
-        catch (JsonException) { return ApiErrors.InvalidRequest(); }
-        catch (DecoderFallbackException) { return ApiErrors.InvalidRequest(); }
-        // JSON accepts escaped surrogate code units, but accessing an unpaired
-        // surrogate in a property name or string value fails during decoding.
-        catch (InvalidOperationException) { return ApiErrors.InvalidRequest(); }
 
         var validation = ResidentRequestValidator.ValidateCreate(values);
         if (validation.Fields.Count != 0) return ApiErrors.ValidationFailed(validation.Fields);
@@ -68,7 +61,7 @@ public sealed class ResidentsController(
         var (authorization, denied) = await AuthorizeAdminAsync(cancellationToken);
         if (denied is not null) return denied;
 
-        if (!TryParseUpdateObject(bytes!, length, out var values))
+        if (!TryParseObject(bytes!, length, ResidentRequestValidator.UpdateFields, out var values))
             return ApiErrors.InvalidRequest();
 
         var validation = ResidentRequestValidator.ValidateUpdate(values);
@@ -161,7 +154,8 @@ public sealed class ResidentsController(
         return (authorization, null);
     }
 
-    private static bool TryParseUpdateObject(byte[] bytes, int length, out Dictionary<string, JsonElement> values)
+    private static bool TryParseObject(
+        byte[] bytes, int length, IReadOnlySet<string> allowed, out Dictionary<string, JsonElement> values)
     {
         values = new Dictionary<string, JsonElement>();
         try
@@ -170,19 +164,9 @@ public sealed class ResidentsController(
             if (document.RootElement.ValueKind != JsonValueKind.Object) return false;
             foreach (var property in document.RootElement.EnumerateObject())
             {
-                if (!ResidentRequestValidator.UpdateFields.Contains(property.Name)) return false;
-                if (property.Name == "isActive")
-                {
-                    if (property.Value.ValueKind is not (JsonValueKind.True or JsonValueKind.False or JsonValueKind.Null))
-                        return false;
-                }
-                else
-                {
-                    if (property.Value.ValueKind is not (JsonValueKind.String or JsonValueKind.Null))
-                        return false;
-                    // Decode strings now so unpaired surrogate escapes fail here instead of in the validator.
-                    if (property.Value.ValueKind == JsonValueKind.String) _ = property.Value.GetString();
-                }
+                if (!allowed.Contains(property.Name)) return false;
+                // Decode strings now so unpaired surrogate escapes fail here instead of in the validator.
+                if (property.Value.ValueKind == JsonValueKind.String) _ = property.Value.GetString();
                 if (!values.TryAdd(property.Name, property.Value.Clone())) return false;
             }
             return true;

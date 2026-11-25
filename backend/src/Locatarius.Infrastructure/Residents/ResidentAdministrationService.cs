@@ -207,13 +207,6 @@ public sealed class ResidentAdministrationService(LocatariusDbContext dbContext,
             if (user is null) return null;
 
             await dbContext.Entry(user).ReloadAsync(cancellationToken);
-            var stillInScope = await dbContext.Users.AsNoTracking().AnyAsync(
-                u => u.UserId == residentId
-                    && u.Role!.Role == UserRoleType.Resident
-                    && u.Apartment != null
-                    && u.Apartment.Building.AdminId == adminId,
-                cancellationToken);
-            if (!stillInScope) return null;
 
             if (includeCredential)
             {
